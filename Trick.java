@@ -1,121 +1,101 @@
-// Variables:
-// int numPoints: Stores the number of points accumulated in the trick.
-// ArrayList<Card> cardsInTrick: Stores the cards currently in the trick.
-// Player playerHoldingTrick: Represents the player who currently holds the trick.
-// Card leadingCardOfTrick: Stores the Card that was played first in a trick.
+//Variables:
+//numPoints: Stores the number of points accumulated in the trick.
+//cardsInTrick: ArrayList storing the cards currently in the trick.
+//playerHoldingTrick: Represents the player who currently holds the trick.
+//leadingCardOfTrick: Stores the Card that was played first in a trick.
+//winningCardOfTrick: Stores the Card that won the trick.
 
-// Constructors:
-// Trick(ArrayList<Cards>): Initializes a new Trick object
-
-// Methods:
-// getPlayerHoldingTrick(): Returns the player who played the winning card.
-// getNumPoints(): Returns the number of points accumulated in the trick.
-// getCardsInTrick(): Returns the cards currently in the trick.
-// getLeadingCard(): Return the leading card
-
+//Constructors:
+//Trick(List<Card> cards, List<Player> players): Initializes a new Trick object with the specified list of cards and players. Sets up the trick's initial state, including cards in the trick, leading card, winning card, and calculates the number of points.
+//Methods:
+//addCardToTrick(Card card): Adds a card to the trick.
+//getCardsInTrick(): ArrayList<Card>: Returns the cards currently in the trick.
+//setLeadingCard(Card card): Sets the leading card of the trick.
+//getLeadingCard(): Card: Returns the leading card of the trick.
+//setWinningCard(Card card): Sets the winning card of the trick.
+//getWinningCard(): Card: Returns the winning card of the trick.
+//setNumPoints(): Calculates and sets the number of points in the trick.
+//getNumPoints(): int: Returns the number of points accumulated in the trick.
+//setPlayerHoldingTrick(): Sets the player holding the trick based on the winning card.
+//getPlayerHoldingTrick(): Player: Returns the player who holds the trick.
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Trick {
-    private List<Card> cardsPlayed;  
-    private int currentPlayerIndex;  
-    private List<Player> players;  // List of players in the game
-    private boolean isFirstTrick;  // Flag to track if it's the first trick
- 
     private int numPoints;
     private ArrayList<Card> cardsInTrick;
     private Player playerHoldingTrick;
+    private Card leadingCardOfTrick;
+    private Card winningCardOfTrick;
+    private List<Player> players;
 
-    public Trick(List<Player> players, boolean isFirstTrick) {
-        cardsPlayed = new ArrayList<>();
-        currentPlayerIndex = 0;
+    // Constructor
+    public Trick(List<Card> cards, List<Player> players) {
+        this.cardsInTrick = new ArrayList<>(cards);
         this.players = players;
-        this.isFirstTrick = isFirstTrick;
-        
-        numPoints = 0;
-        cardsInTrick = new ArrayList<>();
-        playerHoldingTrick = null;
+        this.leadingCardOfTrick = null;
+        this.winningCardOfTrick = null;
+        setNumPoints();
+        setPlayerHoldingTrick();
     }
 
-    // Method for a player to play a card
-    public void playCard(Player player, Card card) {
-        if (isValidPlay(player, card)) {
-            cardsPlayed.add(card);
-            player.removeCardFromHand(card);
-            cardsInTrick.add(card);
-            currentPlayerIndex = (currentPlayerIndex + 1) % 4;
-        }
+    // Method to add a card to the trick
+    public void addCardToTrick(Card card) {
+        cardsInTrick.add(card);
     }
 
-    // Method to validate if the card being played is valid
-    private boolean isValidPlay(Player player, Card card) {
-        if (isFirstTrick) {
-            if (player.equals(players.get(0)) && card.getRank() == Rank.TWO && card.getSuit() == Suit.CLUBS) {
-                return true;  // First player must play the 2 of clubs in the first trick
-            } else {
-                return false; // Other players cannot play in the first trick until 2 of clubs is played
-            }
-        } else {
-            // Implement logic for subsequent tricks (checking hearts, Queen of Spades, etc.)
-            return true;
-        }
-    }
-
-    // Method to determine the winning card in the trick
-    public Card getWinningCard() {
-    // Initialize the winning card as the first card played
-    Card winningCard = cardsPlayed.get(0);
-    
-    // Initialize the initial suite (if not first trick)
-    Suit initialSuite = cardsPlayed.get(0).getSuit();
-
-    // Iterate through the cards to find the winning card
-    for (int i = 1; i < cardsPlayed.size(); i++) {
-        Card currentCard = cardsPlayed.get(i);
-        
-        // Check if the current card is of the initial suite
-        if (currentCard.getSuit() == initialSuite) {
-            // If the current card is higher than the winning card and not a heart or queen of spades,
-            // or if the winning card is not of the initial suite, update the winning card
-            if (currentCard.compareTo(winningCard) > 0 && !currentCard.isHeart() && !currentCard.isQueenOfSpades()) {
-                winningCard = currentCard;
-            }
-        } else {
-            // If the current card is of a different suite and the winning card is not of the initial suite,
-            // update the winning card if the current card is higher than the winning card
-            if (winningCard.getSuit() != initialSuite && currentCard.compareTo(winningCard) > 0) {
-                winningCard = currentCard;
-                }
-            }
-        }
-    }
-
-    // Method to get the player who played the winning card
-    public Player getPlayerHoldingTrick() {
-        // Implement this method based on the rules of the Hearts game
-        // Determine which player played the winning card and return that player
-        return null;  // Placeholder return value
-    }
-
-    // Method to check if the trick is complete
-    public boolean isTrickComplete() {
-        return cardsPlayed.size() == 4;
-    }
-
-    // Method to return the number of points in the trick
-    public int getNumPoints() {
-        return numPoints;
-    }
-
-    // Method to return the cards in the trick
+    // Method to return the cards currently in the trick
     public ArrayList<Card> getCardsInTrick() {
         return cardsInTrick;
     }
 
-    // Method to return the player holding the trick
+    // Method to set the leading card of the trick
+    public void setLeadingCard(Card card) {
+        this.leadingCardOfTrick = card;
+    }
+
+    public Card getLeadingCard() {
+        return leadingCardOfTrick;
+    }
+
+    // Method to set the winning card of the trick
+    public void setWinningCard(Card card) {
+        this.winningCardOfTrick = card;
+    }
+
+    public Card getWinningCard() {
+        return winningCardOfTrick;
+    }
+
+    // Method to calculate and return the number of points in the trick
+    private void setNumPoints() {
+        numPoints = 0;
+        for (Card card : cardsInTrick) {
+            if (card.isHeart() || card.isQueenOfSpades()) {
+                numPoints++;
+            }
+        }
+    }
+
+    public int getNumPoints() {
+        return numPoints;
+    }
+
+    // Method to set the player holding the trick
+    private void setPlayerHoldingTrick() {
+        for (Player player : players) {
+            if (player.getHand().contains(winningCardOfTrick)) {
+                playerHoldingTrick = player;
+                return;
+            }
+        }
+        // Handle the case where the winning card is not found in any player's hand
+        playerHoldingTrick = null;
+    }
+
     public Player getPlayerHoldingTrick() {
         return playerHoldingTrick;
     }
-
 }
+

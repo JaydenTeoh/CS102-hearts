@@ -24,10 +24,26 @@ public class Player {
         // not implemented yet
     }
 
-    public ArrayList<Card> getPlayableCards(Trick trick) {
+    public ArrayList<Card> getPlayableCards(Round round, Trick trick) {
         ArrayList<Card> playableCards = new ArrayList<Card>();
-        Card leadingCardInTrick = trick.getLeadingCard();
 
+        // first player of the trick
+        if (trick.getCardsInTrick().isEmpty()) {
+            if (round.isHeartsBroken()) {
+                return hand.cards; // can play any card to start trick
+            } else {
+                for (Card c : hand.cards) {
+                    // can only play cards that are not of the Hearts suit
+                    if (c.getSuit().getName() != "Hearts") {
+                        playableCards.add(c);
+                    }
+                }
+                return playableCards;
+            }
+        }
+
+        // get suit and top card of trick
+        Card leadingCardInTrick = trick.getLeadingCard();
         for (Card c : hand.cards) {
             // if same suit
             if (c.getSuit().compareTo(leadingCardInTrick) == 0) {

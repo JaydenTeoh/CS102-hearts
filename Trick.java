@@ -33,10 +33,13 @@ public class Trick {
     private int numPoints;
     private ArrayList<Card> cardsInTrick;
     private Player playerHoldingTrick;
+    private Card leadingCardOfTrick;
+    private Card winningCardOfTrick;
+    private List<Player> players;
 
-    public Trick(List<Player> players, boolean isFirstTrick) {
-        cardsPlayed = new ArrayList<>();
-        currentPlayerIndex = 0;
+    // Constructor
+    public Trick(List<Player> players) {
+        this.cardsInTrick = new ArrayList<>();
         this.players = players;
         this.isFirstTrick = isFirstTrick;
         

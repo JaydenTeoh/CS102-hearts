@@ -1,4 +1,4 @@
-package com.example._102_test_project;
+package com.example.hearts102;
 
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
@@ -126,7 +126,7 @@ public class MainApplication extends Application {
     private void createCardPlaceholders(Pane playerArea, Pane playArea) {
         try {
             String currentDirectory = System.getProperty("user.dir");
-            File file = new File(currentDirectory + "/JavaFX/Hearts/images/2c.gif");
+            File file = new File(currentDirectory + "/images/2c.gif");
             Image cardImage = new Image(new FileInputStream(file));
 
             for (int i = 0; i < 13; i++) {

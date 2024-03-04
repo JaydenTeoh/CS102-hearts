@@ -27,9 +27,15 @@ public class Trick {
     private Card winningCardOfTrick;
 
     // Constructor
-    public Trick(List<Card> cards) {
-        this.cardsInTrick = new ArrayList<>(cards);
-        this.numPoints = 0;
+
+//     public Trick(List<Card> cards) {
+//         this.cardsInTrick = new ArrayList<>(cards);
+//         this.numPoints = 0;
+
+    public Trick(List<Player> players) {
+        this.cardsInTrick = new ArrayList<>();
+        this.players = players;
+
         this.leadingCardOfTrick = null;
         this.winningCardOfTrick = null;
         setNumPoints();

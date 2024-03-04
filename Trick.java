@@ -1,7 +1,6 @@
 //Variables:
 //numPoints: Stores the number of points accumulated in the trick.
 //cardsInTrick: ArrayList storing the cards currently in the trick.
-//playerHoldingTrick: Represents the player who currently holds the trick.
 //leadingCardOfTrick: Stores the Card that was played first in a trick.
 //winningCardOfTrick: Stores the Card that won the trick.
 
@@ -16,28 +15,30 @@
 //getWinningCard(): Card: Returns the winning card of the trick.
 //setNumPoints(): Calculates and sets the number of points in the trick.
 //getNumPoints(): int: Returns the number of points accumulated in the trick.
-//setPlayerHoldingTrick(): Sets the player holding the trick based on the winning card.
-//getPlayerHoldingTrick(): Player: Returns the player who holds the trick.
+//returnWinningCardIndex(): int: Return the index of the winning card in the cardsInTrick list
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Trick {
     private int numPoints;
-    private ArrayList<Card> cardsInTrick;
-    private Player playerHoldingTrick;
+    private List<Card> cardsInTrick;
     private Card leadingCardOfTrick;
     private Card winningCardOfTrick;
-    private List<Player> players;
 
     // Constructor
+
+//     public Trick(List<Card> cards) {
+//         this.cardsInTrick = new ArrayList<>(cards);
+//         this.numPoints = 0;
+
     public Trick(List<Player> players) {
         this.cardsInTrick = new ArrayList<>();
         this.players = players;
+
         this.leadingCardOfTrick = null;
         this.winningCardOfTrick = null;
         setNumPoints();
-        setPlayerHoldingTrick();
     }
 
     // Method to add a card to the trick
@@ -46,7 +47,7 @@ public class Trick {
     }
 
     // Method to return the cards currently in the trick
-    public ArrayList<Card> getCardsInTrick() {
+    public List<Card> getCardsInTrick() {
         return cardsInTrick;
     }
 
@@ -55,6 +56,7 @@ public class Trick {
         this.leadingCardOfTrick = card;
     }
 
+    // Method to get the leading card of the trick
     public Card getLeadingCard() {
         return leadingCardOfTrick;
     }
@@ -64,11 +66,12 @@ public class Trick {
         this.winningCardOfTrick = card;
     }
 
+    // Method to get the winning card of the trick
     public Card getWinningCard() {
         return winningCardOfTrick;
     }
 
-    // Method to calculate and return the number of points in the trick
+    // Method to calculate and set the number of points in the trick
     private void setNumPoints() {
         numPoints = 0;
         for (Card card : cardsInTrick) {
@@ -78,24 +81,17 @@ public class Trick {
         }
     }
 
+    // Method to get the number of points accumulated in the trick
     public int getNumPoints() {
         return numPoints;
     }
 
-    // Method to set the player holding the trick
-    private void setPlayerHoldingTrick() {
-        for (Player player : players) {
-            if (player.getHand().contains(winningCardOfTrick)) {
-                playerHoldingTrick = player;
-                return;
-            }
+    // Method to return the index of the winning card in the cardsInTrick list
+    public int returnWinningCardIndex() {
+        if (winningCardOfTrick != null) {
+            return cardsInTrick.indexOf(winningCardOfTrick);
+        } else {
+            return -1; // Indicate no winning card set
         }
-        // Handle the case where the winning card is not found in any player's hand
-        playerHoldingTrick = null;
-    }
-
-    public Player getPlayerHoldingTrick() {
-        return playerHoldingTrick;
     }
 }
-

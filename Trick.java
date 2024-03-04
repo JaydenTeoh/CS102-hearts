@@ -31,8 +31,8 @@ public class Trick {
     private List<Player> players;
 
     // Constructor
-    public Trick(List<Card> cards, List<Player> players) {
-        this.cardsInTrick = new ArrayList<>(cards);
+    public Trick(List<Player> players) {
+        this.cardsInTrick = new ArrayList<>();
         this.players = players;
         this.leadingCardOfTrick = null;
         this.winningCardOfTrick = null;

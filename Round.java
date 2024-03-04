@@ -1,4 +1,4 @@
-import java.util.ArrayList;
+import java.util.*;
 
 public class Round {
     private boolean heartsBroken;
@@ -6,13 +6,14 @@ public class Round {
     private int numTricksPlayed;
     private Trick currentTrick;
     private Game belongsToGame;
-    private ArrayList<Player> players;
+    private HashMap<Player, Integer> playersPointsInCurrentRound;
 
-    public Round(Player playerStartingFirst, Game belongsToGame){
+
+    public Round(int playerStartingFirst, Game belongsToGame){
         this.playerStartingFirst = playerStartingFirst;
-        this.belongsToGame = game;
+        this.belongsToGame = belongsToGame;
         // need to implement Game.getPlayers later on
-        this.players = game.getPlayers();
+        this.currentTrick = null;
     }
 
     public int getPlayerStartingFirst() {
@@ -27,8 +28,17 @@ public class Round {
         return heartsBroken;
     }
 
-    public startNewTrick(int player){
-        this.currentTrick = new Trick(new ArrayList<Card>(), )
+    // starts a new trick
+    // if there was a previous trick, allocate points of the trick to the player who won it
+    public void startNewTrick(){
+        if (currentTrick != null) {
+            playerStartingFirst = currentTrick.getWinner(); //ADD THIS LATER ON
+            Player winnerOfTrick = belongsToGame.getPlayers().get(playerStartingFirst);
+            int pointsInTrick = currentTrick.getNumPoints();
+            int previousPoints = playersPointsInCurrentRound.get(winnerOfTrick);
+            playersPointsInCurrentRound.replace(winnerOfTrick, pointsInTrick + previousPoints);
+        }
+        this.currentTrick = new Trick(belongsToGame.getPlayers());
     }
 
 
@@ -42,21 +52,37 @@ public class Round {
         d.shuffle();
 
         // create 4 new hands
-        for (int i = 0; i < NUM_PLAYERS; i++) {
+        for (int i = 0; i < belongsToGame.NUM_PLAYERS; i++) {
             hands.add(new Hand());
         }
 
         // populate 4 hands from the shuffled deck
-        for (int card = 0; card < MAX_NUMBER_OF_CARDS_PER_PLAYER; card++) {
-            for (int handIndex = 0; handIndex < NUM_PLAYERS; handIndex++) {
+        for (int card = 0; card < belongsToGame.MAX_NUMBER_OF_CARDS_PER_PLAYER; card++) {
+            for (int handIndex = 0; handIndex < belongsToGame.NUM_PLAYERS; handIndex++) {
                 if (!d.isEmpty()) {
                     hands.get(handIndex).addCard(d.dealCard());
                 }
             }
         }
 
-        for (int i = 0; i < NUM_PLAYERS; i++) {
+        for (int i = 0; i < belongsToGame.NUM_PLAYERS; i++) {
             players[i].setHand(hands[i]);
         }
     }
+
+    public synchronized void playRound() {
+        // async
+
+        // Conditions: Player's hand is not empty (round is not over) and trick is finished
+        // while (!belongsToGame.getPlayers().get(0).getHand().getCards().isEmpty() && currentTrick.getCardsInTrick().size() == Game.NUM_PLAYERS) {
+        //     this.startNewTrick();
+        //     // get server response for player's play card method * 4
+        // }
+
+        for (int i = 0; i < belongsToGame.MAX_NUMBER_OF_CARDS_PER_PLAYER; i++) {
+            this.startNewTrick();
+            // get server response for player's play card method * 4
+        }
+    }
+
 }

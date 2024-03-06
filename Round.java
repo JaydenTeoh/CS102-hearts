@@ -12,8 +12,15 @@ public class Round {
     public Round(int playerStartingFirst, Game belongsToGame){
         this.playerStartingFirst = playerStartingFirst;
         this.belongsToGame = belongsToGame;
+
         // need to implement Game.getPlayers later on
-        this.currentTrick = null;
+        currentTrick = null;
+
+        // initialising the hashmap, every player starts with 0 points
+        playersPointsInCurrentRound = new HashMap<>();
+        for (Player p: belongsToGame.getPlayers()) {
+            playersPointsInCurrentRound.put(p, 0);
+        }
     }
 
     public int getPlayerStartingFirst() {
@@ -84,7 +91,9 @@ public class Round {
             // get server response for player's play card method * 4
         }
 
-        // update points of Game after round ends 
+        for (Player p: belongsToGame.getPlayers()) {
+            belongsToGame.addPoints(p, playersPointsInCurrentRound.get(p) % 26);
+        }
     }
 
 }

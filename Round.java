@@ -12,8 +12,15 @@ public class Round {
     public Round(int playerStartingFirst, Game belongsToGame){
         this.playerStartingFirst = playerStartingFirst;
         this.belongsToGame = belongsToGame;
+
         // need to implement Game.getPlayers later on
-        this.currentTrick = null;
+        currentTrick = null;
+
+        // initialising the hashmap, every player starts with 0 points
+        playersPointsInCurrentRound = new HashMap<>();
+        for (Player p: belongsToGame.getPlayers()) {
+            playersPointsInCurrentRound.put(p, 0);
+        }
     }
 
     public int getPlayerStartingFirst() {
@@ -36,7 +43,14 @@ public class Round {
             Player winnerOfTrick = belongsToGame.getPlayers().get(playerStartingFirst);
             int pointsInTrick = currentTrick.getNumPoints();
             int previousPoints = playersPointsInCurrentRound.get(winnerOfTrick);
-            playersPointsInCurrentRound.replace(winnerOfTrick, pointsInTrick + previousPoints);
+            if (previousPoints == 26) {
+                // If the players Shoots the Moon, then subtract 26 from his score
+                // The minimum score is capped at 0
+                int newPoints = Math.max(0, pointsInTrick - 26);
+                playersPointsInCurrentRound.replace(winnerOfTrick, newPoints);
+            } else {
+                playersPointsInCurrentRound.replace(winnerOfTrick, pointsInTrick + previousPoints);
+            }
         }
         this.currentTrick = new Trick(belongsToGame.getPlayers());
     }
@@ -82,6 +96,11 @@ public class Round {
         for (int i = 0; i < belongsToGame.MAX_NUMBER_OF_CARDS_PER_PLAYER; i++) {
             this.startNewTrick();
             // get server response for player's play card method * 4
+        }
+
+        // Implement PlayerDoesNotExistException later?
+        for (Player p: belongsToGame.getPlayers()) {
+            belongsToGame.addPoints(p, playersPointsInCurrentRound.get(p));
         }
     }
 

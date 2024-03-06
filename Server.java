@@ -8,11 +8,11 @@ public class Server {
     private static final int PORT = 1234;
     private ServerSocket serverSocket;
     private ArrayList<ClientHandler> clientHandlers;
-    private Game game;
+    //private Game game;
 
     public Server() {
         clientHandlers = new ArrayList<>();
-        game = new Game(); // Assuming Game class exists and is appropriately implemented
+        //game = new Game(); // Assuming Game class exists and is appropriately implemented
     }
 
     public void start() {
@@ -34,15 +34,15 @@ public class Server {
     }
 
     public synchronized void broadcastGameState() {
-        String gameState = game.getState(); // Assuming Game class has a method to get the game state
-        for (ClientHandler clientHandler : clientHandlers) {
-            clientHandler.sendMessage(gameState);
-        }
+        //String gameState = game.getState(); // Assuming Game class has a method to get the game state
+        // for (ClientHandler clientHandler : clientHandlers) {
+        //     clientHandler.sendMessage(gameState);
+        // }
     }
 
     public synchronized void handleClientMove(ClientHandler clientHandler, String move) {
         // Process the move received from the client and update the game state accordingly
-        game.processMove(move); // Assuming Game class has a method to process moves
+        //game.processMove(move); // Assuming Game class has a method to process moves
         broadcastGameState();
     }
 

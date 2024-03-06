@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 
 public class Client {
     private static final String SERVER_HOST = "localhost";
@@ -37,7 +40,7 @@ public class Client {
         }
     }
 
-    private void sendMessageToServer(String message) {
+    private void sendMessage(String message) {
         try {
             // Get the output stream of the socket
             OutputStream outputStream = socket.getOutputStream();
@@ -52,6 +55,10 @@ public class Client {
         }
     }
 
+    public void updateUI(String message) {
+    // Update UI components with the received message
+}
+
     private void listenForMessages() {
         try {
             // Get the input stream of the socket
@@ -60,12 +67,19 @@ public class Client {
             
             String message;
             while ((message = reader.readLine()) != null) {
-                // Process the received message and update the UI
-                Platform.runLater(() -> updateUI(message));
+                // Process the received message
+                handleReceivedMessage(message);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    // Method to handle received messages
+    private void handleReceivedMessage(String message) {
+        // Perform actions based on the received message
+        System.out.println("Received message: " + message);
+        // You can add more logic here as needed
     }
 
     public static void main(String[] args) {

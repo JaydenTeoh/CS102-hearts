@@ -43,14 +43,7 @@ public class Round {
             Player winnerOfTrick = belongsToGame.getPlayers().get(playerStartingFirst);
             int pointsInTrick = currentTrick.getNumPoints();
             int previousPoints = playersPointsInCurrentRound.get(winnerOfTrick);
-            if (previousPoints == 26) {
-                // If the players Shoots the Moon, then subtract 26 from his score
-                // The minimum score is capped at 0
-                int newPoints = Math.max(0, pointsInTrick - 26);
-                playersPointsInCurrentRound.replace(winnerOfTrick, newPoints);
-            } else {
-                playersPointsInCurrentRound.replace(winnerOfTrick, pointsInTrick + previousPoints);
-            }
+            playersPointsInCurrentRound.replace(winnerOfTrick, pointsInTrick + previousPoints);
         }
         this.currentTrick = new Trick(belongsToGame.getPlayers());
     }
@@ -100,7 +93,7 @@ public class Round {
 
         // Implement PlayerDoesNotExistException later?
         for (Player p: belongsToGame.getPlayers()) {
-            belongsToGame.addPoints(p, playersPointsInCurrentRound.get(p));
+            belongsToGame.addPoints(p, playersPointsInCurrentRound.get(p) % 26);
         }
     }
 

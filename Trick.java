@@ -22,9 +22,10 @@ import java.util.List;
 
 public class Trick {
     private int numPoints;
-    private List<Card> cardsInTrick;
+    private ArrayList<Card> cardsInTrick;
     private Card leadingCardOfTrick;
     private Card winningCardOfTrick;
+    private ArrayList<Player> players;
 
     // Constructor
 
@@ -32,7 +33,7 @@ public class Trick {
 //         this.cardsInTrick = new ArrayList<>(cards);
 //         this.numPoints = 0;
 
-    public Trick(List<Player> players) {
+    public Trick(ArrayList<Player> players) {
         this.cardsInTrick = new ArrayList<>();
         this.players = players;
 
@@ -93,5 +94,10 @@ public class Trick {
         } else {
             return -1; // Indicate no winning card set
         }
+    }
+
+    public int getWinner() {
+        int winningCardIdx = this.returnWinningCardIndex();
+        return winningCardIdx;
     }
 }

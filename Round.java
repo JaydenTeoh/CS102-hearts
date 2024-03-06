@@ -39,7 +39,7 @@ public class Round {
     // if there was a previous trick, allocate points of the trick to the player who won it
     public void startNewTrick(){
         if (currentTrick != null) {
-            playerStartingFirst = currentTrick.getWinner(); //ADD THIS LATER ON
+            playerStartingFirst = currentTrick.getWinner(); // RETURNS INT INDEX OF WINNER OF TRICK (IN ORDER OF PLAY)
             Player winnerOfTrick = belongsToGame.getPlayers().get(playerStartingFirst);
             int pointsInTrick = currentTrick.getNumPoints();
             int previousPoints = playersPointsInCurrentRound.get(winnerOfTrick);
@@ -59,21 +59,21 @@ public class Round {
         d.shuffle();
 
         // create 4 new hands
-        for (int i = 0; i < belongsToGame.NUM_PLAYERS; i++) {
-            hands.add(new Hand());
+        for (int i = 0; i < Game.NUM_PLAYERS; i++) {
+            hands.add(new Hand(new ArrayList<Card>()));
         }
 
         // populate 4 hands from the shuffled deck
-        for (int card = 0; card < belongsToGame.MAX_NUMBER_OF_CARDS_PER_PLAYER; card++) {
-            for (int handIndex = 0; handIndex < belongsToGame.NUM_PLAYERS; handIndex++) {
+        for (int card = 0; card < Game.MAX_NUMBER_OF_CARDS_PER_PLAYER; card++) {
+            for (int handIndex = 0; handIndex < Game.NUM_PLAYERS; handIndex++) {
                 if (!d.isEmpty()) {
                     hands.get(handIndex).addCard(d.dealCard());
                 }
             }
         }
 
-        for (int i = 0; i < belongsToGame.NUM_PLAYERS; i++) {
-            players[i].setHand(hands[i]);
+        for (int i = 0; i < Game.NUM_PLAYERS; i++) {
+            belongsToGame.getPlayers().get(i).setHand(hands.get(i));
         }
     }
 
@@ -86,12 +86,11 @@ public class Round {
         //     // get server response for player's play card method * 4
         // }
 
-        for (int i = 0; i < belongsToGame.MAX_NUMBER_OF_CARDS_PER_PLAYER; i++) {
+        for (int i = 0; i < Game.MAX_NUMBER_OF_CARDS_PER_PLAYER; i++) {
             this.startNewTrick();
             // get server response for player's play card method * 4
         }
 
-        // Implement PlayerDoesNotExistException later?
         for (Player p: belongsToGame.getPlayers()) {
             belongsToGame.addPoints(p, playersPointsInCurrentRound.get(p) % 26);
         }

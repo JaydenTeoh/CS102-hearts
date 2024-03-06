@@ -176,4 +176,19 @@ public class Card implements Comparable {
          return true;
    }
 
+   public boolean isHeart() {
+      if (suitValue.getSymbol() == "h") {
+         return true;
+      }
+
+      return false;
+   }
+
+   public boolean isQueenOfSpades() {
+      if (suitValue.getSymbol() == "s" && rankValue.getSymbol() == "q") {
+         return true;
+      }
+
+      return false;
+   }
 }

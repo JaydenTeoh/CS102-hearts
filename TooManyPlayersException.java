@@ -1,4 +1,4 @@
- public class TooManyPlayersException extends Exception {
+public class TooManyPlayersException extends Exception {
     public TooManyPlayersException(String errorMessage) {
         super(errorMessage);
     }

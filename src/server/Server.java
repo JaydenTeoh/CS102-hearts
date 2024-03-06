@@ -12,7 +12,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class Server {
-    private static final int PORT = 1234;
+    private static final int SERVER_PORT = 1234;
     private ServerSocket serverSocket;
     private ArrayList<ClientHandler> clientHandlers;
     //private Game game;
@@ -24,8 +24,8 @@ public class Server {
 
     public void start() {
         try {
-            serverSocket = new ServerSocket(PORT);
-            System.out.println("Server started on port " + PORT);
+            serverSocket = new ServerSocket(SERVER_PORT);
+            System.out.println("Server started on port " + SERVER_PORT);
 
             while (true) {
                 Socket socket = serverSocket.accept();

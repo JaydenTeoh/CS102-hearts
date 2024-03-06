@@ -17,7 +17,7 @@ import java.io.OutputStream;
 
 
 public class Client {
-    private static final String SERVER_HOST = "localhost";
+    private static final String SERVER_HOST = "192.168.x.x"; // Replace "192.168.x.x" with the server's local IP address
     private static final int SERVER_PORT = 1234;
 
     private Socket socket;

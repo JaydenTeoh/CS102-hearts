@@ -40,7 +40,7 @@ public final class Suit implements Comparable {
   /**
    * List of all suit values.  Primarily for use with iteration.
    */
-   public final static java.util.List VALUES = 
+   public final static List<Suit> VALUES = 
       Collections.unmodifiableList( 
          Arrays.asList( new Suit[] { CLUBS, DIAMONDS, HEARTS, SPADES } ) );
    

@@ -26,7 +26,7 @@ import java.util.*;
  * @version 1.0
  */
 public class Deck {
-   private java.util.List deck;
+   private List<Card> deck;
    private int index;
  
   
@@ -34,7 +34,7 @@ public class Deck {
    * Creates an empty deck of cards.
    */
    public Deck() {
-      deck = new ArrayList();
+      deck = new ArrayList<>();
       index = 0;
    }
   

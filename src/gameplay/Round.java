@@ -1,5 +1,5 @@
 package gameplay;
-import gameplay.players.*;
+import players.*;
 import java.util.*;
 import client.*;
 import exceptions.*;

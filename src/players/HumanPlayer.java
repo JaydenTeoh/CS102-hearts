@@ -1,4 +1,4 @@
-package gameplay.players;
+package players;
 import gameplay.*;
 import pokercards.*;
 

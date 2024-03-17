@@ -1,15 +1,14 @@
-import java.util.ArrayList;
+public abstract class Player {
+    public String name; // player name
+    private Hand hand; // cards in hand
 
-public class Player {
-    public String name;
-    private Hand hand;
-
+    // constructor: set Player's name
     public Player(String name) {
         this.name = name;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public Hand getHand() {
@@ -20,42 +19,5 @@ public class Player {
         this.hand = hand;
     }
 
-    public Card playCard() {
-        // not implemented yet
-    }
-
-    public ArrayList<Card> getPlayableCards(Round round, Trick trick) {
-        ArrayList<Card> playableCards = new ArrayList<Card>();
-
-        // first player of the trick
-        if (trick.getCardsInTrick().isEmpty()) {
-            if (round.isHeartsBroken()) {
-                return hand.cards; // can play any card to start trick
-            } else {
-                for (Card c : hand.cards) {
-                    // can only play cards that are not of the Hearts suit
-                    if (c.getSuit().getName() != "Hearts") {
-                        playableCards.add(c);
-                    }
-                }
-                return playableCards;
-            }
-        }
-
-        // get suit and top card of trick
-        Card leadingCardInTrick = trick.getLeadingCard();
-        for (Card c : hand.cards) {
-            // if same suit
-            if (c.getSuit().compareTo(leadingCardInTrick) == 0) {
-                playableCards.add(c);
-            }
-        }
-
-        // player has no card belonging to the trick's suit -> can play any card
-        if (playableCards.isEmpty()) {
-            return hand.cards;
-        }
-
-        return playableCards;
-    }
+    public abstract Card playCard(Round round, Trick trick);
 }

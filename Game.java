@@ -1,6 +1,7 @@
 
 import java.io.PrintStream;
 import java.util.*;
+import javax.swing.ImageIcon;
 
 public class Game {
     private int numRounds;
@@ -13,6 +14,8 @@ public class Game {
     public static final int MAX_POINTS = 50;
     public static final int NUM_PLAYERS = 4;
     public static final int MAX_NUMBER_OF_CARDS_PER_PLAYER = 13;
+    public static final Card ROUND_STARTING_CARD = new Card(Suit.CLUBS, Rank.TWO, new ImageIcon(Card.getFilename(Suit.CLUBS, Rank.TWO)));
+    public static final Card QUEEN_OF_SPADES = new Card(Suit.SPADES, Rank.QUEEN, new ImageIcon(Card.getFilename(Suit.SPADES, Rank.QUEEN)));
 
     public Game() {
         numRounds = 0;

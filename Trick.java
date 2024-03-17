@@ -25,6 +25,7 @@ public class Trick {
     private List<Card> cardsInTrick;
     private Card leadingCardOfTrick;
     private Card winningCardOfTrick;
+    private Suit leadingSuit;
 
     // Constructor
 
@@ -56,9 +57,18 @@ public class Trick {
         this.leadingCardOfTrick = card;
     }
 
+    // Method to set the leading suit of the trick
+    public void setLeadingSuit(Suit suit) {
+        this.leadingSuit = suit;
+    }
+
     // Method to get the leading card of the trick
     public Card getLeadingCard() {
         return leadingCardOfTrick;
+    }
+
+    public Suit getLeadingSuit() {
+        return this.leadingSuit;
     }
 
     // Method to set the winning card of the trick
@@ -75,8 +85,11 @@ public class Trick {
     private void setNumPoints() {
         numPoints = 0;
         for (Card card : cardsInTrick) {
-            if (card.isHeart() || card.isQueenOfSpades()) {
+            // add 1 point for cards that are Hearts suit
+            if (card.getSuit().compareTo(Suit.HEARTS) == 0) {
                 numPoints++;
+            } else if (card.isSameAs(Game.QUEEN_OF_SPADES)) {
+                numPoints += 13;
             }
         }
     }

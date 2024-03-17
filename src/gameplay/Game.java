@@ -4,7 +4,7 @@ import exceptions.*;
 import app.*;
 import pokercards.*;
 import server.*;
-import gameplay.players.*;
+import players.*;
 
 import java.io.PrintStream;
 import java.util.*;

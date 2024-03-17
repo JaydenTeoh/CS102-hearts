@@ -1,5 +1,5 @@
 
-package gameplay.players;
+package players;
 import gameplay.*;
 import java.util.ArrayList;
 import client.*;

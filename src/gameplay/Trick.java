@@ -1,5 +1,5 @@
 package gameplay;
-import gameplay.players.*;
+import players.*;
 import client.*;
 import exceptions.*;
 import app.*;

@@ -2,21 +2,17 @@ package com.example.hearts102;
 
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.geometry.Insets;
-import javafx.geometry.Point2D;
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -24,12 +20,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainApplication extends Application {
 
     private static final double WINDOW_WIDTH = 1500;
     private static final double WINDOW_HEIGHT = 800;
-    private static final int CARD_WIDTH = 100;
+    private static final int CARD_WIDTH = 95;
     private static final int CARD_HEIGHT = 140;
 
     private static final int PLAYER_AREA_WIDTH = 600;
@@ -39,6 +37,8 @@ public class MainApplication extends Application {
     private static final int PLAY_AREA_HEIGHT = 200;
     private static final int SPACING = -65;
 
+    // To remove
+    private static final ArrayList<String> playableCards = new ArrayList<String>(List.of("ace_of_spades"));
     private Pane root = new Pane();
     private Parent createContent() {
 
@@ -69,6 +69,7 @@ public class MainApplication extends Application {
 
         // Call the method to create and position card placeholders
         createCardPlaceholders(playerArea, playArea);
+        setPlayableCards(playerArea.getChildren());
         root.getChildren().add(playerArea);
 
         return root;
@@ -123,13 +124,19 @@ public class MainApplication extends Application {
         return playArea;
     }
 
-    private void createCardPlaceholders(Pane playerArea, Pane playArea) {
+    private Pane createCardPlaceholders(Pane playerArea, Pane playArea) {
         try {
             String currentDirectory = System.getProperty("user.dir");
-            File file = new File(currentDirectory + "/images/2c.gif");
-            Image cardImage = new Image(new FileInputStream(file));
+            String fileName = "ace_of_spades";
 
             for (int i = 0; i < 13; i++) {
+                if(i%2==0){
+                    fileName = "ace_of_spades";
+                } else{
+                    fileName = "ace_of_clubs";
+                }
+                File file = new File(currentDirectory + "/images/set2/"+ fileName+".png");
+                Image cardImage = new Image(new FileInputStream(file));
                 ImageView cardView = new ImageView(cardImage);
                 cardView.setFitWidth(CARD_WIDTH);
                 cardView.setFitHeight(CARD_HEIGHT);
@@ -139,29 +146,37 @@ public class MainApplication extends Application {
                 cardView.setLayoutX(xPos);
                 cardView.setLayoutY((playerArea.getPrefHeight() - CARD_HEIGHT*1.5));
 
-                cardView.getStyleClass().add("card");
-
-                cardView.setId(i+"");
-
-                cardView.setOnMouseClicked(event -> {
-                    System.out.println(cardView.getId());
-
-                    cardView.getStyleClass().remove("card");
-
-                    TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);
-                    transition.setToY(-(PLAYER_AREA_HEIGHT) + 50);
-                    transition.setToX(((PLAYER_AREA_WIDTH / 2) - xPos) - CARD_WIDTH / 2);
-                    transition.setCycleCount(1);
-                    transition.play();
-                });
+                cardView.setId(fileName);
 
                 playerArea.getChildren().add(cardView);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        return playerArea;
     }
 
+    private void setPlayableCards(ObservableList<Node> cards){
+        for (Node card : cards) {
+            System.out.println(playableCards.contains(card.getId()));
+            if(playableCards.contains(card.getId())){
+
+                card.getStyleClass().add("card-active");
+
+                card.setOnMouseClicked(event -> {
+                    card.getStyleClass().remove("card-active");
+                    TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), card);
+                    transition.setToY(-(PLAYER_AREA_HEIGHT) + 50);
+                    transition.setToX(((PLAYER_AREA_WIDTH / 2) - card.getLayoutX()) - CARD_WIDTH / 2);
+                    transition.setCycleCount(1);
+                    transition.play();
+                });
+            } else{
+                card.getStyleClass().add("card-inactive");
+            }
+        }
+
+    }
     @Override
     public void start(Stage stage) throws IOException {
         Scene scene = new Scene(createContent());

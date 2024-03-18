@@ -1,6 +1,11 @@
-.card {
+.card-active {
     -fx-border-color: transparent;
     -fx-transition: translate-y 0.3s ease-out;
+}
+
+.card-inactive {
+    background: rgba(0, 0, 0, 0.5); /* Adjust the opacity to darken the image */
+    pointer-events: none; /* Allows clicking through the overlay */
 }
 
 .card:hover {

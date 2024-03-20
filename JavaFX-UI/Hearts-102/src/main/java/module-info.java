@@ -6,6 +6,6 @@ module com.example.hearts102 {
     requires com.dlsc.formsfx;
     requires org.kordamp.bootstrapfx.core;
 
-    opens com.example.hearts102 to javafx.fxml;
-    exports com.example.hearts102;
+    opens com.example.app to javafx.fxml;
+    exports com.example.app;
 }

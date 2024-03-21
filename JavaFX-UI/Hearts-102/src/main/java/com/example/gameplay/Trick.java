@@ -109,5 +109,17 @@ public class Trick {
     public int getNumPoints() {
         return numPoints;
     }
+
+    // if you're looking for getWinner()
+    // it has been replaced by the following equivalent code in Round
+    //
+    // public int getWinner() {
+    //     int winningCardIndex = currentTrick.getWinningCardIndex();
+    //     int winner = (winningCardIndex + playerStartingFirst) % Game.NUM_PLAYERS;
+
+    //     return winner;
+    // }
+    //
+    // i (vince) put it in Round because we need the playerStarting first to calculate the winner
 }
 

@@ -29,21 +29,11 @@ import java.util.List;
 public class Trick {
     private int numPoints;
     private ArrayList<Card> cardsInTrick;
-    private Card leadingCardOfTrick;
-    private Card winningCardOfTrick;
-    private Suit leadingSuit;
 
     // Constructor
-
-//     public Trick(List<Card> cards) {
-//         this.cardsInTrick = new ArrayList<>(cards);
-//         this.numPoints = 0;
-
     public Trick(ArrayList<Player> players) {
         this.cardsInTrick = new ArrayList<Card>();
-        this.leadingCardOfTrick = null;
-        this.winningCardOfTrick = null;
-        setNumPoints();
+        this.numPoints = 0; // Initialize numPoints to 0
     }
 
     // Method to add a card to the trick
@@ -56,41 +46,58 @@ public class Trick {
         return cardsInTrick;
     }
 
-    // Method to set the leading card of the trick
-    public void setLeadingCard(Card card) {
-        this.leadingCardOfTrick = card;
+    // Method to get the leading card of the trick
+    public Card getLeadingCard() {
+        if (!cardsInTrick.isEmpty()) {
+            return cardsInTrick.get(0);
+        } else {
+            return null; // No cards in the trick, so no leading card
+        }
     }
 
     // Method to set the leading suit of the trick
-    public void setLeadingSuit(Suit suit) {
-        this.leadingSuit = suit;
-    }
-
-    // Method to get the leading card of the trick
-    public Card getLeadingCard() {
-        return leadingCardOfTrick;
-    }
-
     public Suit getLeadingSuit() {
-        return this.leadingSuit;
+        if (!cardsInTrick.isEmpty()) {
+            return cardsInTrick.get(0).getSuit();
+        } else {
+            return null; // No cards in the trick, so no leading suit
+        }
     }
 
-    // Method to set the winning card of the trick
-    public void setWinningCard(Card card) {
-        this.winningCardOfTrick = card;
+    // Method to get the index of the winning card of the trick
+    public int getWinningCardIndex() {
+        Suit leadSuit = getLeadingCard().getSuit();
+        int winningCardIndex = -1;
+        Rank highestRank = null; // Initialize with a low value
+
+        for (int i = 0; i < cardsInTrick.size(); i++) {
+            Card card = cardsInTrick.get(i);
+            if (card.getSuit() == leadSuit) {
+                // Card is of the lead suit
+                if (highestRank == null || card.getRank().compareTo(highestRank) > 0) {
+                    // This card is currently the highest of the lead suit
+                    winningCardIndex = i;
+                    highestRank = card.getRank();
+                }
+            } else if (winningCardIndex == -1) {
+                // No cards of lead suit played yet, consider this card as winning card
+                winningCardIndex = i;
+                highestRank = card.getRank();
+            } else if (card.getSuit() != leadSuit && card.getRank().compareTo(highestRank) > 0) {
+                // Card is not of the lead suit, but it has a higher rank
+                winningCardIndex = i;
+                highestRank = card.getRank();
+            }
+        }
+        return winningCardIndex;
     }
 
-    // Method to get the winning card of the trick
-    public Card getWinningCard() {
-        return winningCardOfTrick;
-    }
 
     // Method to calculate and set the number of points in the trick
     private void setNumPoints() {
         numPoints = 0;
         for (Card card : cardsInTrick) {
-            // add 1 point for cards that are Hearts suit
-            if (card.getSuit().compareTo(Suit.HEARTS) == 0) {
+            if (card.getSuit().equals(Suit.HEARTS)) {
                 numPoints++;
             } else if (card.isSameAs(Game.QUEEN_OF_SPADES)) {
                 numPoints += 13;
@@ -102,18 +109,5 @@ public class Trick {
     public int getNumPoints() {
         return numPoints;
     }
-
-    // Method to return the index of the winning card in the cardsInTrick list
-    public int returnWinningCardIndex() {
-        if (winningCardOfTrick != null) {
-            return cardsInTrick.indexOf(winningCardOfTrick);
-        } else {
-            return -1; // Indicate no winning card set
-        }
-    }
-
-    public int getWinner() {
-        int winningCardIdx = this.returnWinningCardIndex();
-        return winningCardIdx;
-    }
 }
+

@@ -49,7 +49,7 @@ public class Round {
     // if there was a previous trick, allocate points of the trick to the player who won it
     public void startNewTrick(){
         if (currentTrick != null) {
-            playerStartingFirst = currentTrick.getWinner(); // RETURNS INT INDEX OF WINNER OF TRICK (IN ORDER OF PLAY)
+            playerStartingFirst = this.getWinner();
             Player winnerOfTrick = belongsToGame.getPlayers().get(playerStartingFirst);
             int pointsInTrick = currentTrick.getNumPoints();
             int previousPoints = playersPointsInCurrentRound.get(winnerOfTrick);
@@ -116,4 +116,11 @@ public class Round {
     }
 
     // Need a new method to get next player
+
+    public int getWinner() {
+        int winningCardIndex = currentTrick.getWinningCardIndex();
+        int winner = (winningCardIndex + playerStartingFirst) % Game.NUM_PLAYERS;
+
+        return winner;
+    }
 }

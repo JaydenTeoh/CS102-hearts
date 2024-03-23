@@ -135,10 +135,9 @@ public class Hand {
             }
         }
 
-        // player has no card belonging to the trick's suit -> can play any card
-        if (playableCards.isEmpty()) {
-            return cards;
-        }
+
+
+        
 
         // if player is the first player of the trick, can play any card that isn't hearts if hearts is not yet broken. else, can play anything
         if (trick.getCardsInTrick().isEmpty()) {
@@ -164,6 +163,11 @@ public class Hand {
             if (c.getSuit().compareTo(leadingCardInTrick.getSuit()) == 0) {
                 playableCards.add(c);
             }
+        }
+
+        // player has no card belonging to the trick's suit -> can play any card
+        if (playableCards.isEmpty()) {
+            return cards;
         }
 
         return playableCards;

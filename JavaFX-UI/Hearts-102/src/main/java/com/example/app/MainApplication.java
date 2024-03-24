@@ -23,6 +23,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.Cursor;
 import javafx.util.Duration;
@@ -266,8 +267,17 @@ public class MainApplication extends Application {
             Card selectedCard = (Card) cardView.getUserData();
 
             if (!playableCards.contains(selectedCard)) {
+                cardView.setOnMouseEntered(null);
+                cardView.setOnMouseExited(null);
+                ColorAdjust grayscale = new ColorAdjust();
+                grayscale.setBrightness(-0.5); // Lower brightness by 50%
+                grayscale.setContrast(-0.5); // Lower contrast by 50%
+                cardView.setEffect(grayscale);
                 continue;
             }
+            addHoverEffect((ImageView) cardView);
+            cardView.setEffect(null);
+            cardView.setOpacity(1);
             cardView.getStyleClass().add("card-active");
             cardView.setOnMouseClicked(event -> {
                 disableCards(getCardViewsOfPlayer(currentPlayer));
@@ -287,6 +297,7 @@ public class MainApplication extends Application {
         for (Node card : cards) {
             card.setOnMouseClicked(null);
             card.getStyleClass().remove("card-active");
+            
         }
     }
 
@@ -369,7 +380,7 @@ public class MainApplication extends Application {
                 // Determine if the card is playable
                 boolean isPlayable = hand.contains(card);
                 // Apply hover effect
-                addHoverEffect(cardView, isPlayable);
+                addHoverEffect(cardView);
 
                 // cardView.setId(card.getRank().getSymbol()+card.getSuit().getSymbol());
                 cardView.setId(i + "");
@@ -454,28 +465,26 @@ public class MainApplication extends Application {
         stage.show();
     }
 
-    private void addHoverEffect(ImageView cardView, boolean isPlayable) {
-        if (isPlayable) {
-            cardView.setOnMouseEntered(event -> {
-                cardView.setEffect(new DropShadow()); // Apply drop shadow effect when mouse enters
-                cardView.setCursor(Cursor.HAND); // Change cursor to hand
+    private void addHoverEffect(ImageView cardView) {
+        cardView.setOnMouseEntered(event -> {
+            cardView.setEffect(new DropShadow()); // Apply drop shadow effect when mouse enters
+            cardView.setCursor(Cursor.HAND); // Change cursor to hand
 
-                // Translate animation to move the card up
-                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
-                hoverTransition.setToY(-20); // Adjust this value to change the hover distance
-                hoverTransition.play();
-            });
+            // Translate animation to move the card up
+            TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
+            hoverTransition.setToY(-20); // Adjust this value to change the hover distance
+            hoverTransition.play();
+        });
 
-            cardView.setOnMouseExited(event -> {
-                cardView.setEffect(null); // Remove drop shadow effect when mouse exits
-                cardView.setCursor(Cursor.DEFAULT); // Change cursor back to default
+        cardView.setOnMouseExited(event -> {
+            cardView.setEffect(null); // Remove drop shadow effect when mouse exits
+            cardView.setCursor(Cursor.DEFAULT); // Change cursor back to default
 
-                // Translate animation to move the card back down
-                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
-                hoverTransition.setToY(0);
-                hoverTransition.play();
-            });
-        }
+            // Translate animation to move the card back down
+            TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
+            hoverTransition.setToY(0);
+            hoverTransition.play();
+        });
     }
     
     private void updateScoresDisplay() {

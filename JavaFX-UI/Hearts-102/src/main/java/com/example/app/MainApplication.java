@@ -97,73 +97,79 @@ public class MainApplication extends Application {
 
             playerList = game.getPlayers();
 
-            round = new Round(0, game);
-
-            round.dealHands();
-
-            for (int i = 0; i < Game.NUM_PLAYERS; i++) {
-                List<Card> hand = playerList.get(i).getHand().getCards();
-                for (Card c : hand) {
-                    // Hard code first player
-                    if (c.getRank().getName().equals("Two") && c.getSuit().getName().equals("Clubs")) {
-                        round.setPlayerStartingFirst(i);
-                    }
-                }
-            }
-
-            // Create Play Area
-            Pane playArea = createPlayArea();
-            playArea.setLayoutX((root.getPrefWidth() - playArea.getPrefWidth()) / 2);
-            playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
-            root.getChildren().add(playArea);
-
-            round.startNewTrick();
-
-            // Create Player Areas
-            setupPlayerAreas(playerList, round);
-
-            // Set Playable Cards to starting player
-            currentPlayer = round.getPlayerStartingFirst();
-
-            // Start Turn
-            // Check if player is Human or AI
-            if (playerList.get(currentPlayer) instanceof AIPlayer) {
-                Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
-                ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
-                for (Node node : currentPlayerCardViews) {
-                    if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
-                        System.out.println("Card played: " + cardPlayed + " by " + playerList.get(currentPlayer));
-                        moveCard(node, cardPlayed);
-                    }
-                }
-            } else {
-                enableCards(currentPlayer);
-            }
+            startRound();
 
         } catch (TooManyPlayersException e) {
             e.printStackTrace();
         }
     }
 
-    private void nextTurn() {
-        disableCards(getCardViewsOfPlayer(currentPlayer));
+    private void startRound(){
+        round = new Round(0, game);
 
-        // Can't continue from here
-        if (round.getCurrentTrick().getCardsInTrick().size() == 4) {
-            System.out.println("Trick ended");
-            System.out.println("------------------------");
-            round.setCurrentTrick(new Trick(game.getPlayers()));
-            ;
+        round.dealHands();
 
-            // Cannot set currentPlayer to winner of trick as I cannot find out the winner
+        for (int i = 0; i < Game.NUM_PLAYERS; i++) {
+            List<Card> hand = playerList.get(i).getHand().getCards();
+            for (Card c : hand) {
+                // Hard code first player
+                if (c.getRank().getName().equals("Two") && c.getSuit().getName().equals("Clubs")) {
+                    round.setPlayerStartingFirst(i);
+                }
+            }
         }
 
-        // Get next player - possible to implement it in Game?
-        if (currentPlayer == game.getPlayers().size() - 1) {
-            currentPlayer = 0;
+        // Create Play Area
+        Pane playArea = createPlayArea();
+        playArea.setLayoutX((root.getPrefWidth() - playArea.getPrefWidth()) / 2);
+        playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
+        root.getChildren().add(playArea);
+
+        round.startNewTrick();
+
+        // Create Player Areas
+        setupPlayerAreas(playerList, round);
+
+        // Set Playable Cards to starting player
+        currentPlayer = round.getPlayerStartingFirst();
+
+        // Start Turn
+        // Check if player is Human or AI
+        if (playerList.get(currentPlayer) instanceof AIPlayer) {
+            Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
+            ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
+            for (Node node : currentPlayerCardViews) {
+                if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
+                    moveCard(node, cardPlayed);
+                }
+            }
         } else {
-            currentPlayer += 1;
+            enableCards(currentPlayer);
         }
+    }
+
+    private void nextTurn() {
+        System.out.println("Number of Tricks played: "+round.getNumTricksPlayed());
+        if(round.getNumTricksPlayed() == 12){
+            root.getChildren().clear();
+            startRound();
+        }
+
+        if (round.getCurrentTrick().getCardsInTrick().size() == 4) {
+            System.out.println("------------------------");
+            round.startNewTrick();
+            currentPlayer = round.getPlayerStartingFirst();
+
+        } else {
+            // Get next player - possible to implement it in Game?
+            if (currentPlayer == game.getPlayers().size() - 1) {
+                currentPlayer = 0;
+            } else {
+                currentPlayer += 1;
+            }
+        }
+
+        System.out.println("Next Player: Player " + currentPlayer);
 
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
@@ -171,7 +177,6 @@ public class MainApplication extends Application {
             ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
-                    System.out.println("Card played: " + cardPlayed + " by " + playerList.get(currentPlayer));
                     moveCard(node, cardPlayed);
                 }
             }
@@ -196,16 +201,24 @@ public class MainApplication extends Application {
     }
 
     private void enableCards(int currentPlayer) {
+        Player player = playerList.get(currentPlayer);
+        ArrayList<Card> playableCards = player.getHand().getPlayableCards(round, round.getCurrentTrick());
+        // System.out.println("Playable Cards");
+        // for (Card c: playableCards) {
+        // System.out.println(c);
+        // }
         ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
         for (Node cardView : cards) {
+            Card selectedCard = (Card) cardView.getUserData();
+
+            if (!playableCards.contains(selectedCard)) {
+                continue;
+            }
             cardView.getStyleClass().add("card-active");
             cardView.setOnMouseClicked(event -> {
-                cardView.getStyleClass().remove("card-active");
-                cardView.setOnMouseClicked(null);
+                disableCards(getCardViewsOfPlayer(currentPlayer));
 
                 Card cardPlayed = (Card) cardView.getUserData();
-
-                System.out.println("Card played: " + cardPlayed + " by " + playerList.get(currentPlayer));
                 // Move card to play area
                 moveCard(cardView, cardPlayed);
             });
@@ -226,6 +239,8 @@ public class MainApplication extends Application {
         transition.setCycleCount(1);
 
         transition.setOnFinished(event -> {
+            System.out.println("Card played: " + cardPlayed + " by " + playerList.get(currentPlayer));
+            playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
             round.getCurrentTrick().addCardToTrick(cardPlayed);
             nextTurn();
         });
@@ -266,6 +281,7 @@ public class MainApplication extends Application {
         }
         return playerArea;
     }
+
     private Pane createPlayArea() {
         Pane playArea = new Pane();
         playArea.setPrefSize(PLAY_AREA_WIDTH, PLAY_AREA_HEIGHT);
@@ -322,7 +338,6 @@ public class MainApplication extends Application {
         playerArea.setLayoutX(xPos);
         playerArea.setLayoutY(yPos);
     }
-
 
     @Override
     public void start(Stage stage) throws IOException {

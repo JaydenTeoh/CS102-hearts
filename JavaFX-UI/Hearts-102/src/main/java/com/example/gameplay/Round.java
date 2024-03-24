@@ -50,6 +50,8 @@ public class Round {
     public void startNewTrick(){
         if (currentTrick != null) {
             playerStartingFirst = this.getWinner();
+            System.out.println("Winner of trick: Plyer "+playerStartingFirst);
+            numTricksPlayed++;
             Player winnerOfTrick = belongsToGame.getPlayers().get(playerStartingFirst);
             int pointsInTrick = currentTrick.getNumPoints();
             int previousPoints = playersPointsInCurrentRound.get(winnerOfTrick);

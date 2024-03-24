@@ -1,6 +1,6 @@
 package com.example.app;
 
-import com.example.exceptions.TooManyPlayersException;
+import com.example.exceptions.PlayerException;
 import com.example.gameplay.Game;
 import com.example.gameplay.Round;
 import com.example.gameplay.Trick;
@@ -99,7 +99,7 @@ public class MainApplication extends Application {
 
             startRound();
 
-        } catch (TooManyPlayersException e) {
+        } catch (PlayerException e) {
             e.printStackTrace();
         }
     }
@@ -112,8 +112,6 @@ public class MainApplication extends Application {
         for (int i = 0; i < Game.NUM_PLAYERS; i++) {
             List<Card> hand = playerList.get(i).getHand().getCards();
             for (Card c : hand) {
-                // Hard code first player
-                // CLEAN THIS UP LATER 
                 if (c.getRank().getName().equals("Two") && c.getSuit().getName().equals("Clubs")) {
                     round.setPlayerStartingFirst(i);
                 }
@@ -153,7 +151,7 @@ public class MainApplication extends Application {
     }
 
     private void nextTurn() {
-        System.out.println("Number of Tricks played: "+round.getNumTricksPlayed());
+        System.out.println("Number of Tricks played: " + round.getNumTricksPlayed());
         if(round.getNumTricksPlayed() == 12){
             root.getChildren().clear();
             startRound();
@@ -165,12 +163,13 @@ public class MainApplication extends Application {
             currentPlayer = round.getPlayerStartingFirst();
 
         } else {
-            // Get next player - possible to implement it in Game?
-            if (currentPlayer == game.getPlayers().size() - 1) {
-                currentPlayer = 0;
-            } else {
-                currentPlayer += 1;
-            }
+            // // Get next player - possible to implement it in Game?
+            // if (currentPlayer == game.getPlayers().size() - 1) {
+            //     currentPlayer = 0;
+            // } else {
+            //     currentPlayer += 1;
+            // }
+            currentPlayer = game.getNextPlayer(currentPlayer);
         }
 
         System.out.println("Next Player: Player " + currentPlayer);

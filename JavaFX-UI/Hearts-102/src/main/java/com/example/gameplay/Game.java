@@ -40,13 +40,13 @@ public class Game {
         return players;
     }
 
-    public void addPlayer(Player p) throws TooManyPlayersException {
+    public void addPlayer(Player p) throws PlayerException {
         if (currentNumPlayers < NUM_PLAYERS) {
             currentNumPlayers += 1;
             playersPoints.put(p, 0);
             players.add(p);
         } else {
-            throw new TooManyPlayersException("There can only be 4 players in one game.");
+            throw new PlayerException("There can only be 4 players in one game, so we cannot add any more players.");
         }
 
         return;
@@ -62,11 +62,11 @@ public class Game {
         return;
     }
 
-    public void addPoints(Player p, int points) throws PlayerDoesNotExistException {
+    public void addPoints(Player p, int points) throws PlayerException {
         if (playersPoints.containsKey(p)) {
             playersPoints.put(p, playersPoints.get(p) + points);
         } else {
-            throw new PlayerDoesNotExistException("Player does not exist.");
+            throw new PlayerException("We cannot add points because the player does not exist.");
         }
 
         return;
@@ -80,6 +80,17 @@ public class Game {
         }
 
         return false;
+    }
+
+    public int getNextPlayer(int currentPlayer) {
+        int nextPlayer = 0;
+        if (currentPlayer == this.getPlayers().size() - 1) {
+            nextPlayer = 0;
+        } else {
+            nextPlayer = currentPlayer + 1;
+        }
+
+        return nextPlayer;
     }
 }
 

@@ -34,7 +34,7 @@ public class Hand {
          * call removal of cards that are not even in hand
          */
         if (!hasRemoved) {
-            throw new NoSuchCardInHandException("Hand does not have card: " + toRemove.toString());
+            throw new HandException("Hand does not have card: " + toRemove.toString());
         }
     }
 
@@ -55,7 +55,7 @@ public class Hand {
          * call removal of cards that are not even in hand
          */
         if (!hasRemoved) {
-            throw new NoSuchCardInHandException("Hand does not have card: " + r.toString() + s.toString());
+            throw new HandException("Hand does not have card: " + r.toString() + s.toString());
         }
     }
 

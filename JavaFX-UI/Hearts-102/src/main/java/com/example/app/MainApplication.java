@@ -176,7 +176,7 @@ public class MainApplication extends Application {
     private void nextTurn() {
         Trick currTrick = round.getCurrentTrick();
 
-        if (currTrick.getCardsInTrick().size() == 4 || round.getNumTricksPlayed() == 12) {
+        if (currTrick.getCardsInTrick().size() == 4) {
             System.out.println("------------------------");
             
             updateScoresBackend(currTrick);
@@ -190,7 +190,7 @@ public class MainApplication extends Application {
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
 
-        if (round.getNumTricksPlayed() == 12){
+        if (round.getNumTricksPlayed() == 13){
             HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
             Iterator<Player> iter = roundPoints.keySet().iterator();
             

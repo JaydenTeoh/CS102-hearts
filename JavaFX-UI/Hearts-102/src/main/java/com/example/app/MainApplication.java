@@ -285,11 +285,17 @@ public class MainApplication extends Application {
             System.out.println(c);
         }
         System.out.println();
+        for (Node child : root.getChildren()) {
+            if ("0".equals(child.getId())) {
+                child.toFront();
+                break; // Exit the loop once the desired node is found and brought to front
+            }
+        }
 
         ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
         for (Node cardView : cards) {
             Card selectedCard = (Card) cardView.getUserData();
-
+            
             if (!playableCards.contains(selectedCard)) {
                 cardView.setOnMouseEntered(null);
                 cardView.setOnMouseExited(null);
@@ -344,19 +350,19 @@ public class MainApplication extends Application {
         }
         int playerNo = playerList.indexOf(playerNow) + 1; // Player number is the index in the list + 1
 
-        // Adjust the transition based on the player number
+       // Adjust the transition based on the player number
         if (playerNo == 1) { // Bottom player
             transition.setToY(-(PLAYER_AREA_HEIGHT) + 90);
             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
         } else if (playerNo == 2) { // Left player
-            transition.setToY(-160);
-            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2) + 270);
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToX(500);
         } else if (playerNo == 3) { // Top player
             transition.setToY(180);
             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
         } else if (playerNo == 4) { // Right player
-            transition.setToY(-160);
-            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2) - 620);
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToX(-350);
         }
 
         transition.setCycleCount(1);
@@ -386,6 +392,7 @@ public class MainApplication extends Application {
         try {
             String currentDirectory = System.getProperty("user.dir");
             List<Card> hand = player.getHand().getCards();
+            int playerIndex = playerList.indexOf(player);
 
             for (int i = 0; i < hand.size(); i++) {
                 Card card = hand.get(i);
@@ -396,12 +403,30 @@ public class MainApplication extends Application {
                 cardView.setFitWidth(CARD_WIDTH);
                 cardView.setFitHeight(CARD_HEIGHT);
 
-                double xPos = i * (CARD_WIDTH + SPACING);
+                double xPos, yPos;
+                if (playerIndex == 0) { // Bottom player
+                    xPos = i *  (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                    yPos = 0; // Align with top edge
+                } else if (playerIndex == 1) { // Left player
+                    xPos = 0; // Align with left edge
+                    yPos = i * 30; // Vertical spacing
+                } else if (playerIndex == 2) { // Top player
+                    xPos = i * (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                    yPos = 0; // Align with top edge
+                } else { // Right player
+                    xPos = 0; // Align with left edge
+                    yPos = i * 30; // Vertical spacing
+                }
 
                 cardView.setLayoutX(xPos);
-                cardView.setLayoutY((playerArea.getPrefHeight() - CARD_HEIGHT * 1.5));
+                cardView.setLayoutY(yPos);
+                
 
                 // cardView.setRotate(-90);
+                // Rotate cards for left and right players
+                if (playerIndex == 1 || playerIndex == 3) {
+                    cardView.setRotate(90); // Rotate 90 degrees for left and right players
+                }
 
                 // Determine if the card is playable
                 // boolean isPlayable = hand.contains(card);
@@ -439,6 +464,12 @@ public class MainApplication extends Application {
             // Create Cards
             playerArea = createCardViewsOfPlayer(playerArea, playerList.get(i));
             playerArea.setId(i + "");
+            // final String playerAreaId = playerArea.getId();
+            // playerArea.setOnMouseEntered(event -> {
+            //     // Print the node's ID or any other identifying detail
+            //     System.out.println("Mouse entered: " + playerAreaId);
+            // });
+            
 
             root.getChildren().add(playerArea);
         }

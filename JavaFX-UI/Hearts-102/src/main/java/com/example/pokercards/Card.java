@@ -193,6 +193,13 @@ public class Card implements Comparable {
       return false;
    }
 
+   public int hashCode() {
+      // reduce hash collisions
+      final int PRIME_MULTIPLIER = 131;
+      
+      return ((PRIME_MULTIPLIER + rankValue.hashCode()) * PRIME_MULTIPLIER) + suitValue.hashCode();
+   }
+
 
    public boolean isHeart() {
       if (suitValue.getSymbol() == "h") {

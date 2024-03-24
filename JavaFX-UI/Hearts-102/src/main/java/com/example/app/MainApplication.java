@@ -1,6 +1,6 @@
 package com.example.app;
 
-import com.example.exceptions.TooManyPlayersException;
+import com.example.exceptions.PlayerException;
 import com.example.gameplay.Game;
 import com.example.gameplay.Round;
 import com.example.gameplay.Trick;
@@ -102,7 +102,7 @@ public class MainApplication extends Application {
 
             startRound();
 
-        } catch (TooManyPlayersException e) {
+        } catch (PlayerException e) {
             e.printStackTrace();
         }
     }
@@ -140,6 +140,9 @@ public class MainApplication extends Application {
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
             Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
+        if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
+                round.setHeartsBroken(true);
+            }
             ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
@@ -152,7 +155,7 @@ public class MainApplication extends Application {
     }
 
     private void nextTurn() {
-        System.out.println("Number of Tricks played: "+round.getNumTricksPlayed());
+        System.out.println("Number of Tricks played: " + round.getNumTricksPlayed());
         if(round.getNumTricksPlayed() == 12){
             root.getChildren().clear();
             startRound();
@@ -164,12 +167,13 @@ public class MainApplication extends Application {
             currentPlayer = round.getPlayerStartingFirst();
 
         } else {
-            // Get next player - possible to implement it in Game?
-            if (currentPlayer == game.getPlayers().size() - 1) {
-                currentPlayer = 0;
-            } else {
-                currentPlayer += 1;
-            }
+            // // Get next player - possible to implement it in Game?
+            // if (currentPlayer == game.getPlayers().size() - 1) {
+                //     currentPlayer = 0;
+            // } else {
+                //     currentPlayer += 1;
+            // }
+            currentPlayer = game.getNextPlayer(currentPlayer);
         }
 
         System.out.println("Next Player: Player " + currentPlayer);
@@ -177,6 +181,9 @@ public class MainApplication extends Application {
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
             Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
+            if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
+                round.setHeartsBroken(true);
+            }
             ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
@@ -206,10 +213,10 @@ public class MainApplication extends Application {
     private void enableCards(int currentPlayer) {
         Player player = playerList.get(currentPlayer);
         ArrayList<Card> playableCards = player.getHand().getPlayableCards(round, round.getCurrentTrick());
-        // System.out.println("Playable Cards");
-        // for (Card c: playableCards) {
-        // System.out.println(c);
-        // }
+        System.out.println("Playable Cards");
+        for (Card c: playableCards) {
+            System.out.println(c);
+        }
         ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
         for (Node cardView : cards) {
             Card selectedCard = (Card) cardView.getUserData();
@@ -222,6 +229,10 @@ public class MainApplication extends Application {
                 disableCards(getCardViewsOfPlayer(currentPlayer));
 
                 Card cardPlayed = (Card) cardView.getUserData();
+                // shift this into a function?? idk but ill clean this up later
+                if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
+                    round.setHeartsBroken(true);
+                }
                 // Move card to play area
                 moveCard(cardView, cardPlayed);
             });
@@ -266,7 +277,7 @@ public class MainApplication extends Application {
         transition.setCycleCount(1);
 
         transition.setOnFinished(event -> {
-            System.out.println("Card played: " + cardPlayed + " by Player " + (playerNo));
+            System.out.println("Card played: " + cardPlayed + " by " + playerList.get(currentPlayer));
             playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
             round.getCurrentTrick().addCardToTrick(cardPlayed);
             nextTurn();

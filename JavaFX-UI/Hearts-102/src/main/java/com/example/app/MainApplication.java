@@ -393,7 +393,9 @@ public class MainApplication extends Application {
                 // Determine if the card is playable
                 // boolean isPlayable = hand.contains(card);
                 // Apply hover effect
-                addHoverEffect(cardView);
+                if (player instanceof HumanPlayer) {
+                    addHoverEffect(cardView);
+                }
 
                 // cardView.setId(card.getRank().getSymbol()+card.getSuit().getSymbol());
                 cardView.setId(i + "");

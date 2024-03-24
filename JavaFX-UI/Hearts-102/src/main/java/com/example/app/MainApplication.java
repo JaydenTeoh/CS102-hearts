@@ -248,7 +248,8 @@ public class MainApplication extends Application {
 
     private void moveCard(Node cardView, Card cardPlayed) {
         TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);
-
+        cardView.setOnMouseEntered(null);
+        cardView.setOnMouseExited(null);
         // Find the player who played the card
         Player playerNow = null;
         for (Player player : playerList) {
@@ -281,13 +282,14 @@ public class MainApplication extends Application {
             playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
             round.getCurrentTrick().addCardToTrick(cardPlayed);
             nextTurn();
+            cardView.toFront(); // Bring the card to the front
+            // Disable mouse interaction with the card
+            cardView.setDisable(true);
         });
 
         transition.play();
 
-        cardView.toFront(); // Bring the card to the front
-        // Disable mouse interaction with the card
-        cardView.setDisable(true);
+        
     }
 
     private Pane createCardViewsOfPlayer(Pane playerArea, Player player) {

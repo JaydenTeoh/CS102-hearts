@@ -140,7 +140,7 @@ public class MainApplication extends Application {
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
             Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
-        if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
+            if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
                 round.setHeartsBroken(true);
             }
             ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
@@ -277,7 +277,7 @@ public class MainApplication extends Application {
         transition.setCycleCount(1);
 
         transition.setOnFinished(event -> {
-            System.out.println("Card played: " + cardPlayed + " by " + playerList.get(currentPlayer));
+            System.out.println("Card played: " + cardPlayed + " by Player " + (playerNo));
             playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
             round.getCurrentTrick().addCardToTrick(cardPlayed);
             nextTurn();

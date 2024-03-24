@@ -54,6 +54,7 @@ public class MainApplication extends Application {
 
     private int currentPlayer;
     private List<Player> playerList;
+    private List<Node> currentCardViewsInTrick;
 
     private Pane root = new Pane();
     private Game game;
@@ -115,6 +116,7 @@ public class MainApplication extends Application {
         round = new Round(0, game);
         updateScoresDisplay();
 
+        currentCardViewsInTrick = new ArrayList<>();
         round.dealHands();
 
         for (int i = 0; i < Game.NUM_PLAYERS; i++) {
@@ -153,6 +155,7 @@ public class MainApplication extends Application {
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
                     moveCard(node, cardPlayed);
+                    currentCardViewsInTrick.add(node);
                 }
             }
         } else {
@@ -201,6 +204,12 @@ public class MainApplication extends Application {
             updateScoresDisplay();
 
             // start new trick
+            for (Node cardView: currentCardViewsInTrick) {
+                ((ImageView) cardView).setImage(null);
+            }
+
+            currentCardViewsInTrick = new ArrayList<>();
+
             round.startNewTrick();
             currentPlayer = round.getPlayerStartingFirst();
 
@@ -220,6 +229,7 @@ public class MainApplication extends Application {
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
                     moveCard(node, cardPlayed);
+                    currentCardViewsInTrick.add(node);
                 }
             }
         } else {
@@ -273,6 +283,9 @@ public class MainApplication extends Application {
                 grayscale.setBrightness(-0.5); // Lower brightness by 50%
                 grayscale.setContrast(-0.5); // Lower contrast by 50%
                 cardView.setEffect(grayscale);
+                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
+                hoverTransition.setToY(0);
+                hoverTransition.play();
                 continue;
             }
             addHoverEffect((ImageView) cardView);
@@ -281,7 +294,7 @@ public class MainApplication extends Application {
             cardView.getStyleClass().add("card-active");
             cardView.setOnMouseClicked(event -> {
                 disableCards(getCardViewsOfPlayer(currentPlayer));
-
+                currentCardViewsInTrick.add(cardView);
                 Card cardPlayed = (Card) cardView.getUserData();
                 // shift this into a function?? idk but ill clean this up later
                 if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
@@ -378,7 +391,7 @@ public class MainApplication extends Application {
                 // cardView.setRotate(-90);
 
                 // Determine if the card is playable
-                boolean isPlayable = hand.contains(card);
+                // boolean isPlayable = hand.contains(card);
                 // Apply hover effect
                 addHoverEffect(cardView);
 

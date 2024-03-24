@@ -113,6 +113,7 @@ public class MainApplication extends Application {
             List<Card> hand = playerList.get(i).getHand().getCards();
             for (Card c : hand) {
                 // Hard code first player
+                // CLEAN THIS UP LATER 
                 if (c.getRank().getName().equals("Two") && c.getSuit().getName().equals("Clubs")) {
                     round.setPlayerStartingFirst(i);
                 }
@@ -137,6 +138,9 @@ public class MainApplication extends Application {
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
             Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
+            if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
+                round.setHeartsBroken(true);
+            }
             ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
@@ -174,6 +178,9 @@ public class MainApplication extends Application {
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
             Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
+            if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
+                round.setHeartsBroken(true);
+            }
             ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
@@ -203,10 +210,10 @@ public class MainApplication extends Application {
     private void enableCards(int currentPlayer) {
         Player player = playerList.get(currentPlayer);
         ArrayList<Card> playableCards = player.getHand().getPlayableCards(round, round.getCurrentTrick());
-        // System.out.println("Playable Cards");
-        // for (Card c: playableCards) {
-        // System.out.println(c);
-        // }
+        System.out.println("Playable Cards");
+            for (Card c: playableCards) {
+            System.out.println(c);
+        }
         ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
         for (Node cardView : cards) {
             Card selectedCard = (Card) cardView.getUserData();
@@ -214,11 +221,17 @@ public class MainApplication extends Application {
             if (!playableCards.contains(selectedCard)) {
                 continue;
             }
+
+            
             cardView.getStyleClass().add("card-active");
             cardView.setOnMouseClicked(event -> {
                 disableCards(getCardViewsOfPlayer(currentPlayer));
 
                 Card cardPlayed = (Card) cardView.getUserData();
+                // shift this into a function?? idk but ill clean this up later
+                if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
+                    round.setHeartsBroken(true);
+                }
                 // Move card to play area
                 moveCard(cardView, cardPlayed);
             });

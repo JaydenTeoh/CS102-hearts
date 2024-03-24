@@ -186,6 +186,14 @@ public class Card implements Comparable {
          return true;
    }
 
+   public boolean equals( Object o ) {
+      if (o instanceof Card card) {
+         return this.isSameAs(card);
+      }
+      return false;
+   }
+
+
    public boolean isHeart() {
       if (suitValue.getSymbol() == "h") {
          return true;

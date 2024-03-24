@@ -93,6 +93,7 @@ public class MainApplication extends Application {
 
     private void startGame() {
         game = new Game();
+        createAndAddAllScorePanes();
 
         playerList = new ArrayList<>();
         try {
@@ -132,7 +133,6 @@ public class MainApplication extends Application {
         playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
         root.getChildren().add(playArea);
 
-        // updateScoresDisplay();
         round.startNewTrick();
 
         // Create Player Areas
@@ -174,26 +174,9 @@ public class MainApplication extends Application {
     }
 
     private void nextTurn() {
-        if(round.getNumTricksPlayed() == 12){
-            root.getChildren().clear();
-
-            HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
-            Iterator<Player> iter = roundPoints.keySet().iterator();
-
-            while (iter.hasNext()) {
-                Player p = iter.next();
-                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
-            }
-            
-            updateScoresDisplay();
-
-            // start new round
-            startRound();
-        }
-
         Trick currTrick = round.getCurrentTrick();
 
-        if (currTrick.getCardsInTrick().size() == 4) {
+        if (currTrick.getCardsInTrick().size() == 4 || round.getNumTricksPlayed() == 12) {
             System.out.println("------------------------");
             
             updateScoresBackend(currTrick);
@@ -205,6 +188,27 @@ public class MainApplication extends Application {
 
         } else {
             currentPlayer = game.getNextPlayer(currentPlayer);
+        }
+
+        if (round.getNumTricksPlayed() == 12){
+            HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
+            Iterator<Player> iter = roundPoints.keySet().iterator();
+            
+            while (iter.hasNext()) {
+                Player p = iter.next();
+                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
+            }
+            
+            updateScoresDisplay();
+            
+            root.getChildren().clear();
+
+            // start new round if game is not ended
+            if (!game.isEnded()) {
+                startRound();
+            } else {
+                // display final scores?
+            }
         }
 
         System.out.println("Next Player: Player " + (currentPlayer + 1));
@@ -478,39 +482,128 @@ public class MainApplication extends Application {
         }
     }
     
+    // private void updateScoresDisplay() {
+    //     // Attempt to find an existing scorePane by ID or another unique identifier
+    //     Pane foundScorePane = (Pane) root.getChildren().stream()
+    //     .filter(node -> "scorePane".equals(node.getId()))
+    //     .findFirst()
+    //     .orElse(null);
+
+    //     // If not found, initialize it and add to root
+    //     if (foundScorePane == null) {
+    //         foundScorePane = new Pane();
+    //         foundScorePane.setId("scorePane"); // Set an ID to find it later
+    //         foundScorePane.setLayoutX(WINDOW_WIDTH - 300); // Position it
+    //         foundScorePane.setLayoutY(40);
+    //         foundScorePane.setPrefSize(200, 200);
+    //         root.getChildren().add(foundScorePane);
+    //     } else {
+    //         // Clear the existing content only if found
+    //         foundScorePane.getChildren().clear();
+    //     }
+
+    //     HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();
+    //     HashMap<Player, Integer> pointsInCurrentGame = game.getPlayersPointsInCurrentGame();
+        
+    //     for (int i = 0; i < playerList.size(); i++) {
+    //         Player player = playerList.get(i);
+    //         int roundPoints = pointsInCurrentRound.get(player);
+    //         int gamePoints = pointsInCurrentGame.get(player);
+            
+    //         Label scoreLabel = new Label("Player " + (i + 1) + ": Round = " + roundPoints + ", Game = " + gamePoints);
+    //         scoreLabel.setLayoutY(i * 30); // Position labels vertically
+    //         foundScorePane.getChildren().add(scoreLabel);
+    //     }
+    // }
+
+    private void setScorePaneLayout(Pane scorePane, double layoutX, double layoutY) {
+        scorePane.setLayoutX(layoutX);
+        scorePane.setLayoutY(layoutY);
+    }
+
+    private void createAndAddScorePane(double layoutX, double layoutY) {
+        Pane scorePane = createScoreArea();
+        setScorePaneLayout(scorePane, layoutX, layoutY);
+        root.getChildren().add(scorePane);
+    }
+
+    private void createAndAddAllScorePanes() {
+        createAndAddScorePane(root.getPrefWidth() / 2 - 150, 520); // bottom player
+        createAndAddScorePane(400, root.getPrefHeight() / 2); // left player
+        createAndAddScorePane(root.getPrefWidth() / 2 - 150, 245); // top player
+        createAndAddScorePane(1000, root.getPrefHeight() / 2); // right player
+    }
+
+    private Pane createScoreArea() {
+        Pane scorePane = new Pane();
+        scorePane.setPrefSize(100, 40);
+        scorePane.setStyle("-fx-background-color: black; -fx-border-color: black;");
+
+        // Create the score label
+        Label scoreLabel = new Label("Score: 0");
+        scoreLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        scoreLabel.setLayoutX(5);
+        scoreLabel.setLayoutY(10);
+
+        // Add the score label to the score pane
+        scorePane.getChildren().add(scoreLabel);
+
+        return scorePane;
+    }
+
+
     private void updateScoresDisplay() {
-        // Attempt to find an existing scorePane by ID or another unique identifier
-        Pane foundScorePane = (Pane) root.getChildren().stream()
-        .filter(node -> "scorePane".equals(node.getId()))
-        .findFirst()
-        .orElse(null);
-
-        // If not found, initialize it and add to root
-        if (foundScorePane == null) {
-            foundScorePane = new Pane();
-            foundScorePane.setId("scorePane"); // Set an ID to find it later
-            foundScorePane.setLayoutX(WINDOW_WIDTH - 300); // Position it
-            foundScorePane.setLayoutY(40);
-            foundScorePane.setPrefSize(200, 200);
-            root.getChildren().add(foundScorePane);
-        } else {
-            // Clear the existing content only if found
-            foundScorePane.getChildren().clear();
-        }
-
         HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();
         HashMap<Player, Integer> pointsInCurrentGame = game.getPlayersPointsInCurrentGame();
-        
+    
+        // Define offsets from the player areas where you want to place the score labels
+        final double scoreLabelOffsetX = 20; // Horizontal offset from the player area
+        final double scoreLabelOffsetY = PLAYER_AREA_HEIGHT + 10; // Vertical offset from the player area
+    
+ 
         for (int i = 0; i < playerList.size(); i++) {
             Player player = playerList.get(i);
             int roundPoints = pointsInCurrentRound.get(player);
             int gamePoints = pointsInCurrentGame.get(player);
-            
+    
             Label scoreLabel = new Label("Player " + (i + 1) + ": Round = " + roundPoints + ", Game = " + gamePoints);
-            scoreLabel.setLayoutY(i * 30); // Position labels vertically
-            foundScorePane.getChildren().add(scoreLabel);
+            
+            // Here's the change: create an effectively final variable for use in the lambda
+            final String scoreLabelId = "scoreLabelForPlayer" + (i + 1);
+            scoreLabel.setId(scoreLabelId); 
+    
+            // Now use the effectively final variable within the lambda
+            root.getChildren().removeIf(node -> scoreLabelId.equals(node.getId()));
+    
+            // Calculate the position based on the player's position
+            double labelX, labelY;
+            switch (i) {
+                case 0: // South - Player 1
+                    labelX = (WINDOW_WIDTH - PLAYER_AREA_WIDTH) / 2 + scoreLabelOffsetX;
+                    labelY = WINDOW_HEIGHT - scoreLabelOffsetY;
+                    break;
+                case 1: // West - Player 2
+                    labelX = scoreLabelOffsetX;
+                    labelY = (WINDOW_HEIGHT - PLAYER_AREA_WIDTH) / 2 + scoreLabelOffsetY;
+                    break;
+                case 2: // North - Player 3
+                    labelX = (WINDOW_WIDTH - PLAYER_AREA_WIDTH) / 2 + scoreLabelOffsetX;
+                    labelY = scoreLabelOffsetY - 30; // Adjust Y offset for North position
+                    break;
+                case 3: // East - Player 4
+                    labelX = WINDOW_WIDTH - PLAYER_AREA_HEIGHT - scoreLabelOffsetX;
+                    labelY = (WINDOW_HEIGHT - PLAYER_AREA_WIDTH) / 2 + scoreLabelOffsetY;
+                    break;
+                default:
+                    labelX = labelY = 0; // Default position
+            }
+    
+            scoreLabel.setLayoutX(labelX);
+            scoreLabel.setLayoutY(labelY);
+            root.getChildren().add(scoreLabel); // Add the score label to the root
         }
     }
+    
 
     public static void main(String[] args) {
         launch();

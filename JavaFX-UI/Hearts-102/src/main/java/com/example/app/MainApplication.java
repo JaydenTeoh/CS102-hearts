@@ -1,6 +1,6 @@
 package com.example.app;
 
-import com.example.exceptions.PlayerException;
+import com.example.exceptions.TooManyPlayersException;
 import com.example.gameplay.Game;
 import com.example.gameplay.Round;
 import com.example.gameplay.Trick;
@@ -21,10 +21,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.Cursor;
+import javafx.scene.control.Label;
 import javafx.util.Duration;
+
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +35,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MainApplication extends Application {
@@ -102,7 +107,7 @@ public class MainApplication extends Application {
 
             startRound();
 
-        } catch (PlayerException e) {
+        } catch (TooManyPlayersException e) {
             e.printStackTrace();
         }
     }
@@ -130,6 +135,9 @@ public class MainApplication extends Application {
 
         round.startNewTrick();
 
+        // Create score board
+        createAndAddAllScorePanes();
+
         // Create Player Areas
         setupPlayerAreas(playerList, round);
 
@@ -140,9 +148,6 @@ public class MainApplication extends Application {
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
             Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
-            if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
-                round.setHeartsBroken(true);
-            }
             ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
@@ -155,25 +160,26 @@ public class MainApplication extends Application {
     }
 
     private void nextTurn() {
-        System.out.println("Number of Tricks played: " + round.getNumTricksPlayed());
+        System.out.println("Number of Tricks played: "+round.getNumTricksPlayed());
         if(round.getNumTricksPlayed() == 12){
             root.getChildren().clear();
             startRound();
         }
 
         if (round.getCurrentTrick().getCardsInTrick().size() == 4) {
+            // Update score labels at the end of the trick
+            updateScoreLabels(round.getPlayersPointsInCurrentRound());
+
             System.out.println("------------------------");
             round.startNewTrick();
             currentPlayer = round.getPlayerStartingFirst();
-
         } else {
-            // // Get next player - possible to implement it in Game?
-            // if (currentPlayer == game.getPlayers().size() - 1) {
-                //     currentPlayer = 0;
-            // } else {
-                //     currentPlayer += 1;
-            // }
-            currentPlayer = game.getNextPlayer(currentPlayer);
+            // Get next player - possible to implement it in Game?
+            if (currentPlayer == game.getPlayers().size() - 1) {
+                currentPlayer = 0;
+            } else {
+                currentPlayer += 1;
+            }
         }
 
         System.out.println("Next Player: Player " + currentPlayer);
@@ -181,9 +187,6 @@ public class MainApplication extends Application {
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
             Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
-            if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
-                round.setHeartsBroken(true);
-            }
             ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
@@ -195,6 +198,9 @@ public class MainApplication extends Application {
         }
 
         // round.startNewTrick();
+
+        //display score
+
     }
 
     private ObservableList<Node> getCardViewsOfPlayer(int id) {
@@ -213,10 +219,10 @@ public class MainApplication extends Application {
     private void enableCards(int currentPlayer) {
         Player player = playerList.get(currentPlayer);
         ArrayList<Card> playableCards = player.getHand().getPlayableCards(round, round.getCurrentTrick());
-        System.out.println("Playable Cards");
-        for (Card c: playableCards) {
-            System.out.println(c);
-        }
+        // System.out.println("Playable Cards");
+        // for (Card c: playableCards) {
+        // System.out.println(c);
+        // }
         ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
         for (Node cardView : cards) {
             Card selectedCard = (Card) cardView.getUserData();
@@ -229,10 +235,6 @@ public class MainApplication extends Application {
                 disableCards(getCardViewsOfPlayer(currentPlayer));
 
                 Card cardPlayed = (Card) cardView.getUserData();
-                // shift this into a function?? idk but ill clean this up later
-                if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
-                    round.setHeartsBroken(true);
-                }
                 // Move card to play area
                 moveCard(cardView, cardPlayed);
             });
@@ -248,8 +250,7 @@ public class MainApplication extends Application {
 
     private void moveCard(Node cardView, Card cardPlayed) {
         TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);
-        cardView.setOnMouseEntered(null);
-        cardView.setOnMouseExited(null);
+
         // Find the player who played the card
         Player playerNow = null;
         for (Player player : playerList) {
@@ -282,14 +283,13 @@ public class MainApplication extends Application {
             playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
             round.getCurrentTrick().addCardToTrick(cardPlayed);
             nextTurn();
-            cardView.toFront(); // Bring the card to the front
-            // Disable mouse interaction with the card
-            cardView.setDisable(true);
         });
 
         transition.play();
 
-        
+        cardView.toFront(); // Bring the card to the front
+        // Disable mouse interaction with the card
+        cardView.setDisable(true);
     }
 
     private Pane createCardViewsOfPlayer(Pane playerArea, Player player) {
@@ -424,6 +424,59 @@ public class MainApplication extends Application {
             });
         }
     }
+
+    private void setScorePaneLayout(Pane scorePane, double layoutX, double layoutY) {
+        scorePane.setLayoutX(layoutX);
+        scorePane.setLayoutY(layoutY);
+    }
+
+    private void createAndAddScorePane(double layoutX, double layoutY) {
+        Pane scorePane = createScoreArea();
+        setScorePaneLayout(scorePane, layoutX, layoutY);
+        root.getChildren().add(scorePane);
+    }
+
+    private void createAndAddAllScorePanes() {
+        createAndAddScorePane(root.getPrefWidth() / 2 - 150, 520); // bottom player
+        createAndAddScorePane(400, root.getPrefHeight() / 2); // left player
+        createAndAddScorePane(root.getPrefWidth() / 2 - 150, 245); // top player
+        createAndAddScorePane(1000, root.getPrefHeight() / 2); // right player
+    }
+
+    private Pane createScoreArea() {
+        Pane scorePane = new Pane();
+        scorePane.setPrefSize(100, 40);
+        scorePane.setStyle("-fx-background-color: black; -fx-border-color: black;");
+
+        // Create the score label
+        Label scoreLabel = new Label("Score: 0");
+        scoreLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        scoreLabel.setLayoutX(5);
+        scoreLabel.setLayoutY(10);
+
+        // Add the score label to the score pane
+        scorePane.getChildren().add(scoreLabel);
+
+        return scorePane;
+    }
+
+    private void updateScoreLabels(HashMap<Player, Integer> playersPointsInCurrentRound) {
+        int index = 0;
+        for (Map.Entry<Player, Integer> entry : playersPointsInCurrentRound.entrySet()) {
+            Player player = entry.getKey();
+            int points = entry.getValue();
+
+            Pane scorePane = (Pane) root.getChildren().get(index); // Assuming score panes are added in order
+            if (scorePane != null) {
+                Label scoreLabel = (Label) scorePane.getChildren().get(0); // Assuming score label is the first child
+                scoreLabel.setText("Score: " + points);
+            }
+            index++;
+        }
+    }
+
+
+
 
     public static void main(String[] args) {
         launch();

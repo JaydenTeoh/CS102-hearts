@@ -156,6 +156,20 @@ public class MainApplication extends Application {
         }
     }
 
+    private void updateScoresBackend(Trick currTrick) {
+        currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
+        int pointsInCurrTrick = currTrick.getNumPoints();
+        int winningCardIndexInTrick = currTrick.getWinningCardIndex();
+            int shift = Game.NUM_PLAYERS - 1 - currentPlayer; // because current player is last player of trick
+            int winnerIndexInPlayerList = winningCardIndexInTrick - shift;
+            if (winnerIndexInPlayerList < 0) {
+                winnerIndexInPlayerList += 4;
+            }
+
+            Player winner = playerList.get(winnerIndexInPlayerList);
+            round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
+    }
+
     private void nextTurn() {
         if(round.getNumTricksPlayed() == 12){
             root.getChildren().clear();
@@ -167,7 +181,7 @@ public class MainApplication extends Application {
                 Player p = iter.next();
                 game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
             }
-
+            
             updateScoresDisplay();
 
             // start new round
@@ -178,21 +192,8 @@ public class MainApplication extends Application {
 
         if (currTrick.getCardsInTrick().size() == 4) {
             System.out.println("------------------------");
-
-            // count points in trick and change hashmap in round, then call update scores display
-            currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
-            int pointsInCurrTrick = currTrick.getNumPoints();
-
-            // clean this abomination
-            int winningCardIndexInTrick = currTrick.getWinningCardIndex();
-            int shift = Game.NUM_PLAYERS - 1 - currentPlayer; // because current player is last player of trick
-            int winnerIndexInPlayerList = winningCardIndexInTrick - shift;
-            if (winnerIndexInPlayerList < 0) {
-                winnerIndexInPlayerList += 4;
-            }
-
-            Player winner = playerList.get(winnerIndexInPlayerList);
-            round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
+            
+            updateScoresBackend(currTrick);
             updateScoresDisplay();
 
             // start new trick

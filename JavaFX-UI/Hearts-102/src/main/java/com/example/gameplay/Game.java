@@ -13,7 +13,7 @@ public class Game {
     private int currentNumPlayers;
 
     // this hashmap stores players and their points in the current game
-    private HashMap<Player, Integer> playersPoints;
+    private HashMap<Player, Integer> playersPointsInCurrentGame;
     private ArrayList<Player> players;
 
     public static final int MAX_POINTS = 50;
@@ -28,7 +28,7 @@ public class Game {
     public Game() {
         numRounds = 0;
         currentNumPlayers = 0;
-        playersPoints = new HashMap<>();
+        playersPointsInCurrentGame = new HashMap<>();
         players = new ArrayList<>();
     }
 
@@ -43,7 +43,7 @@ public class Game {
     public void addPlayer(Player p) throws PlayerException {
         if (currentNumPlayers < NUM_PLAYERS) {
             currentNumPlayers += 1;
-            playersPoints.put(p, 0);
+            playersPointsInCurrentGame.put(p, 0);
             players.add(p);
         } else {
             throw new PlayerException("There can only be 4 players in one game, so we cannot add any more players.");
@@ -53,18 +53,22 @@ public class Game {
     }
 
     public void removePlayer(Player p) {
-        if (playersPoints.containsKey(p)) {
+        if (playersPointsInCurrentGame.containsKey(p)) {
             currentNumPlayers -= 1;
-            playersPoints.remove(p);
+            playersPointsInCurrentGame.remove(p);
             players.remove(p);
         }
 
         return;
     }
 
-    public void addPoints(Player p, int points) throws PlayerException {
-        if (playersPoints.containsKey(p)) {
-            playersPoints.put(p, playersPoints.get(p) + points);
+    public HashMap<Player, Integer> getPlayersPointsInCurrentGame() {
+        return playersPointsInCurrentGame;
+    }
+
+    public void setPlayersPointsInCurrentGame(Player p, int points) throws PlayerException {
+        if (playersPointsInCurrentGame.containsKey(p)) {
+            playersPointsInCurrentGame.put(p, playersPointsInCurrentGame.get(p) + points);
         } else {
             throw new PlayerException("We cannot add points because the player does not exist.");
         }
@@ -73,7 +77,7 @@ public class Game {
     }
 
     public boolean isEnded() {
-        for (Integer value : playersPoints.values()) {
+        for (Integer value : playersPointsInCurrentGame.values()) {
             if (value >= MAX_POINTS) {
                 return true;
             }

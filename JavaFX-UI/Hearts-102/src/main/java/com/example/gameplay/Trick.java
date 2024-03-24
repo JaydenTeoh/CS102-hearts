@@ -64,7 +64,7 @@ public class Trick {
         }
     }
 
-    // Method to get the index of the winning card of the trick
+    // Method to get the index of the winning card of the trick (0 - 3, where 0 is the leading card)
     public int getWinningCardIndex() {
         Card leadingCard = this.getLeadingCard();
         Suit leadSuit = leadingCard.getSuit();
@@ -82,13 +82,13 @@ public class Trick {
                 }
             }
         }
-        
+
         return winningCardIndex;
     }
 
 
     // Method to calculate and set the number of points in the trick
-    private void setNumPoints() {
+    public void setNumPoints() {
         numPoints = 0;
         for (Card card : cardsInTrick) {
             if (card.getSuit().equals(Suit.HEARTS)) {

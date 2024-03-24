@@ -17,6 +17,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
@@ -29,6 +30,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class MainApplication extends Application {
@@ -106,12 +109,14 @@ public class MainApplication extends Application {
 
     private void startRound(){
         round = new Round(0, game);
+        updateScoresDisplay();
 
         round.dealHands();
 
         for (int i = 0; i < Game.NUM_PLAYERS; i++) {
             List<Card> hand = playerList.get(i).getHand().getCards();
             for (Card c : hand) {
+                // set 2 of clubs to start first, as per game rules
                 if (c.getRank().getName().equals("Two") && c.getSuit().getName().equals("Clubs")) {
                     round.setPlayerStartingFirst(i);
                 }
@@ -124,6 +129,7 @@ public class MainApplication extends Application {
         playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
         root.getChildren().add(playArea);
 
+        // updateScoresDisplay();
         round.startNewTrick();
 
         // Create Player Areas
@@ -151,28 +157,53 @@ public class MainApplication extends Application {
     }
 
     private void nextTurn() {
-        System.out.println("Number of Tricks played: " + round.getNumTricksPlayed());
         if(round.getNumTricksPlayed() == 12){
             root.getChildren().clear();
+
+            HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
+            Iterator<Player> iter = roundPoints.keySet().iterator();
+
+            while (iter.hasNext()) {
+                Player p = iter.next();
+                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
+            }
+
+            updateScoresDisplay();
+
+            // start new round
             startRound();
         }
 
-        if (round.getCurrentTrick().getCardsInTrick().size() == 4) {
+        Trick currTrick = round.getCurrentTrick();
+
+        if (currTrick.getCardsInTrick().size() == 4) {
             System.out.println("------------------------");
+
+            // count points in trick and change hashmap in round, then call update scores display
+            currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
+            int pointsInCurrTrick = currTrick.getNumPoints();
+
+            // clean this abomination
+            int winningCardIndexInTrick = currTrick.getWinningCardIndex();
+            int shift = Game.NUM_PLAYERS - 1 - currentPlayer; // because current player is last player of trick
+            int winnerIndexInPlayerList = winningCardIndexInTrick - shift;
+            if (winnerIndexInPlayerList < 0) {
+                winnerIndexInPlayerList += 4;
+            }
+
+            Player winner = playerList.get(winnerIndexInPlayerList);
+            round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
+            updateScoresDisplay();
+
+            // start new trick
             round.startNewTrick();
             currentPlayer = round.getPlayerStartingFirst();
 
         } else {
-            // // Get next player - possible to implement it in Game?
-            // if (currentPlayer == game.getPlayers().size() - 1) {
-            //     currentPlayer = 0;
-            // } else {
-            //     currentPlayer += 1;
-            // }
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
 
-        System.out.println("Next Player: Player " + currentPlayer);
+        System.out.println("Next Player: Player " + (currentPlayer + 1));
 
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
@@ -193,13 +224,24 @@ public class MainApplication extends Application {
         // round.startNewTrick();
     }
 
+    // Utility method to check if a string is numeric
+    private static boolean isNumeric(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+}
+
     private ObservableList<Node> getCardViewsOfPlayer(int id) {
         for (Node node : root.getChildren()) {
             if (node.getId() != null)
-                if (Integer.parseInt(node.getId()) == id) {
-                    Pane pane = (Pane) node;
-                    return pane.getChildren();
-                }
+                if (isNumeric(node.getId()))
+                    if (Integer.parseInt(node.getId()) == id) {
+                        Pane pane = (Pane) node;
+                        return pane.getChildren();
+                    }
         }
 
         // Empty List
@@ -209,10 +251,12 @@ public class MainApplication extends Application {
     private void enableCards(int currentPlayer) {
         Player player = playerList.get(currentPlayer);
         ArrayList<Card> playableCards = player.getHand().getPlayableCards(round, round.getCurrentTrick());
-        System.out.println("Playable Cards");
-            for (Card c: playableCards) {
+        System.out.println("\nPlayable Cards:");
+        for (Card c: playableCards) {
             System.out.println(c);
         }
+        System.out.println();
+
         ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
         for (Node cardView : cards) {
             Card selectedCard = (Card) cardView.getUserData();
@@ -251,10 +295,20 @@ public class MainApplication extends Application {
         transition.setCycleCount(1);
 
         transition.setOnFinished(event -> {
-            System.out.println("Card played: " + cardPlayed + " by " + playerList.get(currentPlayer));
+            System.out.println("Card played: " + cardPlayed + " by Player " + (playerNo));
+
+            // remove card from current player's hand
             playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
+
+            // add card to current trick
             round.getCurrentTrick().addCardToTrick(cardPlayed);
             nextTurn();
+
+            // Bring the card to the front
+            cardView.toFront();
+
+            // Disable mouse interaction with the card
+            cardView.setDisable(true);
         });
 
         transition.play();
@@ -362,6 +416,64 @@ public class MainApplication extends Application {
         stage.setHeight(WINDOW_HEIGHT);
         stage.setTitle("Hearts");
         stage.show();
+    }
+
+    private void addHoverEffect(ImageView cardView, boolean isPlayable) {
+        if (isPlayable) {
+            cardView.setOnMouseEntered(event -> {
+                cardView.setEffect(new DropShadow()); // Apply drop shadow effect when mouse enters
+                cardView.setCursor(Cursor.HAND); // Change cursor to hand
+
+                // Translate animation to move the card up
+                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
+                hoverTransition.setToY(-20); // Adjust this value to change the hover distance
+                hoverTransition.play();
+            });
+
+            cardView.setOnMouseExited(event -> {
+                cardView.setEffect(null); // Remove drop shadow effect when mouse exits
+                cardView.setCursor(Cursor.DEFAULT); // Change cursor back to default
+
+                // Translate animation to move the card back down
+                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
+                hoverTransition.setToY(0);
+                hoverTransition.play();
+            });
+        }
+    }
+    
+    private void updateScoresDisplay() {
+        // Attempt to find an existing scorePane by ID or another unique identifier
+        Pane foundScorePane = (Pane) root.getChildren().stream()
+        .filter(node -> "scorePane".equals(node.getId()))
+        .findFirst()
+        .orElse(null);
+
+        // If not found, initialize it and add to root
+        if (foundScorePane == null) {
+            foundScorePane = new Pane();
+            foundScorePane.setId("scorePane"); // Set an ID to find it later
+            foundScorePane.setLayoutX(WINDOW_WIDTH - 300); // Position it
+            foundScorePane.setLayoutY(40);
+            foundScorePane.setPrefSize(200, 200);
+            root.getChildren().add(foundScorePane);
+        } else {
+            // Clear the existing content only if found
+            foundScorePane.getChildren().clear();
+        }
+
+        HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();
+        HashMap<Player, Integer> pointsInCurrentGame = game.getPlayersPointsInCurrentGame();
+        
+        for (int i = 0; i < playerList.size(); i++) {
+            Player player = playerList.get(i);
+            int roundPoints = pointsInCurrentRound.get(player);
+            int gamePoints = pointsInCurrentGame.get(player);
+            
+            Label scoreLabel = new Label("Player " + (i + 1) + ": Round = " + roundPoints + ", Game = " + gamePoints);
+            scoreLabel.setLayoutY(i * 30); // Position labels vertically
+            foundScorePane.getChildren().add(scoreLabel);
+        }
     }
 
     public static void main(String[] args) {

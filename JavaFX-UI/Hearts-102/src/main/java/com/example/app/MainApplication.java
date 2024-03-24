@@ -23,7 +23,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
-import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.Cursor;
 import javafx.util.Duration;
@@ -54,7 +53,6 @@ public class MainApplication extends Application {
 
     private int currentPlayer;
     private List<Player> playerList;
-    private List<Node> currentCardViewsInTrick;
 
     private Pane root = new Pane();
     private Game game;
@@ -116,7 +114,6 @@ public class MainApplication extends Application {
         round = new Round(0, game);
         updateScoresDisplay();
 
-        currentCardViewsInTrick = new ArrayList<>();
         round.dealHands();
 
         for (int i = 0; i < Game.NUM_PLAYERS; i++) {
@@ -155,7 +152,6 @@ public class MainApplication extends Application {
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
                     moveCard(node, cardPlayed);
-                    currentCardViewsInTrick.add(node);
                 }
             }
         } else {
@@ -204,12 +200,6 @@ public class MainApplication extends Application {
             updateScoresDisplay();
 
             // start new trick
-            for (Node cardView: currentCardViewsInTrick) {
-                ((ImageView) cardView).setImage(null);
-            }
-
-            currentCardViewsInTrick = new ArrayList<>();
-
             round.startNewTrick();
             currentPlayer = round.getPlayerStartingFirst();
 
@@ -229,7 +219,6 @@ public class MainApplication extends Application {
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
                     moveCard(node, cardPlayed);
-                    currentCardViewsInTrick.add(node);
                 }
             }
         } else {
@@ -277,24 +266,12 @@ public class MainApplication extends Application {
             Card selectedCard = (Card) cardView.getUserData();
 
             if (!playableCards.contains(selectedCard)) {
-                cardView.setOnMouseEntered(null);
-                cardView.setOnMouseExited(null);
-                ColorAdjust grayscale = new ColorAdjust();
-                grayscale.setBrightness(-0.5); // Lower brightness by 50%
-                grayscale.setContrast(-0.5); // Lower contrast by 50%
-                cardView.setEffect(grayscale);
-                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
-                hoverTransition.setToY(0);
-                hoverTransition.play();
                 continue;
             }
-            addHoverEffect((ImageView) cardView);
-            cardView.setEffect(null);
-            cardView.setOpacity(1);
             cardView.getStyleClass().add("card-active");
             cardView.setOnMouseClicked(event -> {
                 disableCards(getCardViewsOfPlayer(currentPlayer));
-                currentCardViewsInTrick.add(cardView);
+
                 Card cardPlayed = (Card) cardView.getUserData();
                 // shift this into a function?? idk but ill clean this up later
                 if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
@@ -310,7 +287,6 @@ public class MainApplication extends Application {
         for (Node card : cards) {
             card.setOnMouseClicked(null);
             card.getStyleClass().remove("card-active");
-            
         }
     }
 
@@ -335,14 +311,14 @@ public class MainApplication extends Application {
             transition.setToY(-(PLAYER_AREA_HEIGHT) + 90);
             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
         } else if (playerNo == 2) { // Left player
-            transition.setToY(-160);
-            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2)+270);
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToX(500);
         } else if (playerNo == 3) { // Top player
             transition.setToY(180);
             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
         } else if (playerNo == 4) { // Right player
-            transition.setToY(-160);
-            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2)-620);
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToX(-350);
         }
 
         transition.setCycleCount(1);
@@ -373,6 +349,7 @@ public class MainApplication extends Application {
         try {
             String currentDirectory = System.getProperty("user.dir");
             List<Card> hand = player.getHand().getCards();
+            int playerIndex = playerList.indexOf(player);
 
             for (int i = 0; i < hand.size(); i++) {
                 Card card = hand.get(i);
@@ -383,19 +360,35 @@ public class MainApplication extends Application {
                 cardView.setFitWidth(CARD_WIDTH);
                 cardView.setFitHeight(CARD_HEIGHT);
 
-                double xPos = i * (CARD_WIDTH + SPACING);
+                double xPos, yPos;
+                if (playerIndex == 0) { // Bottom player
+                    xPos = i *  (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                    yPos = 0; // Align with top edge
+                } else if (playerIndex == 1) { // Left player
+                    xPos = 0; // Align with left edge
+                    yPos = i * 30; // Vertical spacing
+                } else if (playerIndex == 2) { // Top player
+                    xPos = i * (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                    yPos = 0; // Align with top edge
+                } else { // Right player
+                    xPos = 0; // Align with left edge
+                    yPos = i * 30; // Vertical spacing
+                }
 
                 cardView.setLayoutX(xPos);
-                cardView.setLayoutY((playerArea.getPrefHeight() - CARD_HEIGHT * 1.5));
+                cardView.setLayoutY(yPos);
 
                 // cardView.setRotate(-90);
+                // Rotate cards for left and right players
+                if (playerIndex == 1 || playerIndex == 3) {
+                    cardView.setRotate(90); // Rotate 90 degrees for left and right players
+                }
+
 
                 // Determine if the card is playable
-                // boolean isPlayable = hand.contains(card);
+                boolean isPlayable = hand.contains(card);
                 // Apply hover effect
-                if (player instanceof HumanPlayer) {
-                    addHoverEffect(cardView);
-                }
+                addHoverEffect(cardView, isPlayable);
 
                 // cardView.setId(card.getRank().getSymbol()+card.getSuit().getSymbol());
                 cardView.setId(i + "");
@@ -480,26 +473,28 @@ public class MainApplication extends Application {
         stage.show();
     }
 
-    private void addHoverEffect(ImageView cardView) {
-        cardView.setOnMouseEntered(event -> {
-            cardView.setEffect(new DropShadow()); // Apply drop shadow effect when mouse enters
-            cardView.setCursor(Cursor.HAND); // Change cursor to hand
+    private void addHoverEffect(ImageView cardView, boolean isPlayable) {
+        if (isPlayable) {
+            cardView.setOnMouseEntered(event -> {
+                cardView.setEffect(new DropShadow()); // Apply drop shadow effect when mouse enters
+                cardView.setCursor(Cursor.HAND); // Change cursor to hand
 
-            // Translate animation to move the card up
-            TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
-            hoverTransition.setToY(-20); // Adjust this value to change the hover distance
-            hoverTransition.play();
-        });
+                // Translate animation to move the card up
+                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
+                hoverTransition.setToY(-20); // Adjust this value to change the hover distance
+                hoverTransition.play();
+            });
 
-        cardView.setOnMouseExited(event -> {
-            cardView.setEffect(null); // Remove drop shadow effect when mouse exits
-            cardView.setCursor(Cursor.DEFAULT); // Change cursor back to default
+            cardView.setOnMouseExited(event -> {
+                cardView.setEffect(null); // Remove drop shadow effect when mouse exits
+                cardView.setCursor(Cursor.DEFAULT); // Change cursor back to default
 
-            // Translate animation to move the card back down
-            TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
-            hoverTransition.setToY(0);
-            hoverTransition.play();
-        });
+                // Translate animation to move the card back down
+                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
+                hoverTransition.setToY(0);
+                hoverTransition.play();
+            });
+        }
     }
     
     private void updateScoresDisplay() {

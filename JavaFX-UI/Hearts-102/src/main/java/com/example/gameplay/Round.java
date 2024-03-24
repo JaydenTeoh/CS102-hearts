@@ -17,6 +17,7 @@ public class Round {
     public Round(int playerStartingFirst, Game belongsToGame){
         this.playerStartingFirst = playerStartingFirst;
         this.belongsToGame = belongsToGame;
+        heartsBroken = false;
 
         // need to implement Game.getPlayers later on
         currentTrick = null;
@@ -43,6 +44,10 @@ public class Round {
 
     public boolean isHeartsBroken() {
         return heartsBroken;
+    }
+
+    public void setHeartsBroken(boolean heartsBroken) {
+        this.heartsBroken = heartsBroken;
     }
 
     // starts a new trick

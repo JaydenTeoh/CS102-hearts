@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-
 public class MainApplication extends Application {
 
     private static final double WINDOW_WIDTH = 1500;
@@ -69,7 +68,10 @@ public class MainApplication extends Application {
         background.setStyle("-fx-background-color: green");
 
         Button btn = new Button();
-        btn.setText("Start  ");
+        btn.setText("Start");
+
+        btn.setPrefSize(200, 50);
+        btn.setStyle("-fx-font-size: 20px;");
 
         // Set the action event handler to call handleButtonClick method
         btn.setOnAction(event -> {
@@ -87,8 +89,20 @@ public class MainApplication extends Application {
             fadeOut.play();
         });
 
-        root.getChildren().add(background);
-        root.getChildren().add(btn);
+        root.getChildren().addAll(background, btn);
+
+        root.widthProperty().addListener((obs, oldVal, newVal) -> {
+            btn.setLayoutX(newVal.doubleValue() / 2 - btn.getWidth() / 2);
+        });
+
+        root.heightProperty().addListener((obs, oldVal, newVal) -> {
+            btn.setLayoutY(newVal.doubleValue() / 2 - btn.getHeight() / 2);
+        });
+
+        btn.layoutBoundsProperty().addListener((obs, oldVal, newVal) -> {
+            btn.setLayoutX((WINDOW_WIDTH - newVal.getWidth()) / 2);
+            btn.setLayoutY((WINDOW_HEIGHT - newVal.getHeight()) / 2);
+        });
 
         return root;
     }
@@ -112,7 +126,7 @@ public class MainApplication extends Application {
         }
     }
 
-    private void startRound(){
+    private void startRound() {
         round = new Round(0, game);
         updateScoresDisplay();
 
@@ -167,18 +181,18 @@ public class MainApplication extends Application {
         currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
         int pointsInCurrTrick = currTrick.getNumPoints();
         int winningCardIndexInTrick = currTrick.getWinningCardIndex();
-            int shift = Game.NUM_PLAYERS - 1 - currentPlayer; // because current player is last player of trick
-            int winnerIndexInPlayerList = winningCardIndexInTrick - shift;
-            if (winnerIndexInPlayerList < 0) {
-                winnerIndexInPlayerList += 4;
-            }
+        int shift = Game.NUM_PLAYERS - 1 - currentPlayer; // because current player is last player of trick
+        int winnerIndexInPlayerList = winningCardIndexInTrick - shift;
+        if (winnerIndexInPlayerList < 0) {
+            winnerIndexInPlayerList += 4;
+        }
 
-            Player winner = playerList.get(winnerIndexInPlayerList);
-            round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
+        Player winner = playerList.get(winnerIndexInPlayerList);
+        round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
     }
 
     private void nextTurn() {
-        if(round.getNumTricksPlayed() == 12){
+        if (round.getNumTricksPlayed() == 12) {
             root.getChildren().clear();
 
             HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
@@ -188,7 +202,7 @@ public class MainApplication extends Application {
                 Player p = iter.next();
                 game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
             }
-            
+
             updateScoresDisplay();
 
             // start new round
@@ -199,7 +213,7 @@ public class MainApplication extends Application {
 
         if (currTrick.getCardsInTrick().size() == 4) {
             System.out.println("------------------------");
-            
+
             updateScoresBackend(currTrick);
             updateScoresDisplay();
 
@@ -247,7 +261,7 @@ public class MainApplication extends Application {
         } catch (NumberFormatException e) {
             return false;
         }
-}
+    }
 
     private ObservableList<Node> getCardViewsOfPlayer(int id) {
         for (Node node : root.getChildren()) {
@@ -267,7 +281,7 @@ public class MainApplication extends Application {
         Player player = playerList.get(currentPlayer);
         ArrayList<Card> playableCards = player.getHand().getPlayableCards(round, round.getCurrentTrick());
         System.out.println("\nPlayable Cards:");
-        for (Card c: playableCards) {
+        for (Card c : playableCards) {
             System.out.println(c);
         }
         System.out.println();
@@ -310,7 +324,7 @@ public class MainApplication extends Application {
         for (Node card : cards) {
             card.setOnMouseClicked(null);
             card.getStyleClass().remove("card-active");
-            
+
         }
     }
 
@@ -336,13 +350,13 @@ public class MainApplication extends Application {
             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
         } else if (playerNo == 2) { // Left player
             transition.setToY(-160);
-            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2)+270);
+            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2) + 270);
         } else if (playerNo == 3) { // Top player
             transition.setToY(180);
             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
         } else if (playerNo == 4) { // Right player
             transition.setToY(-160);
-            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2)-620);
+            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2) - 620);
         }
 
         transition.setCycleCount(1);
@@ -366,7 +380,6 @@ public class MainApplication extends Application {
 
         transition.play();
 
-        
     }
 
     private Pane createCardViewsOfPlayer(Pane playerArea, Player player) {
@@ -501,13 +514,13 @@ public class MainApplication extends Application {
             hoverTransition.play();
         });
     }
-    
+
     private void updateScoresDisplay() {
         // Attempt to find an existing scorePane by ID or another unique identifier
         Pane foundScorePane = (Pane) root.getChildren().stream()
-        .filter(node -> "scorePane".equals(node.getId()))
-        .findFirst()
-        .orElse(null);
+                .filter(node -> "scorePane".equals(node.getId()))
+                .findFirst()
+                .orElse(null);
 
         // If not found, initialize it and add to root
         if (foundScorePane == null) {
@@ -524,12 +537,12 @@ public class MainApplication extends Application {
 
         HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();
         HashMap<Player, Integer> pointsInCurrentGame = game.getPlayersPointsInCurrentGame();
-        
+
         for (int i = 0; i < playerList.size(); i++) {
             Player player = playerList.get(i);
             int roundPoints = pointsInCurrentRound.get(player);
             int gamePoints = pointsInCurrentGame.get(player);
-            
+
             Label scoreLabel = new Label("Player " + (i + 1) + ": Round = " + roundPoints + ", Game = " + gamePoints);
             scoreLabel.setLayoutY(i * 30); // Position labels vertically
             foundScorePane.getChildren().add(scoreLabel);

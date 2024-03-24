@@ -66,29 +66,23 @@ public class Trick {
 
     // Method to get the index of the winning card of the trick
     public int getWinningCardIndex() {
-        Suit leadSuit = getLeadingCard().getSuit();
-        int winningCardIndex = -1;
-        Rank highestRank = null; // Initialize with a low value
+        Card leadingCard = this.getLeadingCard();
+        Suit leadSuit = leadingCard.getSuit();
+        int winningCardIndex = 0; // leading card is winnning card unless higher card of that suit found
+        Rank highestRank = leadingCard.getRank();
 
-        for (int i = 0; i < cardsInTrick.size(); i++) {
+        for (int i = 1; i < cardsInTrick.size(); i++) {
             Card card = cardsInTrick.get(i);
             if (card.getSuit() == leadSuit) {
                 // Card is of the lead suit
-                if (highestRank == null || card.getRank().compareTo(highestRank) > 0) {
+                if (card.getRank().compareTo(highestRank) > 0) {
                     // This card is currently the highest of the lead suit
                     winningCardIndex = i;
                     highestRank = card.getRank();
                 }
-            } else if (winningCardIndex == -1) {
-                // No cards of lead suit played yet, consider this card as winning card
-                winningCardIndex = i;
-                highestRank = card.getRank();
-            } else if (card.getSuit() != leadSuit && card.getRank().compareTo(highestRank) > 0) {
-                // Card is not of the lead suit, but it has a higher rank
-                winningCardIndex = i;
-                highestRank = card.getRank();
             }
         }
+        
         return winningCardIndex;
     }
 

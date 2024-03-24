@@ -24,7 +24,7 @@ import java.util.*;
 public class Rank implements Comparable {
    private String name;
    private String symbol;
-   private static boolean aceHigh = false;
+   private static boolean aceHigh = true;
     
    /** 
     * The rank ace. 

@@ -194,7 +194,7 @@ public class AIPlayer implements Player {
             return currHand.getHighest(Suit.SPADES);
         }
 
-        // throw new AIPlayerException("Edge case: AI player made 0 decision");
+        // throw new PlayerException("Edge case: AI player made 0 decision");
         //return null;
     }
 }

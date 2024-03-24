@@ -19,7 +19,7 @@ import com.example.gameplay.*;
  * @author John K. Estell
  * @version 1.0
  */
-public class Card implements Comparable {
+public class Card implements Comparable<Card> {
     
    // instance variables for the card 
    private Suit suitValue;
@@ -147,12 +147,11 @@ public class Card implements Comparable {
    * Compares two cards for the purposes of sorting.  
    * Cards are ordered first by their suit value, then by their
    * rank value.
-   * @param otherCardObject the other card
+   * @param otherCard the other card
    * @return a negative integer, zero, or a positive integer is this card is
    * less than, equal to, or greater than the referenced card.
    */
-   public int compareTo( Object otherCardObject ) {
-      Card otherCard = (Card) otherCardObject;
+   public int compareTo( Card otherCard ) {
       int suitDiff = suitValue.compareTo( otherCard.suitValue );
       int rankDiff = rankValue.compareTo( otherCard.rankValue );
       
@@ -185,6 +184,18 @@ public class Card implements Comparable {
       else
          return true;
    }
+
+   public boolean equals( Object o ) {
+      if (o instanceof Card card) {
+         return this.isSameAs(card);
+      }
+      return false;
+   }
+
+   public boolean equals(Suit s, Rank r) {
+      return this.getRank().compareTo(r) == 0 && this.getSuit().compareTo(s) == 0;
+   }
+
 
    public boolean isHeart() {
       if (suitValue.getSymbol() == "h") {

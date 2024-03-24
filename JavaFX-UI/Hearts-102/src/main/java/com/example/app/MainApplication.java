@@ -23,6 +23,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.Cursor;
 import javafx.util.Duration;
 
 import java.io.File;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
 
 public class MainApplication extends Application {
 
@@ -264,8 +267,6 @@ public class MainApplication extends Application {
             if (!playableCards.contains(selectedCard)) {
                 continue;
             }
-
-            
             cardView.getStyleClass().add("card-active");
             cardView.setOnMouseClicked(event -> {
                 disableCards(getCardViewsOfPlayer(currentPlayer));
@@ -290,8 +291,33 @@ public class MainApplication extends Application {
 
     private void moveCard(Node cardView, Card cardPlayed) {
         TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);
-        transition.setToY(-(PLAYER_AREA_HEIGHT) + 50);
-        transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
+        cardView.setOnMouseEntered(null);
+        cardView.setOnMouseExited(null);
+        // Find the player who played the card
+        Player playerNow = null;
+        for (Player player : playerList) {
+            if (player.getHand().getCards().contains(cardPlayed)) {
+                playerNow = player;
+                break;
+            }
+        }
+        int playerNo = playerList.indexOf(playerNow) + 1; // Player number is the index in the list + 1
+
+        // Adjust the transition based on the player number
+        if (playerNo == 1) { // Bottom player
+            transition.setToY(-(PLAYER_AREA_HEIGHT) + 90);
+            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
+        } else if (playerNo == 2) { // Left player
+            transition.setToY(-160);
+            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2)+270);
+        } else if (playerNo == 3) { // Top player
+            transition.setToY(180);
+            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
+        } else if (playerNo == 4) { // Right player
+            transition.setToY(-160);
+            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2)-620);
+        }
+
         transition.setCycleCount(1);
 
         transition.setOnFinished(event -> {
@@ -312,6 +338,8 @@ public class MainApplication extends Application {
         });
 
         transition.play();
+
+        
     }
 
     private Pane createCardViewsOfPlayer(Pane playerArea, Player player) {
@@ -334,6 +362,11 @@ public class MainApplication extends Application {
                 cardView.setLayoutY((playerArea.getPrefHeight() - CARD_HEIGHT * 1.5));
 
                 // cardView.setRotate(-90);
+
+                // Determine if the card is playable
+                boolean isPlayable = hand.contains(card);
+                // Apply hover effect
+                addHoverEffect(cardView, isPlayable);
 
                 // cardView.setId(card.getRank().getSymbol()+card.getSuit().getSymbol());
                 cardView.setId(i + "");

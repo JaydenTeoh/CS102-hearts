@@ -294,6 +294,8 @@ public class MainApplication extends Application {
         TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);
         cardView.setOnMouseEntered(null);
         cardView.setOnMouseExited(null);
+        cardView.setEffect(null); // Remove drop shadow effect when mouse exits
+        cardView.setCursor(Cursor.DEFAULT); // Change cursor back to default
         // Find the player who played the card
         Player playerNow = null;
         for (Player player : playerList) {

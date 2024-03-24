@@ -15,6 +15,11 @@ public class Hand {
         return cards;
     }
 
+
+    public void sortCards() {
+        Collections.sort(cards);
+    }
+
     public boolean isAllHearts() {
         return !cards.stream().anyMatch(c -> c.getSuit().compareTo(Suit.HEARTS) != 0);
     }
@@ -67,6 +72,14 @@ public class Hand {
     public boolean hasExactlyOne(Suit s) {
         long count = cards.stream().filter(c -> c.getSuit().compareTo(s) == 0).count();
         return count == 1;
+    }
+
+    public long howManyOfSuit(Suit s) {
+        return cards.stream().filter(c -> c.getSuit().compareTo(s) == 0).count();
+    }
+
+    public List<Card> getAll(Suit s) {
+        return cards.stream().filter(c -> c.getSuit().compareTo(s) == 0).toList();
     }
 
     public boolean hasCard(Card card) {
@@ -135,10 +148,6 @@ public class Hand {
             }
         }
 
-
-
-        
-
         // if player is the first player of the trick, can play any card that isn't hearts if hearts is not yet broken. else, can play anything
         if (trick.getCardsInTrick().isEmpty()) {
             if (round.isHeartsBroken()) {
@@ -177,5 +186,34 @@ public class Hand {
         cards.add(card);
         
         return;
+    }
+
+    // for AI player to decide whether to dump spades
+    public boolean poorSpadesHand() {
+        int goodSpades = 0;
+        int badSpades = 0;
+
+        for (Card c : cards) {
+            if (c.equals(Game.QUEEN_OF_SPADES)) {
+                badSpades += 2;
+            } else if (c.equals(Suit.SPADES, Rank.ACE) || c.equals(Suit.SPADES, Rank.KING)) {
+                // King and Ace spades can help cover the Queen
+                if (this.hasCard(Game.QUEEN_OF_SPADES)) {
+                    goodSpades++;
+                } else {
+                    badSpades++;
+                }
+            } else if (c.getSuit().equals(Suit.SPADES)) {
+                goodSpades += 1;
+            }
+        }
+
+        // no risky spades, i.e. A/K/Q Spades
+        if (badSpades == 0) {
+            return false; 
+        }
+
+        // too few good spades cards covering the queen, hard to bleed out spades
+        return goodSpades - badSpades < 2;
     }
 }

@@ -103,7 +103,11 @@ public class Round {
         this.currentTrick = currenTrick;
     }
 
-    public synchronized void playRound() {
+    public void passCards() {
+        
+    }
+
+    public void playRound() {
         // async
 
         // Conditions: Player's hand is not empty (round is not over) and trick is finished

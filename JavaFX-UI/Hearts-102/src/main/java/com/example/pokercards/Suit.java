@@ -91,7 +91,14 @@ public final class Suit implements Comparable {
       Suit otherSuit = (Suit) otherSuitObject;
       return VALUES.indexOf( this ) - VALUES.indexOf( otherSuit );
    } 
-    
+
+
+   /*
+    * Check if same suit
+    */
+   public boolean equals(Suit s) {
+      return VALUES.indexOf( this ) == VALUES.indexOf( s );
+   }
 }
 
     

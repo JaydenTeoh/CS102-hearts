@@ -1,6 +1,8 @@
 package com.example.players;
 import com.example.gameplay.*;
-import com.example.exceptions.*;
+
+import java.util.*;
+
 import com.example.pokercards.*;
 
 
@@ -22,6 +24,78 @@ public class AIPlayer implements Player {
 
     public void setHand(Hand hand) {
         this.hand = hand;
+    }
+
+    @Override
+    public List<Card> passCards() {
+        Hand currHand = getHand();
+        int numLeft = 3;
+        List<Card> cardsToPass = new ArrayList<>();
+
+        // deal with spades, avoiding getting Queen of Spades is the priority
+        if (currHand.poorSpadesHand()) {
+            if (currHand.hasCard(Game.QUEEN_OF_SPADES)) {
+                cardsToPass.add(Game.QUEEN_OF_SPADES);
+                numLeft--;
+            }
+            if (currHand.hasCard(Suit.SPADES, Rank.ACE)) {
+                cardsToPass.add(new Card(Suit.SPADES, Rank.ACE));
+                numLeft--;
+            }
+            if (currHand.hasCard(Suit.SPADES, Rank.KING)) {
+                cardsToPass.add(new Card(Suit.SPADES, Rank.KING));
+                numLeft--;
+            }
+        }
+
+        if (numLeft == 0) {
+            return cardsToPass;
+        }
+
+        // short-suit yourself in the following order, Diamonds -> Clubs
+        if (currHand.howManyOfSuit(Suit.DIAMONDS) <= numLeft) {
+            numLeft -= currHand.howManyOfSuit(Suit.DIAMONDS);
+            cardsToPass.addAll(currHand.getAll(Suit.DIAMONDS));
+        }
+        
+        if (currHand.howManyOfSuit(Suit.CLUBS) <= numLeft) {
+            numLeft -= currHand.howManyOfSuit(Suit.DIAMONDS);
+            cardsToPass.addAll(currHand.getAll(Suit.DIAMONDS));
+        }
+
+        // if you can leave yourself with 1 club left, that's okay also, you can dump it on first trick anyways
+        if (currHand.howManyOfSuit(Suit.CLUBS) == numLeft + 1) {
+            List<Card> clubsCards = currHand.getAll(Suit.DIAMONDS);
+            clubsCards.remove(currHand.getHighest(Suit.CLUBS)); // keep the highest so you can possibly win first trick and lead next one
+            numLeft = 0;
+        }
+
+        if (numLeft == 0) {
+            return cardsToPass;
+        }
+
+
+        for (int rankIndex = Rank.VALUES_ACE_HIGH.size(); rankIndex >= 0; rankIndex--) {
+            Rank currRank = Rank.VALUES_ACE_HIGH.get(rankIndex);
+            List<Suit> dumpingSuitOrder = Arrays.asList( new Suit[] { Suit.HEARTS, Suit.SPADES, Suit.DIAMONDS, Suit.CLUBS } );
+
+            for (int suitIndex = 0; suitIndex < dumpingSuitOrder.size(); suitIndex++) {
+                Suit dumpSuit = dumpingSuitOrder.get(suitIndex);
+                if (currHand.hasCard(dumpSuit, currRank)) {
+                    Card toDumpCard = new Card(dumpSuit, currRank);
+                    if (!cardsToPass.contains(toDumpCard)) { // not already inside the cards to be dumped
+                        cardsToPass.add(toDumpCard);
+                        numLeft--;
+                    }
+
+                    if (numLeft == 0) {
+                        return cardsToPass;
+                    }
+                }
+            }
+        }
+
+        return cardsToPass;
     }
 
 
@@ -58,9 +132,9 @@ public class AIPlayer implements Player {
             }
 
             // if you have a safeish card, lead with it
-            if (getHand().getHighestSafe(Suit.SPADES, Rank.QUEEN) != null) {
-                return getHand().getHighestSafe(Suit.SPADES, Rank.QUEEN);
-            } else if (getHand().getHighestSafe(Suit.HEARTS, Rank.SIX) != null & round.isHeartsBroken()) {
+            if (getHand().getHighestSafe(Suit.SPADES, Rank.QUEEN) != null && !currHand.poorSpadesHand()) {
+                return getHand().getHighestSafe(Suit.SPADES, Rank.QUEEN); // bleed out Spades early so that you don't risk getting dumped with Queen Spades
+            } else if (getHand().getHighestSafe(Suit.HEARTS, Rank.SIX) != null && round.isHeartsBroken()) {
                 return getHand().getHighestSafe(Suit.HEARTS, Rank.SIX);
             } else if (getHand().getHighestSafe(Suit.CLUBS, Rank.SIX) != null) {
                 return getHand().getHighestSafe(Suit.CLUBS, Rank.SIX);
@@ -73,7 +147,7 @@ public class AIPlayer implements Player {
                 return getHand().getHighestSafe(Suit.DIAMONDS, Rank.NINE);
             } else if (getHand().getHighestSafe(Suit.CLUBS, Rank.NINE) != null) {
                 return getHand().getHighestSafe(Suit.CLUBS, Rank.NINE);
-            } else if (getHand().getHighestSafe(Suit.HEARTS, Rank.NINE) != null & round.isHeartsBroken()) {
+            } else if (getHand().getHighestSafe(Suit.HEARTS, Rank.NINE) != null && round.isHeartsBroken()) {
                 return getHand().getHighestSafe(Suit.HEARTS, Rank.NINE);
             }
 
@@ -82,7 +156,7 @@ public class AIPlayer implements Player {
                 return getHand().getLowest(Suit.DIAMONDS);
             } else if (getHand().hasSuit(Suit.CLUBS)) {
                 return getHand().getLowest(Suit.CLUBS);
-            } else if (getHand().hasSuit(Suit.HEARTS) & round.isHeartsBroken()) {
+            } else if (getHand().hasSuit(Suit.HEARTS) && round.isHeartsBroken()) {
                 return getHand().getLowest(Suit.HEARTS);
             }
             // otherwise you only have spades
@@ -123,7 +197,7 @@ public class AIPlayer implements Player {
                         }
                         // Queen of Spades is our largest spades so we have to throw the biggest
                         // card after it to avoid dumping Queen of Spades on ourself
-                        Card lowerCard = currHand.getHighestSafe(Suit.SPADES, Rank.QUEEN);
+                        return currHand.getHighestSafe(Suit.SPADES, Rank.QUEEN);
                     }
                 }
             }
@@ -193,8 +267,5 @@ public class AIPlayer implements Player {
         } else {
             return currHand.getHighest(Suit.SPADES);
         }
-
-        // throw new PlayerException("Edge case: AI player made 0 decision");
-        //return null;
     }
 }

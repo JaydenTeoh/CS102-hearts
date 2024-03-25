@@ -58,6 +58,8 @@ public class MainApplication extends Application {
     private Pane root = new Pane();
     private Game game;
     private Round round;
+    private Label roundLabel;
+    private int currentRound;
 
     private Parent createContent() {
 
@@ -109,6 +111,8 @@ public class MainApplication extends Application {
 
     private void startGame() {
         game = new Game();
+        initializeRoundDisplay();
+        currentRound = 0;
 
         playerList = new ArrayList<>();
         try {
@@ -128,8 +132,10 @@ public class MainApplication extends Application {
 
     private void startRound() {
         round = new Round(0, game);
+        currentRound++;
         createAndAddAllScorePanes();
         updateScoresDisplay();
+        updateRoundDisplay(currentRound);
 
         currentCardViewsInTrick = new ArrayList<>();
         round.dealHands();
@@ -178,7 +184,7 @@ public class MainApplication extends Application {
         }
     }
 
-    private void updateScoresBackend(Trick currTrick) {
+    private void updateScoresAfterCurrentTrickBackend(Trick currTrick) {
         currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
         int pointsInCurrTrick = currTrick.getNumPoints();
         int winningCardIndexInTrick = currTrick.getWinningCardIndex();
@@ -198,7 +204,7 @@ public class MainApplication extends Application {
         if (currTrick.getCardsInTrick().size() == 4) {
             System.out.println("------------------------");
     
-            updateScoresBackend(currTrick);
+            updateScoresAfterCurrentTrickBackend(currTrick);
             updateScoresDisplay();
     
             // start new trick
@@ -590,6 +596,26 @@ public class MainApplication extends Application {
         createAndAddScorePane(root.getPrefWidth() / 2 - 150, 265, 2); // top player
         createAndAddScorePane(1000, root.getPrefHeight() / 2 - 30, 3); // right player
     }
+
+    private void initializeRoundDisplay() {
+        roundLabel = new Label("Round 1");
+        roundLabel.setLayoutX(10);
+        roundLabel.setLayoutY(10);
+        roundLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        
+        root.getChildren().add(roundLabel);
+    }
+
+    private void updateRoundDisplay(int currentRound) {
+        if (roundLabel != null) {
+            roundLabel.setText("Round " + currentRound);
+        } else {
+            // If roundLabel is null, it means it hasn't been initialized yet
+            initializeRoundDisplay();
+            roundLabel.setText("Round " + currentRound); // Update the label after initialization
+        }
+    }
+
 
     private void updateScoresDisplay() {
         HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();

@@ -14,7 +14,7 @@ public class Round {
     private HashMap<Player, Integer> playersPointsInCurrentRound;
 
 
-    public Round(int playerStartingFirst, Game belongsToGame){
+    public Round(int playerStartingFirst, Game belongsToGame) {
         this.playerStartingFirst = playerStartingFirst;
         this.belongsToGame = belongsToGame;
         heartsBroken = false;
@@ -52,16 +52,19 @@ public class Round {
 
     // starts a new trick
     // if there was a previous trick, allocate points of the trick to the player who won it
-    public void startNewTrick(){
+    public void startNewTrick() {
         if (currentTrick != null) {
             playerStartingFirst = this.getWinner();
-            System.out.println("Winner of trick: Player "+ playerStartingFirst);
+            System.out.println("Winner of trick: Player " + (playerStartingFirst + 1));
             numTricksPlayed++;
+
             Player winnerOfTrick = belongsToGame.getPlayers().get(playerStartingFirst);
             int pointsInTrick = currentTrick.getNumPoints();
             int previousPoints = playersPointsInCurrentRound.get(winnerOfTrick);
-            playersPointsInCurrentRound.replace(winnerOfTrick, pointsInTrick + previousPoints);
+
+            // playersPointsInCurrentRound.replace(winnerOfTrick, pointsInTrick + previousPoints);
         }
+
         this.currentTrick = new Trick(belongsToGame.getPlayers());
     }
 
@@ -94,40 +97,33 @@ public class Round {
         }
     }
 
-    public Trick getCurrentTrick(){
+    public Trick getCurrentTrick() {
         return currentTrick;
     }
 
     // Added for testing
-    public void setCurrentTrick(Trick currenTrick){
-        this.currentTrick = currenTrick;
+    public void setCurrentTrick(Trick currentTrick) {
+        this.currentTrick = currentTrick;
     }
-
-    public synchronized void playRound() {
-        // async
-
-        // Conditions: Player's hand is not empty (round is not over) and trick is finished
-        // while (!belongsToGame.getPlayers().get(0).getHand().getCards().isEmpty() && currentTrick.getCardsInTrick().size() == Game.NUM_PLAYERS) {
-        //     this.startNewTrick();
-        //     // get server response for player's play card method * 4
-        // }
-
-        for (int i = 0; i < Game.MAX_NUMBER_OF_CARDS_PER_PLAYER; i++) {
-            this.startNewTrick();
-            // get server response for player's play card method * 4
-        }
-
-        for (Player p: belongsToGame.getPlayers()) {
-            belongsToGame.addPoints(p, playersPointsInCurrentRound.get(p) % 26);
-        }
-    }
-
-    // Need a new method to get next player
 
     public int getWinner() {
         int winningCardIndex = currentTrick.getWinningCardIndex();
         int winner = (winningCardIndex + playerStartingFirst) % Game.NUM_PLAYERS;
 
         return winner;
+    }
+
+    public HashMap<Player, Integer> getPlayersPointsInCurrentRound() {
+        return this.playersPointsInCurrentRound;
+    }
+
+    public void setPlayersPointsInCurrentRound(Player p, int points) throws PlayerException {
+        if (playersPointsInCurrentRound.containsKey(p)) {
+            playersPointsInCurrentRound.put(p, playersPointsInCurrentRound.get(p) + points);
+        } else {
+            throw new PlayerException("We cannot add points because the player does not exist.");
+        }
+
+        return;
     }
 }

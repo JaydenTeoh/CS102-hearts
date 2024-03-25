@@ -17,11 +17,13 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.Cursor;
 import javafx.util.Duration;
@@ -31,8 +33,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-
 
 public class MainApplication extends Application {
 
@@ -50,6 +53,7 @@ public class MainApplication extends Application {
 
     private int currentPlayer;
     private List<Player> playerList;
+    private List<Node> currentCardViewsInTrick;
 
     private Pane root = new Pane();
     private Game game;
@@ -64,7 +68,10 @@ public class MainApplication extends Application {
         background.setStyle("-fx-background-color: green");
 
         Button btn = new Button();
-        btn.setText("Start  ");
+        btn.setText("Start");
+
+        btn.setPrefSize(200, 50);
+        btn.setStyle("-fx-font-size: 20px;");
 
         // Set the action event handler to call handleButtonClick method
         btn.setOnAction(event -> {
@@ -82,8 +89,20 @@ public class MainApplication extends Application {
             fadeOut.play();
         });
 
-        root.getChildren().add(background);
-        root.getChildren().add(btn);
+        root.getChildren().addAll(background, btn);
+
+        root.widthProperty().addListener((obs, oldVal, newVal) -> {
+            btn.setLayoutX(newVal.doubleValue() / 2 - btn.getWidth() / 2);
+        });
+
+        root.heightProperty().addListener((obs, oldVal, newVal) -> {
+            btn.setLayoutY(newVal.doubleValue() / 2 - btn.getHeight() / 2);
+        });
+
+        btn.layoutBoundsProperty().addListener((obs, oldVal, newVal) -> {
+            btn.setLayoutX((WINDOW_WIDTH - newVal.getWidth()) / 2);
+            btn.setLayoutY((WINDOW_HEIGHT - newVal.getHeight()) / 2);
+        });
 
         return root;
     }
@@ -107,15 +126,17 @@ public class MainApplication extends Application {
         }
     }
 
-    private void startRound(){
+    private void startRound() {
         round = new Round(0, game);
+        updateScoresDisplay();
 
+        currentCardViewsInTrick = new ArrayList<>();
         round.dealHands();
 
         for (int i = 0; i < Game.NUM_PLAYERS; i++) {
             List<Card> hand = playerList.get(i).getHand().getCards();
             for (Card c : hand) {
-                // Hard code first player
+                // set 2 of clubs to start first, as per game rules
                 if (c.getRank().getName().equals("Two") && c.getSuit().getName().equals("Clubs")) {
                     round.setPlayerStartingFirst(i);
                 }
@@ -128,6 +149,7 @@ public class MainApplication extends Application {
         playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
         root.getChildren().add(playArea);
 
+        // updateScoresDisplay();
         round.startNewTrick();
 
         // Create Player Areas
@@ -147,6 +169,7 @@ public class MainApplication extends Application {
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
                     moveCard(node, cardPlayed);
+                    currentCardViewsInTrick.add(node);
                 }
             }
         } else {
@@ -154,29 +177,61 @@ public class MainApplication extends Application {
         }
     }
 
+    private void updateScoresBackend(Trick currTrick) {
+        currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
+        int pointsInCurrTrick = currTrick.getNumPoints();
+        int winningCardIndexInTrick = currTrick.getWinningCardIndex();
+        int shift = Game.NUM_PLAYERS - 1 - currentPlayer; // because current player is last player of trick
+        int winnerIndexInPlayerList = winningCardIndexInTrick - shift;
+        if (winnerIndexInPlayerList < 0) {
+            winnerIndexInPlayerList += 4;
+        }
+
+        Player winner = playerList.get(winnerIndexInPlayerList);
+        round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
+    }
+
     private void nextTurn() {
-        System.out.println("Number of Tricks played: " + round.getNumTricksPlayed());
-        if(round.getNumTricksPlayed() == 12){
+        if (round.getNumTricksPlayed() == 12) {
             root.getChildren().clear();
+
+            HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
+            Iterator<Player> iter = roundPoints.keySet().iterator();
+
+            while (iter.hasNext()) {
+                Player p = iter.next();
+                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
+            }
+
+            updateScoresDisplay();
+
+            // start new round
             startRound();
         }
 
-        if (round.getCurrentTrick().getCardsInTrick().size() == 4) {
+        Trick currTrick = round.getCurrentTrick();
+
+        if (currTrick.getCardsInTrick().size() == 4) {
             System.out.println("------------------------");
+
+            updateScoresBackend(currTrick);
+            updateScoresDisplay();
+
+            // start new trick
+            for (Node cardView: currentCardViewsInTrick) {
+                ((ImageView) cardView).setImage(null);
+            }
+
+            currentCardViewsInTrick = new ArrayList<>();
+
             round.startNewTrick();
             currentPlayer = round.getPlayerStartingFirst();
 
         } else {
-            // // Get next player - possible to implement it in Game?
-            // if (currentPlayer == game.getPlayers().size() - 1) {
-                //     currentPlayer = 0;
-            // } else {
-                //     currentPlayer += 1;
-            // }
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
 
-        System.out.println("Next Player: Player " + currentPlayer);
+        System.out.println("Next Player: Player " + (currentPlayer + 1));
 
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
@@ -188,6 +243,7 @@ public class MainApplication extends Application {
             for (Node node : currentPlayerCardViews) {
                 if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
                     moveCard(node, cardPlayed);
+                    currentCardViewsInTrick.add(node);
                 }
             }
         } else {
@@ -197,13 +253,24 @@ public class MainApplication extends Application {
         // round.startNewTrick();
     }
 
+    // Utility method to check if a string is numeric
+    private static boolean isNumeric(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     private ObservableList<Node> getCardViewsOfPlayer(int id) {
         for (Node node : root.getChildren()) {
             if (node.getId() != null)
-                if (Integer.parseInt(node.getId()) == id) {
-                    Pane pane = (Pane) node;
-                    return pane.getChildren();
-                }
+                if (isNumeric(node.getId()))
+                    if (Integer.parseInt(node.getId()) == id) {
+                        Pane pane = (Pane) node;
+                        return pane.getChildren();
+                    }
         }
 
         // Empty List
@@ -213,21 +280,41 @@ public class MainApplication extends Application {
     private void enableCards(int currentPlayer) {
         Player player = playerList.get(currentPlayer);
         ArrayList<Card> playableCards = player.getHand().getPlayableCards(round, round.getCurrentTrick());
-        System.out.println("Playable Cards");
-        for (Card c: playableCards) {
+        System.out.println("\nPlayable Cards:");
+        for (Card c : playableCards) {
             System.out.println(c);
         }
+        System.out.println();
+        for (Node child : root.getChildren()) {
+            if ("0".equals(child.getId())) {
+                child.toFront();
+                break; // Exit the loop once the desired node is found and brought to front
+            }
+        }
+
         ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
         for (Node cardView : cards) {
             Card selectedCard = (Card) cardView.getUserData();
-
+            
             if (!playableCards.contains(selectedCard)) {
+                cardView.setOnMouseEntered(null);
+                cardView.setOnMouseExited(null);
+                ColorAdjust grayscale = new ColorAdjust();
+                grayscale.setBrightness(-0.5); // Lower brightness by 50%
+                grayscale.setContrast(-0.5); // Lower contrast by 50%
+                cardView.setEffect(grayscale);
+                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
+                hoverTransition.setToY(0);
+                hoverTransition.play();
                 continue;
             }
+            addHoverEffect((ImageView) cardView);
+            cardView.setEffect(null);
+            cardView.setOpacity(1);
             cardView.getStyleClass().add("card-active");
             cardView.setOnMouseClicked(event -> {
                 disableCards(getCardViewsOfPlayer(currentPlayer));
-
+                currentCardViewsInTrick.add(cardView);
                 Card cardPlayed = (Card) cardView.getUserData();
                 // shift this into a function?? idk but ill clean this up later
                 if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
@@ -243,6 +330,7 @@ public class MainApplication extends Application {
         for (Node card : cards) {
             card.setOnMouseClicked(null);
             card.getStyleClass().remove("card-active");
+
         }
     }
 
@@ -250,6 +338,8 @@ public class MainApplication extends Application {
         TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);
         cardView.setOnMouseEntered(null);
         cardView.setOnMouseExited(null);
+        cardView.setEffect(null); // Remove drop shadow effect when mouse exits
+        cardView.setCursor(Cursor.DEFAULT); // Change cursor back to default
         // Find the player who played the card
         Player playerNow = null;
         for (Player player : playerList) {
@@ -260,42 +350,49 @@ public class MainApplication extends Application {
         }
         int playerNo = playerList.indexOf(playerNow) + 1; // Player number is the index in the list + 1
 
-        // Adjust the transition based on the player number
+       // Adjust the transition based on the player number
         if (playerNo == 1) { // Bottom player
             transition.setToY(-(PLAYER_AREA_HEIGHT) + 90);
             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
         } else if (playerNo == 2) { // Left player
-            transition.setToY(-160);
-            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2)+270);
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToX(500);
         } else if (playerNo == 3) { // Top player
             transition.setToY(180);
             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
         } else if (playerNo == 4) { // Right player
-            transition.setToY(-160);
-            transition.setToX((((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2)-620);
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToX(-350);
         }
 
         transition.setCycleCount(1);
 
         transition.setOnFinished(event -> {
             System.out.println("Card played: " + cardPlayed + " by Player " + (playerNo));
+
+            // remove card from current player's hand
             playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
+
+            // add card to current trick
             round.getCurrentTrick().addCardToTrick(cardPlayed);
             nextTurn();
-            cardView.toFront(); // Bring the card to the front
+
+            // Bring the card to the front
+            cardView.toFront();
+
             // Disable mouse interaction with the card
             cardView.setDisable(true);
         });
 
         transition.play();
 
-        
     }
 
     private Pane createCardViewsOfPlayer(Pane playerArea, Player player) {
         try {
             String currentDirectory = System.getProperty("user.dir");
             List<Card> hand = player.getHand().getCards();
+            int playerIndex = playerList.indexOf(player);
 
             for (int i = 0; i < hand.size(); i++) {
                 Card card = hand.get(i);
@@ -306,17 +403,37 @@ public class MainApplication extends Application {
                 cardView.setFitWidth(CARD_WIDTH);
                 cardView.setFitHeight(CARD_HEIGHT);
 
-                double xPos = i * (CARD_WIDTH + SPACING);
+                double xPos, yPos;
+                if (playerIndex == 0) { // Bottom player
+                    xPos = i *  (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                    yPos = 0; // Align with top edge
+                } else if (playerIndex == 1) { // Left player
+                    xPos = 0; // Align with left edge
+                    yPos = i * 30; // Vertical spacing
+                } else if (playerIndex == 2) { // Top player
+                    xPos = i * (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                    yPos = 0; // Align with top edge
+                } else { // Right player
+                    xPos = 0; // Align with left edge
+                    yPos = i * 30; // Vertical spacing
+                }
 
                 cardView.setLayoutX(xPos);
-                cardView.setLayoutY((playerArea.getPrefHeight() - CARD_HEIGHT * 1.5));
+                cardView.setLayoutY(yPos);
+                
 
                 // cardView.setRotate(-90);
+                // Rotate cards for left and right players
+                if (playerIndex == 1 || playerIndex == 3) {
+                    cardView.setRotate(90); // Rotate 90 degrees for left and right players
+                }
 
                 // Determine if the card is playable
-                boolean isPlayable = hand.contains(card);
+                // boolean isPlayable = hand.contains(card);
                 // Apply hover effect
-                addHoverEffect(cardView, isPlayable);
+                if (player instanceof HumanPlayer) {
+                    addHoverEffect(cardView);
+                }
 
                 // cardView.setId(card.getRank().getSymbol()+card.getSuit().getSymbol());
                 cardView.setId(i + "");
@@ -347,6 +464,12 @@ public class MainApplication extends Application {
             // Create Cards
             playerArea = createCardViewsOfPlayer(playerArea, playerList.get(i));
             playerArea.setId(i + "");
+            // final String playerAreaId = playerArea.getId();
+            // playerArea.setOnMouseEntered(event -> {
+            //     // Print the node's ID or any other identifying detail
+            //     System.out.println("Mouse entered: " + playerAreaId);
+            // });
+            
 
             root.getChildren().add(playerArea);
         }
@@ -401,27 +524,59 @@ public class MainApplication extends Application {
         stage.show();
     }
 
-    private void addHoverEffect(ImageView cardView, boolean isPlayable) {
-        if (isPlayable) {
-            cardView.setOnMouseEntered(event -> {
-                cardView.setEffect(new DropShadow()); // Apply drop shadow effect when mouse enters
-                cardView.setCursor(Cursor.HAND); // Change cursor to hand
+    private void addHoverEffect(ImageView cardView) {
+        cardView.setOnMouseEntered(event -> {
+            cardView.setEffect(new DropShadow()); // Apply drop shadow effect when mouse enters
+            cardView.setCursor(Cursor.HAND); // Change cursor to hand
 
-                // Translate animation to move the card up
-                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
-                hoverTransition.setToY(-20); // Adjust this value to change the hover distance
-                hoverTransition.play();
-            });
+            // Translate animation to move the card up
+            TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
+            hoverTransition.setToY(-20); // Adjust this value to change the hover distance
+            hoverTransition.play();
+        });
 
-            cardView.setOnMouseExited(event -> {
-                cardView.setEffect(null); // Remove drop shadow effect when mouse exits
-                cardView.setCursor(Cursor.DEFAULT); // Change cursor back to default
+        cardView.setOnMouseExited(event -> {
+            cardView.setEffect(null); // Remove drop shadow effect when mouse exits
+            cardView.setCursor(Cursor.DEFAULT); // Change cursor back to default
 
-                // Translate animation to move the card back down
-                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
-                hoverTransition.setToY(0);
-                hoverTransition.play();
-            });
+            // Translate animation to move the card back down
+            TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
+            hoverTransition.setToY(0);
+            hoverTransition.play();
+        });
+    }
+
+    private void updateScoresDisplay() {
+        // Attempt to find an existing scorePane by ID or another unique identifier
+        Pane foundScorePane = (Pane) root.getChildren().stream()
+                .filter(node -> "scorePane".equals(node.getId()))
+                .findFirst()
+                .orElse(null);
+
+        // If not found, initialize it and add to root
+        if (foundScorePane == null) {
+            foundScorePane = new Pane();
+            foundScorePane.setId("scorePane"); // Set an ID to find it later
+            foundScorePane.setLayoutX(WINDOW_WIDTH - 300); // Position it
+            foundScorePane.setLayoutY(40);
+            foundScorePane.setPrefSize(200, 200);
+            root.getChildren().add(foundScorePane);
+        } else {
+            // Clear the existing content only if found
+            foundScorePane.getChildren().clear();
+        }
+
+        HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();
+        HashMap<Player, Integer> pointsInCurrentGame = game.getPlayersPointsInCurrentGame();
+
+        for (int i = 0; i < playerList.size(); i++) {
+            Player player = playerList.get(i);
+            int roundPoints = pointsInCurrentRound.get(player);
+            int gamePoints = pointsInCurrentGame.get(player);
+
+            Label scoreLabel = new Label("Player " + (i + 1) + ": Round = " + roundPoints + ", Game = " + gamePoints);
+            scoreLabel.setLayoutY(i * 30); // Position labels vertically
+            foundScorePane.getChildren().add(scoreLabel);
         }
     }
 

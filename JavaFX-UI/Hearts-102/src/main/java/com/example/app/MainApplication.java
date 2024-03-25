@@ -210,32 +210,24 @@ public class MainApplication extends Application {
         animateTrickToPlayerArea(winnerIndexInPlayerList);
     }
 
-    private void nextTurn() {
-        Trick currTrick = round.getCurrentTrick();
+    private void processNextTrick(Trick currTrick) {
+        System.out.println("------------------------");
 
-        if (currTrick.getCardsInTrick().size() == 4) {
-            System.out.println("------------------------");
+        updateScoresAfterCurrentTrickBackend(currTrick);
+        updateScoresDisplay();
 
-            updateScoresAfterCurrentTrickBackend(currTrick);
-            updateScoresDisplay();
-
-            // start new trick
-            for (Node cardView: currentCardViewsInTrick) {
-                ((ImageView) cardView).setImage(null);
-            }
-
-            currentCardViewsInTrick = new ArrayList<>();
-
-            round.startNewTrick();
-            currentPlayer = round.getPlayerStartingFirst();
-
-        } else {
-            currentPlayer = game.getNextPlayer(currentPlayer);
+        // start new trick
+        for (Node cardView: currentCardViewsInTrick) {
+            ((ImageView) cardView).setImage(null);
         }
 
-        // when all tricks have been played, start a new round
-        if (currTrick.getCardsInTrick().size() == 4 && round.getNumTricksPlayed() == 12) {
-            HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
+        currentCardViewsInTrick = new ArrayList<>();
+
+        round.startNewTrick();
+    }
+
+    private void processNextRound() {
+        HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
             Iterator<Player> iter = roundPoints.keySet().iterator();
 
             while (iter.hasNext()) {
@@ -253,7 +245,6 @@ public class MainApplication extends Application {
             background.setStyle("-fx-background-color: green");
             root.getChildren().add(background);
 
-
             // start new round
             if (!game.isEnded()) {
                 startRound();
@@ -261,8 +252,22 @@ public class MainApplication extends Application {
             } 
 
             // display final scores if game ended
+    }
 
+    private void nextTurn() {
+        Trick currTrick = round.getCurrentTrick();
 
+        if (currTrick.getCardsInTrick().size() == 4) {
+            processNextTrick(currTrick);
+            currentPlayer = round.getPlayerStartingFirst();
+
+        } else {
+            currentPlayer = game.getNextPlayer(currentPlayer);
+        }
+
+        // when all tricks have been played, start a new round
+        if (currTrick.getCardsInTrick().size() == 4 && round.getNumTricksPlayed() == 13) {
+            processNextRound();
         } 
 
         System.out.println("Next Player: Player " + (currentPlayer + 1));

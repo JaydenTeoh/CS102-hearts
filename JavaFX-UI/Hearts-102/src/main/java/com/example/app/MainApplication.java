@@ -13,6 +13,7 @@ import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -22,6 +23,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
@@ -39,6 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class MainApplication extends Application {
 
@@ -257,8 +261,7 @@ public class MainApplication extends Application {
             } 
 
             // display final scores if game ended
-
-
+            // displayFinalScores();
         } 
 
         System.out.println("Next Player: Player " + (currentPlayer + 1));
@@ -748,6 +751,32 @@ public class MainApplication extends Application {
             e.printStackTrace();
         }
     }
+
+    private void displayFinalScores() {
+        root.getChildren().clear();
+
+        VBox scoreLayout = new VBox(10);
+        scoreLayout.setAlignment(Pos.CENTER);
+
+        Label finalScoreLabel = new Label("Final Scores");
+        finalScoreLabel.setFont(new Font("Arial", 24));
+        scoreLayout.getChildren().add(finalScoreLabel);
+
+        Map<Player, Integer> finalScores = game.getPlayersPointsInCurrentGame();
+        for (Map.Entry<Player, Integer> entry : finalScores.entrySet()) {
+            Label scoreLabel = new Label(entry.getKey().getName() + ": " + entry.getValue());
+            scoreLayout.getChildren().add(scoreLabel);
+        }
+
+        Button restartButton = new Button("Restart");
+        restartButton.setOnAction(e -> startGame());
+        scoreLayout.getChildren().add(restartButton);
+
+        scoreLayout.setLayoutX((WINDOW_WIDTH - scoreLayout.getPrefWidth()) / 2);
+        scoreLayout.setLayoutY((WINDOW_HEIGHT - scoreLayout.getPrefHeight()) / 2);
+        root.getChildren().add(scoreLayout);
+    }
+
 
     public static void main(String[] args) {
         launch();

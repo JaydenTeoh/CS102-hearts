@@ -128,6 +128,7 @@ public class MainApplication extends Application {
 
     private void startRound() {
         round = new Round(0, game);
+        createAndAddAllScorePanes();
         updateScoresDisplay();
 
         currentCardViewsInTrick = new ArrayList<>();
@@ -192,7 +193,29 @@ public class MainApplication extends Application {
     }
 
     private void nextTurn() {
-        if (round.getNumTricksPlayed() == 12) {
+        Trick currTrick = round.getCurrentTrick();
+    
+        if (currTrick.getCardsInTrick().size() == 4) {
+            System.out.println("------------------------");
+    
+            updateScoresBackend(currTrick);
+            updateScoresDisplay();
+    
+            // start new trick
+            for (Node cardView: currentCardViewsInTrick) {
+                ((ImageView) cardView).setImage(null);
+            }
+    
+            currentCardViewsInTrick = new ArrayList<>();
+    
+            round.startNewTrick();
+            currentPlayer = round.getPlayerStartingFirst();
+    
+        } else {
+            currentPlayer = game.getNextPlayer(currentPlayer);
+        }
+
+        if (round.getNumTricksPlayed() == 13) {
             root.getChildren().clear();
 
             HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
@@ -206,30 +229,13 @@ public class MainApplication extends Application {
             updateScoresDisplay();
 
             // start new round
-            startRound();
-        }
-
-        Trick currTrick = round.getCurrentTrick();
-
-        if (currTrick.getCardsInTrick().size() == 4) {
-            System.out.println("------------------------");
-
-            updateScoresBackend(currTrick);
-            updateScoresDisplay();
-
-            // start new trick
-            for (Node cardView: currentCardViewsInTrick) {
-                ((ImageView) cardView).setImage(null);
+            if (!game.isEnded()) {
+                startRound();
+            } else {
+                // display final score screen?
             }
-
-            currentCardViewsInTrick = new ArrayList<>();
-
-            round.startNewTrick();
-            currentPlayer = round.getPlayerStartingFirst();
-
-        } else {
-            currentPlayer = game.getNextPlayer(currentPlayer);
         }
+
 
         System.out.println("Next Player: Player " + (currentPlayer + 1));
 
@@ -546,37 +552,61 @@ public class MainApplication extends Application {
         });
     }
 
+    private void setScorePaneLayout(Pane scorePane, double layoutX, double layoutY) {
+        scorePane.setLayoutX(layoutX);
+        scorePane.setLayoutY(layoutY);
+    }
+
+    private Pane createScoreArea(int playerIndex) {
+        Pane scorePane = new Pane();
+        scorePane.setPrefSize(220, 40);
+        scorePane.setStyle("-fx-background-color: black; -fx-border-color: black;");
+    
+        // Assign an ID to the score pane based on the player's position
+        scorePane.setId("scorePanePlayer" + (playerIndex + 1));
+    
+        // Create the score label
+        Label scoreLabel = new Label();
+        scoreLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        scoreLabel.setLayoutX(5);
+        scoreLabel.setLayoutY(10);
+    
+        // Add the score label to the score pane
+        scorePane.getChildren().add(scoreLabel);
+    
+        return scorePane;
+    }
+    
+
+    private void createAndAddScorePane(double layoutX, double layoutY, int playerIndex) {
+        Pane scorePane = createScoreArea(playerIndex);
+        setScorePaneLayout(scorePane, layoutX, layoutY);
+        root.getChildren().add(scorePane);
+    }
+
+    private void createAndAddAllScorePanes() {
+        createAndAddScorePane(root.getPrefWidth() / 2 - 150, 500, 0); // bottom player
+        createAndAddScorePane(400, root.getPrefHeight() / 2 - 30, 1); // left player
+        createAndAddScorePane(root.getPrefWidth() / 2 - 150, 265, 2); // top player
+        createAndAddScorePane(1000, root.getPrefHeight() / 2 - 30, 3); // right player
+    }
+
     private void updateScoresDisplay() {
-        // Attempt to find an existing scorePane by ID or another unique identifier
-        Pane foundScorePane = (Pane) root.getChildren().stream()
-                .filter(node -> "scorePane".equals(node.getId()))
-                .findFirst()
-                .orElse(null);
-
-        // If not found, initialize it and add to root
-        if (foundScorePane == null) {
-            foundScorePane = new Pane();
-            foundScorePane.setId("scorePane"); // Set an ID to find it later
-            foundScorePane.setLayoutX(WINDOW_WIDTH - 300); // Position it
-            foundScorePane.setLayoutY(40);
-            foundScorePane.setPrefSize(200, 200);
-            root.getChildren().add(foundScorePane);
-        } else {
-            // Clear the existing content only if found
-            foundScorePane.getChildren().clear();
-        }
-
         HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();
         HashMap<Player, Integer> pointsInCurrentGame = game.getPlayersPointsInCurrentGame();
-
+    
         for (int i = 0; i < playerList.size(); i++) {
             Player player = playerList.get(i);
             int roundPoints = pointsInCurrentRound.get(player);
             int gamePoints = pointsInCurrentGame.get(player);
-
-            Label scoreLabel = new Label("Player " + (i + 1) + ": Round = " + roundPoints + ", Game = " + gamePoints);
-            scoreLabel.setLayoutY(i * 30); // Position labels vertically
-            foundScorePane.getChildren().add(scoreLabel);
+    
+            // Find the score pane for the current player
+            Pane scorePane = (Pane) root.lookup("#scorePanePlayer" + (i + 1));
+            if (scorePane != null) {
+                // Update the score label text
+                Label scoreLabel = (Label) scorePane.getChildren().get(0); // Assuming the score label is the first child
+                scoreLabel.setText("Player " + (i + 1) + ": Round = " + roundPoints + ", Game = " + gamePoints);
+            }
         }
     }
 

@@ -686,7 +686,7 @@ public class MainApplication extends Application {
                     transition.setToY(250);
                     break;
                 case 1: // Left player
-                    transition.setToX(560);
+                    transition.setToX(-560);
                     transition.setToY(237);
                     break;
                 case 2: // Top player
@@ -694,7 +694,7 @@ public class MainApplication extends Application {
                     transition.setToY(-220);
                     break;
                 case 3: // Right player
-                    transition.setToX(-560);
+                    transition.setToX(560);
                     transition.setToY(237);
                     break;
                 default:

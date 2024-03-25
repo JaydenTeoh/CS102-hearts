@@ -65,7 +65,6 @@ public class MainApplication extends Application {
     private int currentRound;
 
     private Parent createContent() {
-
         root.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 
         Region background = new Region();
@@ -209,33 +208,8 @@ public class MainApplication extends Application {
 
     private void nextTurn() {
         Trick currTrick = round.getCurrentTrick();
-        // when all tricks have been played, start a new round
-        if (currTrick.getCardsInTrick().size() == 4 && round.getNumTricksPlayed() == 12) {
-            root.getChildren().clear();
-            Region background = new Region();
-            background.setPrefSize(1500, 800);
-            background.setStyle("-fx-background-color: green");
-            root.getChildren().add(background);
 
-            HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
-            Iterator<Player> iter = roundPoints.keySet().iterator();
-
-            while (iter.hasNext()) {
-                Player p = iter.next();
-                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
-            }
-
-            updateScoresDisplay();
-
-            // start new round
-            if (!game.isEnded()) {
-                startRound();
-                return;
-            } else {
-                // display final score screen?
-            }
-        } 
-        if (currTrick.getCardsInTrick().size() == 4 ) {
+        if (currTrick.getCardsInTrick().size() == 4) {
             System.out.println("------------------------");
     
             updateScoresAfterCurrentTrickBackend(currTrick);
@@ -254,6 +228,38 @@ public class MainApplication extends Application {
         } else {
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
+
+        // when all tricks have been played, start a new round
+        if (currTrick.getCardsInTrick().size() == 4 && round.getNumTricksPlayed() == 12) {
+            HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
+            Iterator<Player> iter = roundPoints.keySet().iterator();
+
+            while (iter.hasNext()) {
+                Player p = iter.next();
+                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
+            }
+
+            // updateScoresAfterCurrentTrickBackend(currTrick);
+            updateScoresDisplay();
+
+            // make new background for next round
+            root.getChildren().clear();
+            Region background = new Region();
+            background.setPrefSize(1500, 800);
+            background.setStyle("-fx-background-color: green");
+            root.getChildren().add(background);
+
+
+            // start new round
+            if (!game.isEnded()) {
+                startRound();
+                return;
+            } 
+
+            // display final scores if game ended
+
+
+        } 
 
         System.out.println("Next Player: Player " + (currentPlayer + 1));
 
@@ -578,7 +584,7 @@ public class MainApplication extends Application {
 
     private Pane createScoreArea(int playerIndex) {
         Pane scorePane = new Pane();
-        scorePane.setPrefSize(220, 40);
+        scorePane.setPrefSize(90, 82);
         scorePane.setStyle("-fx-background-color: black; -fx-border-color: black;");
     
         // Assign an ID to the score pane based on the player's position
@@ -603,10 +609,35 @@ public class MainApplication extends Application {
     }
 
     private void createAndAddAllScorePanes() {
-        createAndAddScorePane(root.getPrefWidth() / 2 - 150, 500, 0); // bottom player
-        createAndAddScorePane(400, root.getPrefHeight() / 2 - 30, 1); // left player
-        createAndAddScorePane(root.getPrefWidth() / 2 - 150, 265, 2); // top player
-        createAndAddScorePane(1000, root.getPrefHeight() / 2 - 30, 3); // right player
+        // is there anyway to get exact location where we should put or just hard code?
+        double xPos, yPos;
+
+        for (int i = 0; i < Game.NUM_PLAYERS; i++) {
+            switch (i) {
+                case 0:
+                    xPos = WINDOW_WIDTH - 540;
+                    yPos = WINDOW_HEIGHT - 250;
+                    break;
+                case 1:
+                    xPos = 160;
+                    yPos = 100;
+                    break;
+                case 2:
+                    xPos = WINDOW_WIDTH - 540;
+                    yPos = 168;
+                    break;
+                case 3:
+                    xPos = WINDOW_WIDTH - 250;
+                    yPos = WINDOW_HEIGHT - 183;
+                    break;
+                default:
+                    xPos = 0;
+                    yPos = 0;
+                    break;
+            }
+
+            createAndAddScorePane(xPos, yPos, i);
+        }
     }
 
     private void initializeRoundDisplay() {
@@ -642,7 +673,7 @@ public class MainApplication extends Application {
             if (scorePane != null) {
                 // Update the score label text
                 Label scoreLabel = (Label) scorePane.getChildren().get(0); // Assuming the score label is the first child
-                scoreLabel.setText("Player " + (i + 1) + ": Round = " + roundPoints + ", Game = " + gamePoints);
+                scoreLabel.setText("Player " + (i + 1) + ":\nRound = " + roundPoints + "\nGame = " + gamePoints);
             }
         }
     }
@@ -683,18 +714,18 @@ public class MainApplication extends Application {
             switch (winnerPlayerIndex) {
                 case 0: // Bottom player
                     transition.setToX(250);
-                    transition.setToY(250);
+                    transition.setToY(350);
                     break;
                 case 1: // Left player
-                    transition.setToX(-560);
+                    transition.setToX(-660);
                     transition.setToY(237);
                     break;
                 case 2: // Top player
                     transition.setToX(250);
-                    transition.setToY(-220);
+                    transition.setToY(-320);
                     break;
                 case 3: // Right player
-                    transition.setToX(560);
+                    transition.setToX(660);
                     transition.setToY(237);
                     break;
                 default:

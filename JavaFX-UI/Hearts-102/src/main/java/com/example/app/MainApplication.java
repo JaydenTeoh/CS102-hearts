@@ -179,7 +179,11 @@ public class MainApplication extends Application {
             }
             ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
             for (Node node : currentPlayerCardViews) {
-                if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
+                Card card = (Card) node.getUserData();
+                if (card.isSameAs(cardPlayed)) {
+                    // Flip the card to face up if it's played by AI player
+                    CardImageView cardView = (CardImageView) node;
+                    cardView.setImage(true); // Flip the card to face up
                     moveCard(node, cardPlayed);
                     currentCardViewsInTrick.add(node);
                 }

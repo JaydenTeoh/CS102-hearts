@@ -234,23 +234,23 @@ public class MainApplication extends Application {
             } else {
                 // display final score screen?
             }
-        }
+        } 
         if (currTrick.getCardsInTrick().size() == 4 ) {
             System.out.println("------------------------");
-
+    
             updateScoresAfterCurrentTrickBackend(currTrick);
             updateScoresDisplay();
-
+    
             // start new trick
             for (Node cardView: currentCardViewsInTrick) {
                 ((ImageView) cardView).setImage(null);
             }
-
+    
             currentCardViewsInTrick = new ArrayList<>();
-
+    
             round.startNewTrick();
             currentPlayer = round.getPlayerStartingFirst();
-
+    
         } else {
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
@@ -265,11 +265,7 @@ public class MainApplication extends Application {
             }
             ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
             for (Node node : currentPlayerCardViews) {
-                Card card = (Card) node.getUserData();
-                if (card.isSameAs(cardPlayed)) {
-                    // Flip the card to face up if it's played by AI player
-                    CardImageView cardView = (CardImageView) node;
-                    cardView.setImage(true); // Flip the card to face up
+                if (((Card) node.getUserData()).isSameAs(cardPlayed)) {
                     moveCard(node, cardPlayed);
                     currentCardViewsInTrick.add(node);
                 }
@@ -324,7 +320,7 @@ public class MainApplication extends Application {
         disableCards(cards);
         for (Node cardView : cards) {
             Card selectedCard = (Card) cardView.getUserData();
-
+            
             if (!playableCards.contains(selectedCard)) {
                 continue;
             }
@@ -379,7 +375,7 @@ public class MainApplication extends Application {
         }
         int playerNo = playerList.indexOf(playerNow) + 1; // Player number is the index in the list + 1
 
-        // Adjust the transition based on the player number
+       // Adjust the transition based on the player number
         if (playerNo == 1) { // Bottom player
             transition.setToY(-(PLAYER_AREA_HEIGHT) + 90);
             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
@@ -426,14 +422,9 @@ public class MainApplication extends Application {
             for (int i = 0; i < hand.size(); i++) {
                 Card card = hand.get(i);
 
-                File faceUpFile = new File(currentDirectory + "/images/" + card.getFilename());
-                Image faceUpImage = new Image(new FileInputStream(faceUpFile));
-                File faceDownFile = new File(currentDirectory + "/face_down_image.png");
-                Image faceDownImage = new Image(new FileInputStream(faceDownFile));
-                CardImageView cardView = new CardImageView(faceUpImage, faceDownImage);
-                if (player instanceof HumanPlayer) {
-                    cardView.setImage(true);
-                }
+                File file = new File(currentDirectory + "/images/" + card.getFilename());
+                Image cardImage = new Image(new FileInputStream(file));
+                ImageView cardView = new ImageView(cardImage);
                 cardView.setFitWidth(CARD_WIDTH);
                 cardView.setFitHeight(CARD_HEIGHT);
 
@@ -454,7 +445,7 @@ public class MainApplication extends Application {
 
                 cardView.setLayoutX(xPos);
                 cardView.setLayoutY(yPos);
-
+                
 
                 // cardView.setRotate(-90);
                 // Rotate cards for left and right players
@@ -503,7 +494,7 @@ public class MainApplication extends Application {
             //     // Print the node's ID or any other identifying detail
             //     System.out.println("Mouse entered: " + playerAreaId);
             // });
-
+            
 
             root.getChildren().add(playerArea);
         }
@@ -589,22 +580,22 @@ public class MainApplication extends Application {
         Pane scorePane = new Pane();
         scorePane.setPrefSize(220, 40);
         scorePane.setStyle("-fx-background-color: black; -fx-border-color: black;");
-
+    
         // Assign an ID to the score pane based on the player's position
         scorePane.setId("scorePanePlayer" + (playerIndex + 1));
-
+    
         // Create the score label
         Label scoreLabel = new Label();
         scoreLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
         scoreLabel.setLayoutX(5);
         scoreLabel.setLayoutY(10);
-
+    
         // Add the score label to the score pane
         scorePane.getChildren().add(scoreLabel);
-
+    
         return scorePane;
     }
-
+    
     private void createAndAddScorePane(double layoutX, double layoutY, int playerIndex) {
         Pane scorePane = createScoreArea(playerIndex);
         setScorePaneLayout(scorePane, layoutX, layoutY);
@@ -623,7 +614,7 @@ public class MainApplication extends Application {
         roundLabel.setLayoutX(10);
         roundLabel.setLayoutY(10);
         roundLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-
+        
         root.getChildren().add(roundLabel);
     }
 
@@ -640,12 +631,12 @@ public class MainApplication extends Application {
     private void updateScoresDisplay() {
         HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();
         HashMap<Player, Integer> pointsInCurrentGame = game.getPlayersPointsInCurrentGame();
-
+    
         for (int i = 0; i < playerList.size(); i++) {
             Player player = playerList.get(i);
             int roundPoints = pointsInCurrentRound.get(player);
             int gamePoints = pointsInCurrentGame.get(player);
-
+    
             // Find the score pane for the current player
             Pane scorePane = (Pane) root.lookup("#scorePanePlayer" + (i + 1));
             if (scorePane != null) {

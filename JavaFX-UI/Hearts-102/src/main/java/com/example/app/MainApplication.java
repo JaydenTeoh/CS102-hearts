@@ -9,7 +9,6 @@ import com.example.players.HumanPlayer;
 import com.example.players.Player;
 import com.example.pokercards.Card;
 import javafx.animation.FadeTransition;
-import javafx.animation.PauseTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -28,6 +27,7 @@ import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.Cursor;
 import javafx.util.Duration;
+import java.util.concurrent.TimeUnit;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.animation.ScaleTransition;
@@ -39,8 +39,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.*;
 
 public class MainApplication extends Application {
@@ -149,7 +147,7 @@ public class MainApplication extends Application {
             List<Card> hand = playerList.get(i).getHand().getCards();
             for (Card c : hand) {
                 // set 2 of clubs to start first, as per game rules
-                if (c.equals(Game.ROUND_STARTING_CARD)) {
+                if (c.getRank().getName().equals("Two") && c.getSuit().getName().equals("Clubs")) {
                     round.setPlayerStartingFirst(i);
                 }
             }
@@ -167,12 +165,33 @@ public class MainApplication extends Application {
         // Create Player Areas
         setupPlayerAreas(playerList, round);
 
-        disableCards();
+        ObservableList<Node> cards = getCardViewsOfPlayer(0);
+        disableCards(cards);
 
         // Set Playable Cards to starting player
         currentPlayer = round.getPlayerStartingFirst();
 
-        nextTurn();
+        // Start Turn
+        // Check if player is Human or AI
+        if (playerList.get(currentPlayer) instanceof AIPlayer) {
+            Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
+            if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
+                round.setHeartsBroken(true);
+            }
+            ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
+            for (Node node : currentPlayerCardViews) {
+                Card card = (Card) node.getUserData();
+                if (card.isSameAs(cardPlayed)) {
+                    // Flip the card to face up if it's played by AI player
+                    CardImageView cardView = (CardImageView) node;
+                    cardView.setImage(true); // Flip the card to face up
+                    moveCard(node, cardPlayed);
+                    currentCardViewsInTrick.add(node);
+                }
+            }
+        } else {
+            enableCards(currentPlayer);
+        }
     }
 
     private void updateScoresAfterCurrentTrickBackend(Trick currTrick) {
@@ -190,50 +209,6 @@ public class MainApplication extends Application {
 
         // displays transition of the player that won the trick
         animateTrickToPlayerArea(winnerIndexInPlayerList);
-    }
-
-    private void processNextTrick(Trick currTrick) {
-        System.out.println("------------------------");
-
-        updateScoresAfterCurrentTrickBackend(currTrick);
-        updateScoresDisplay();
-
-        // start new trick
-        for (Node cardView: currentCardViewsInTrick) {
-            ((ImageView) cardView).setImage(null);
-        }
-
-        currentCardViewsInTrick = new ArrayList<>();
-
-        round.startNewTrick();
-    }
-
-    private void processNextRound() {
-        HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
-            Iterator<Player> iter = roundPoints.keySet().iterator();
-
-            while (iter.hasNext()) {
-                Player p = iter.next();
-                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
-            }
-
-            // updateScoresAfterCurrentTrickBackend(currTrick);
-            updateScoresDisplay();
-
-            // make new background for next round
-            root.getChildren().clear();
-            Region background = new Region();
-            background.setPrefSize(1500, 800);
-            background.setStyle("-fx-background-color: green");
-            root.getChildren().add(background);
-
-            // start new round
-            if (!game.isEnded()) {
-                startRound();
-                return;
-            } 
-
-            // display final scores if game ended
     }
 
     private void nextTurn() {
@@ -261,10 +236,40 @@ public class MainApplication extends Application {
             round.startNewTrick();
             currentPlayer = round.getPlayerStartingFirst();
 
-
-        } else if (currTrick.getCardsInTrick().size() != 0 || round.getNumTricksPlayed() != 0 ){
-            // ^ idk if this is ugly but 
+        } else {
             currentPlayer = game.getNextPlayer(currentPlayer);
+        }
+
+        // when all tricks have been played, start a new round
+        if (currTrick.getCardsInTrick().size() == 4 && round.getNumTricksPlayed() == 12) {
+            HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
+            Iterator<Player> iter = roundPoints.keySet().iterator();
+
+            while (iter.hasNext()) {
+                Player p = iter.next();
+                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
+            }
+
+            // updateScoresAfterCurrentTrickBackend(currTrick);
+            updateScoresDisplay();
+
+            // make new background for next round
+            root.getChildren().clear();
+            Region background = new Region();
+            background.setPrefSize(1500, 800);
+            background.setStyle("-fx-background-color: green");
+            root.getChildren().add(background);
+
+
+            // start new round
+            if (!game.isEnded()) {
+                startRound();
+                return;
+            }
+
+            // display final scores if game ended
+
+
         }
 
         System.out.println("Next Player: Player " + (currentPlayer + 1));
@@ -287,7 +292,7 @@ public class MainApplication extends Application {
                 }
             }
         } else {
-            enableCards();
+            enableCards(currentPlayer);
         }
 
         // round.startNewTrick();
@@ -317,8 +322,8 @@ public class MainApplication extends Application {
         return FXCollections.observableArrayList();
     }
 
-    private void enableCards() {
-        Player player = playerList.get(0);
+    private void enableCards(int currentPlayer) {
+        Player player = playerList.get(currentPlayer);
         ArrayList<Card> playableCards = player.getHand().getPlayableCards(round, round.getCurrentTrick());
         System.out.println("\nPlayable Cards:");
         for (Card c : playableCards) {
@@ -333,7 +338,7 @@ public class MainApplication extends Application {
         }
 
         ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
-        disableCards();
+        disableCards(cards);
         for (Node cardView : cards) {
             Card selectedCard = (Card) cardView.getUserData();
 
@@ -345,7 +350,7 @@ public class MainApplication extends Application {
             cardView.setOpacity(1);
             cardView.getStyleClass().add("card-active");
             cardView.setOnMouseClicked(event -> {
-                disableCards();
+                disableCards(getCardViewsOfPlayer(currentPlayer));
                 currentCardViewsInTrick.add(cardView);
                 Card cardPlayed = (Card) cardView.getUserData();
                 // shift this into a function?? idk but ill clean this up later
@@ -358,8 +363,7 @@ public class MainApplication extends Application {
         }
     }
 
-    private void disableCards() {
-        ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
+    private void disableCards(ObservableList<Node> cards) {
         for (Node card : cards) {
             card.setOnMouseClicked(null);
             card.getStyleClass().remove("card-active");
@@ -441,7 +445,7 @@ public class MainApplication extends Application {
 
                 File faceUpFile = new File(currentDirectory + "/images/" + card.getFilename());
                 Image faceUpImage = new Image(new FileInputStream(faceUpFile));
-                File faceDownFile = new File(currentDirectory + "/images/" + "/face_down_image.png");
+                File faceDownFile = new File(currentDirectory + "/face_down_image.png");
                 Image faceDownImage = new Image(new FileInputStream(faceDownFile));
                 CardImageView cardView = new CardImageView(faceUpImage, faceDownImage);
                 if (player instanceof HumanPlayer) {
@@ -455,11 +459,11 @@ public class MainApplication extends Application {
                     xPos = i *  (CARD_WIDTH + SPACING); // Normal horizontal spacing
                     yPos = 0; // Align with top edge
                 } else if (playerIndex == 1) { // Left player
-                    xPos = 0; // Align with left edge
+                    xPos = 30; // Align with left edge
                     yPos = i * 30; // Vertical spacing
                 } else if (playerIndex == 2) { // Top player
                     xPos = i * (CARD_WIDTH + SPACING); // Normal horizontal spacing
-                    yPos = 0; // Align with top edge
+                    yPos = 30; // Align with top edge
                 } else { // Right player
                     xPos = 0; // Align with left edge
                     yPos = i * 30; // Vertical spacing
@@ -697,7 +701,7 @@ public class MainApplication extends Application {
     private void animateTrickToPlayerArea(int winnerPlayerIndex) {
         try {
             String currentDirectory = System.getProperty("user.dir");
-            File file = new File(currentDirectory + "/images/" + "/fourCards.png");
+            File file = new File(currentDirectory + "/fourCards.png");
             // Print out whether the file exists
             System.out.println("File exists: " + file.exists());
 

@@ -159,6 +159,9 @@ public class MainApplication extends Application {
         // Create Player Areas
         setupPlayerAreas(playerList, round);
 
+        ObservableList<Node> cards = getCardViewsOfPlayer(0);
+        disableCards(cards);
+
         // Set Playable Cards to starting player
         currentPlayer = round.getPlayerStartingFirst();
 
@@ -200,8 +203,33 @@ public class MainApplication extends Application {
 
     private void nextTurn() {
         Trick currTrick = round.getCurrentTrick();
-    
-        if (currTrick.getCardsInTrick().size() == 4) {
+        // when all tricks have been played, start a new round
+        if (currTrick.getCardsInTrick().size() == 4 && round.getNumTricksPlayed() == 12) {
+            root.getChildren().clear();
+            Region background = new Region();
+            background.setPrefSize(1500, 800);
+            background.setStyle("-fx-background-color: green");
+            root.getChildren().add(background);
+
+            HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
+            Iterator<Player> iter = roundPoints.keySet().iterator();
+
+            while (iter.hasNext()) {
+                Player p = iter.next();
+                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
+            }
+
+            updateScoresDisplay();
+
+            // start new round
+            if (!game.isEnded()) {
+                startRound();
+                return;
+            } else {
+                // display final score screen?
+            }
+        } 
+        if (currTrick.getCardsInTrick().size() == 4 ) {
             System.out.println("------------------------");
     
             updateScoresBackend(currTrick);
@@ -221,26 +249,6 @@ public class MainApplication extends Application {
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
 
-        if (round.getNumTricksPlayed() == 13) {
-            root.getChildren().clear();
-
-            HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
-            Iterator<Player> iter = roundPoints.keySet().iterator();
-
-            while (iter.hasNext()) {
-                Player p = iter.next();
-                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
-            }
-
-            updateScoresDisplay();
-
-            // start new round
-            if (!game.isEnded()) {
-                startRound();
-            } else {
-                // display final score screen?
-            }
-        }
 
 
         System.out.println("Next Player: Player " + (currentPlayer + 1));
@@ -305,19 +313,11 @@ public class MainApplication extends Application {
         }
 
         ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
+        disableCards(cards);
         for (Node cardView : cards) {
             Card selectedCard = (Card) cardView.getUserData();
             
             if (!playableCards.contains(selectedCard)) {
-                cardView.setOnMouseEntered(null);
-                cardView.setOnMouseExited(null);
-                ColorAdjust grayscale = new ColorAdjust();
-                grayscale.setBrightness(-0.5); // Lower brightness by 50%
-                grayscale.setContrast(-0.5); // Lower contrast by 50%
-                cardView.setEffect(grayscale);
-                TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
-                hoverTransition.setToY(0);
-                hoverTransition.play();
                 continue;
             }
             addHoverEffect((ImageView) cardView);
@@ -342,9 +342,20 @@ public class MainApplication extends Application {
         for (Node card : cards) {
             card.setOnMouseClicked(null);
             card.getStyleClass().remove("card-active");
+            card.setOnMouseEntered(null);
+            card.setOnMouseExited(null);
+            ColorAdjust grayscale = new ColorAdjust();
+            grayscale.setBrightness(-0.5); // Lower brightness by 50%
+            grayscale.setContrast(-0.5); // Lower contrast by 50%
+            card.setEffect(grayscale);
+            TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), card);
+            hoverTransition.setToY(0);
+            hoverTransition.play();
 
         }
     }
+
+
 
     private void moveCard(Node cardView, Card cardPlayed) {
         TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);

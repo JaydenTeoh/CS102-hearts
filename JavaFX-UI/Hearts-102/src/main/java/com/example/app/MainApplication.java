@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.*;
 
 public class MainApplication extends Application {
 
@@ -238,26 +239,27 @@ public class MainApplication extends Application {
         Trick currTrick = round.getCurrentTrick();
 
         if (currTrick.getCardsInTrick().size() == 4) {
-            PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
+            System.out.println("------------------------");
 
-            // Define what to do after the pause
-            pause.setOnFinished(event -> {
-                // Actions to perform after the 1-second pause
-                System.out.println("Pause finished. Continue with operations.");
-                processNextTrick(currTrick);
-                currentPlayer = round.getPlayerStartingFirst();
-                if (round.getNumTricksPlayed() == 13) {
-                    // when all tricks have been played, start a new round
-                    processNextRound();
-                } else {
-                    nextTurn();
-                }
-                
-            });
+            updateScoresAfterCurrentTrickBackend(currTrick);
+            updateScoresDisplay();
 
-            // Start the pause
-            pause.play();
-            return;
+            // start new trick
+            for (Node cardView: currentCardViewsInTrick) {
+                ((ImageView) cardView).setImage(null);
+            }
+
+            currentCardViewsInTrick = new ArrayList<>();
+
+            try {
+                TimeUnit.SECONDS.sleep(1); // Sleep for 5 seconds
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            round.startNewTrick();
+            currentPlayer = round.getPlayerStartingFirst();
+
 
         } else if (currTrick.getCardsInTrick().size() != 0 || round.getNumTricksPlayed() != 0 ){
             // ^ idk if this is ugly but 

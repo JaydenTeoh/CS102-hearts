@@ -25,7 +25,7 @@ public class Card implements Comparable<Card> {
    private Suit suitValue;
    private Rank rankValue;
    //private ImageIcon cardImage;
-   private static boolean sortRankMajorOrder = true;
+   private static boolean sortRankMajorOrder = false;
 
 
   /**

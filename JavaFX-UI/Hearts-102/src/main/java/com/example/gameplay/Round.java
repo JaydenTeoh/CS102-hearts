@@ -93,6 +93,7 @@ public class Round {
         }
 
         for (int i = 0; i < Game.NUM_PLAYERS; i++) {
+            hands.get(i).sortCards();
             belongsToGame.getPlayers().get(i).setHand(hands.get(i));
         }
     }

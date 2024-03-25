@@ -255,8 +255,6 @@ public class MainApplication extends Application {
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
 
-
-
         System.out.println("Next Player: Player " + (currentPlayer + 1));
 
         // Check if player is Human or AI
@@ -279,7 +277,7 @@ public class MainApplication extends Application {
         // round.startNewTrick();
     }
 
-    // Utility method to check if a string is numeric
+    // used to differentiate player panes and score panes
     private static boolean isNumeric(String str) {
         try {
             Integer.parseInt(str);
@@ -360,8 +358,6 @@ public class MainApplication extends Application {
 
         }
     }
-
-
 
     private void moveCard(Node cardView, Card cardPlayed) {
         TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);
@@ -600,7 +596,6 @@ public class MainApplication extends Application {
         return scorePane;
     }
     
-
     private void createAndAddScorePane(double layoutX, double layoutY, int playerIndex) {
         Pane scorePane = createScoreArea(playerIndex);
         setScorePaneLayout(scorePane, layoutX, layoutY);
@@ -632,7 +627,6 @@ public class MainApplication extends Application {
             roundLabel.setText("Round " + currentRound); // Update the label after initialization
         }
     }
-
 
     private void updateScoresDisplay() {
         HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();
@@ -714,8 +708,6 @@ public class MainApplication extends Application {
             e.printStackTrace();
         }
     }
-
-
 
     public static void main(String[] args) {
         launch();

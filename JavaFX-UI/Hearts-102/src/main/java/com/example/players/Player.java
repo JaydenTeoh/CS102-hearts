@@ -15,5 +15,5 @@ public interface Player {
 
     public abstract Card playCard(Round round, Trick trick);
 
-    public abstract List<Card> passCards();
+    public abstract void passCards(List<Card> cards, Player player);
 }

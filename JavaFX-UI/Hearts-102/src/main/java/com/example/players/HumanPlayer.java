@@ -31,8 +31,8 @@ public class HumanPlayer implements Player {
     }
 
     @Override
-    public List<Card> passCards() {
-        // not implemented yet
-        return null;
+    public void passCards(List<Card> cards, Player player) {
+        hand.getCards().removeAll(cards);
+        player.getHand().getCards().addAll(cards);
     }
 }

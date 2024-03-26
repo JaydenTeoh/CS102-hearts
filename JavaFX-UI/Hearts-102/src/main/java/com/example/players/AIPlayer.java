@@ -27,7 +27,7 @@ public class AIPlayer implements Player {
     }
 
     @Override
-    public List<Card> passCards() {
+    public void passCards(List<Card> cards, Player player) {
         Hand currHand = getHand();
         int numLeft = 3;
         List<Card> cardsToPass = new ArrayList<>();
@@ -49,7 +49,7 @@ public class AIPlayer implements Player {
         }
 
         if (numLeft == 0) {
-            return cardsToPass;
+            //return cardsToPass;
         }
 
         // short-suit yourself in the following order, Diamonds -> Clubs
@@ -71,7 +71,7 @@ public class AIPlayer implements Player {
         }
 
         if (numLeft == 0) {
-            return cardsToPass;
+            //return cardsToPass;
         }
 
 
@@ -89,13 +89,13 @@ public class AIPlayer implements Player {
                     }
 
                     if (numLeft == 0) {
-                        return cardsToPass;
+                        //return cardsToPass;
                     }
                 }
             }
         }
 
-        return cardsToPass;
+        //return cardsToPass;
     }
 
 

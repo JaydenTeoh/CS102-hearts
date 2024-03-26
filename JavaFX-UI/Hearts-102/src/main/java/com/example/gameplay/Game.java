@@ -36,6 +36,11 @@ public class Game {
         return numRounds;
     }
 
+    public void incrementNumRounds() {
+        numRounds++;
+        return;
+    }
+
     public ArrayList<Player> getPlayers() {
         return players;
     }

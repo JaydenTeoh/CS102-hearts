@@ -36,7 +36,7 @@ public class PlayAreaUtility {
         double width = (position == 1 || position == 3) ? PLAYER_AREA_HEIGHT : PLAYER_AREA_WIDTH;
         double height = (position == 1 || position == 3) ? PLAYER_AREA_WIDTH : PLAYER_AREA_HEIGHT;
         playerArea.setPrefSize(width, height);
-        playerArea.setStyle("-fx-border-color: black; -fx-border-width: 2;");
+        playerArea.setStyle("-fx-border-color: black; -fx-border-width: 0;");
         return playerArea;
     }
 

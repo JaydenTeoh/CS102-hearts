@@ -110,7 +110,7 @@ public class CardViewUtility {
                 cardView.setFitWidth(CARD_WIDTH);
                 cardView.setFitHeight(CARD_HEIGHT);
 
-                ddouble xPos, yPos;
+                double xPos, yPos;
                 if (playerIndex == 0) { // Bottom player
                     xPos = 75 + i *  (CARD_WIDTH + SPACING); // Normal horizontal spacing
                     yPos = 0; // Align with top edge

@@ -153,7 +153,7 @@ public class MainApplication extends Application {
         }
 
         // Create Play Area
-        Pane playArea = createPlayArea();
+        Pane playArea = PlayAreaUtility.createPlayArea();
         playArea.setLayoutX((root.getPrefWidth() - playArea.getPrefWidth()) / 2);
         playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
         root.getChildren().add(playArea);
@@ -449,18 +449,11 @@ public class MainApplication extends Application {
         return playerArea;
     }
 
-    private Pane createPlayArea() {
-        Pane playArea = new Pane();
-        playArea.setPrefSize(PLAY_AREA_WIDTH, PLAY_AREA_HEIGHT);
-        playArea.setStyle("-fx-background-color: beige; -fx-border-color: black;");
-        return playArea;
-    }
-
     private void setupPlayerAreas(List<Player> playerList, Round round) {
         for (int i = 0; i < playerList.size(); i++) {
             int position = i;
-            Pane playerArea = createPlayerArea(position);
-            positionPlayerArea(playerArea, position);
+            Pane playerArea = PlayAreaUtility.createPlayerArea(position);
+            PlayAreaUtility.positionPlayerArea(playerArea, position);
 
             // Create Cards
             playerArea = createCardViewsOfPlayer(playerArea, playerList.get(i));
@@ -476,41 +469,6 @@ public class MainApplication extends Application {
         }
     }
 
-    private Pane createPlayerArea(int position) {
-        Pane playerArea = new Pane();
-
-        if (position == 2 || position == 0) {
-            playerArea.setPrefSize(PLAYER_AREA_WIDTH, PLAYER_AREA_HEIGHT);
-        } else {
-            playerArea.setPrefSize(PLAYER_AREA_HEIGHT, PLAYER_AREA_WIDTH);
-        }
-        playerArea.setStyle("-fx-border-color: black; -fx-border-width: 2;");
-        return playerArea;
-    }
-
-    private void positionPlayerArea(Pane playerArea, int position) {
-        double xPos = 0;
-        double yPos = 0;
-        // 0: Bottom, 1: Left, 2: Top, 3: Right
-        switch (position) {
-            case 0:
-                xPos = (WINDOW_WIDTH - playerArea.getPrefWidth()) / 2;
-                yPos = WINDOW_HEIGHT - playerArea.getPrefHeight();
-                break;
-            case 1:
-                yPos = (WINDOW_HEIGHT - playerArea.getPrefHeight()) / 2;
-                break;
-            case 2:
-                xPos = (WINDOW_WIDTH - playerArea.getPrefWidth()) / 2;
-                break;
-            case 3:
-                xPos = WINDOW_WIDTH - playerArea.getPrefWidth();
-                yPos = (WINDOW_HEIGHT - playerArea.getPrefHeight()) / 2;
-                break;
-        }
-        playerArea.setLayoutX(xPos);
-        playerArea.setLayoutY(yPos);
-    }
 
     @Override
     public void start(Stage stage) throws IOException {

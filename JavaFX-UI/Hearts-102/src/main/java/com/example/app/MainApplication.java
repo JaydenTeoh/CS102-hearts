@@ -256,7 +256,13 @@ public class MainApplication extends Application {
                     // Flip the card to face up if it's played by AI player
                     CardImageView cardView = (CardImageView) node;
                     cardView.setImage(true); // Flip the card to face up
-                    moveCard(node, cardPlayed);
+                    CardViewUtility.moveCard(cardView, cardPlayed, currentCardViewsInTrick, playerList, () -> {
+                        // remove card from current player's hand
+                        playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
+                        // add card to current trick
+                        round.getCurrentTrick().addCardToTrick(cardPlayed);
+                        nextTurn();
+                    });
                     currentCardViewsInTrick.add(node);
                 }
             }
@@ -298,67 +304,15 @@ public class MainApplication extends Application {
                 CardViewUtility.disableCards(root);
                 Card cardPlayed = (Card) cardView.getUserData();
                 // Move card to play area
-                moveCard(cardView, cardPlayed);
+                CardViewUtility.moveCard(cardView, cardPlayed, currentCardViewsInTrick, playerList, () -> {
+                    // remove card from current player's hand
+                    playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
+                    // add card to current trick
+                    round.getCurrentTrick().addCardToTrick(cardPlayed);
+                    nextTurn();
+                });
             });
         }
-    }
-
-    private void moveCard(Node cardView, Card cardPlayed) {
-        currentCardViewsInTrick.add(cardView);
-
-        if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
-            round.setHeartsBroken();
-        }
-
-        TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);
-        CardViewUtility.disableHover((ImageView) cardView);
-
-        // Find the player who played the card
-        Player playerNow = null;
-        for (Player player : playerList) {
-            if (player.getHand().getCards().contains(cardPlayed)) {
-                playerNow = player;
-                break;
-            }
-        }
-
-        int playerNo = playerList.indexOf(playerNow) + 1; // Player number is the index in the list + 1
-
-        // Adjust the transition based on the player number
-        if (playerNo == 1) { // Bottom player
-            transition.setToY(-(PlayAreaUtility.PLAYER_AREA_HEIGHT) + 90);
-            transition.setToX(((PlayAreaUtility.PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CardViewUtility.CARD_WIDTH / 2);
-        } else if (playerNo == 2) { // Left player
-            transition.setToY((((PlayAreaUtility.PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CardViewUtility.CARD_HEIGHT / 2)+180);
-            transition.setToX(500);
-        } else if (playerNo == 3) { // Top player
-            transition.setToY(180);
-            transition.setToX(((PlayAreaUtility.PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CardViewUtility.CARD_WIDTH / 2);
-        } else if (playerNo == 4) { // Right player
-            transition.setToY((((PlayAreaUtility.PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CardViewUtility.CARD_HEIGHT / 2)+180);
-            transition.setToX(-350);
-        }
-
-        transition.setCycleCount(1);
-
-        transition.setOnFinished(event -> {
-            System.out.println("Card played: " + cardPlayed + " by Player " + (playerNo));
-
-            // remove card from current player's hand
-            playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
-
-            // add card to current trick
-            round.getCurrentTrick().addCardToTrick(cardPlayed);
-            nextTurn();
-
-            // Bring the card to the front
-            cardView.toFront();
-
-            // Disable mouse interaction with the card
-            cardView.setDisable(true);
-        });
-
-        transition.play();
     }
 
     @Override

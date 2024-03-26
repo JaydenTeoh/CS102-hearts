@@ -27,6 +27,8 @@ public class CardViewUtility {
     public static final int CARD_WIDTH = 95;
     public static final int CARD_HEIGHT = 140;
     public static final int SPACING = -65;
+    public static final int PLAYER_AREA_WIDTH = 600;
+    public static final int PLAYER_AREA_HEIGHT = 250;
 
     public static ObservableList<Node> getCardViewsOfPlayer(Pane root, int id) {
         for (Node node : root.getChildren()) {
@@ -151,5 +153,47 @@ public class CardViewUtility {
             e.printStackTrace();
         }
         return playerArea;
+    }
+
+     public static void moveCard(Node cardView, Card cardPlayed, List<Node> currentCardViewsInTrick, List<Player> playerList, Runnable callback) {
+        currentCardViewsInTrick.add(cardView);
+        TranslateTransition transition = new TranslateTransition(Duration.seconds(1), cardView);
+        disableHover((ImageView) cardView);
+        // Find the player who played the card
+        Player playerNow = null;
+        for (Player player : playerList) {
+            if (player.getHand().getCards().contains(cardPlayed)) {
+                playerNow = player;
+                break;
+            }
+        }
+        int playerNo = playerList.indexOf(playerNow) + 1; // Player number is the index in the list + 1
+
+        // Adjust the transition based on the player number
+        if (playerNo == 1) { // Bottom player
+            transition.setToY(-(PLAYER_AREA_HEIGHT) + 90);
+            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
+        } else if (playerNo == 2) { // Left player
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToX(500);
+        } else if (playerNo == 3) { // Top player
+            transition.setToY(180);
+            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
+        } else if (playerNo == 4) { // Right player
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToX(-350);
+        }
+
+        transition.setCycleCount(1);
+
+        transition.setOnFinished(event -> {
+            System.out.println("Card played: " + cardPlayed + " by Player " + (playerNo));
+            // Bring the card to the front
+            cardView.toFront();
+            // Disable mouse interaction with the card
+            cardView.setDisable(true);
+            callback.run();
+        });
+        transition.play();
     }
 }

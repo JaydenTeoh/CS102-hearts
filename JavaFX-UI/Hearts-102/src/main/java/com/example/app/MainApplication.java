@@ -242,7 +242,7 @@ public class MainApplication extends Application {
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
             Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
             if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
-                round.setHeartsBroken(true);
+                round.setHeartsBroken();
             }
             ObservableList<Node> currentPlayerCardViews = CardViewUtility.getCardViewsOfPlayer(root, currentPlayer);
             for (Node node : currentPlayerCardViews) {
@@ -302,7 +302,7 @@ public class MainApplication extends Application {
         currentCardViewsInTrick.add(cardView);
         // shift this into a function?? idk but ill clean this up later
         if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
-            round.setHeartsBroken(true);
+            round.setHeartsBroken();
         }
         TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);
         CardViewUtility.disableHover((ImageView) cardView);

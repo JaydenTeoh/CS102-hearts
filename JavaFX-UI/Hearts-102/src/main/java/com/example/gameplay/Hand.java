@@ -25,45 +25,8 @@ public class Hand {
     }
 
     public void removeCard(Card toRemove) {
-        Iterator<Card> iter = cards.iterator(); // since Card does not implement equals(), we have to iterate
-        boolean hasRemoved = false;
-        while(iter.hasNext()) {
-            if (iter.next().isSameAs(toRemove)) {
-                iter.remove();
-                hasRemoved = true;
-                break;
-            }
-        }
-        /*
-         * just a safety check to make sure our logic is not allowing Player to 
-         * call removal of cards that are not even in hand
-         */
-        if (!hasRemoved) {
-            throw new HandException("Hand does not have card: " + toRemove.toString());
-        }
+        cards.remove(toRemove);
     }
-
-    // Overloaded method, convenient if we don't want to intialise new Card
-    public void removeCard(Suit s, Rank r) {
-        Iterator<Card> iter = cards.iterator(); // since Card does not implement equals(), we have to iterate
-        boolean hasRemoved = false;
-        while(iter.hasNext()) {
-            Card c = iter.next();
-            if (c.getRank().compareTo(r) == 0 && c.getSuit().compareTo(s) == 0) {
-                iter.remove();
-                hasRemoved = true;
-                break;
-            }
-        }
-        /*
-         * just a safety check to make sure our logic is not allowing Player to 
-         * call removal of cards that are not even in hand
-         */
-        if (!hasRemoved) {
-            throw new HandException("Hand does not have card: " + r.toString() + s.toString());
-        }
-    }
-
 
     public boolean hasSuit(Suit s) {
         return cards.stream().anyMatch(c -> c.getSuit().compareTo(s) == 0);

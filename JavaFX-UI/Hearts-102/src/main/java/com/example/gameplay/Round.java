@@ -46,12 +46,11 @@ public class Round {
         return heartsBroken;
     }
 
-    public void setHeartsBroken(boolean heartsBroken) {
-        this.heartsBroken = heartsBroken;
+    public void setHeartsBroken() {
+        heartsBroken = true;
     }
 
     // starts a new trick
-    // if there was a previous trick, allocate points of the trick to the player who won it
     public void startNewTrick() {
         if (currentTrick != null) {
             playerStartingFirst = currentTrick.getWinner();

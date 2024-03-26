@@ -123,10 +123,6 @@ public class Trick {
         return heartsBroken;
     }
 
-    public void setHeartsBroken(boolean heartsBroken) {
-        this.heartsBroken = heartsBroken;
-    }
-
     public int getWinner() {
         if (cardsInTrick.size() != 4) {
             return -1;

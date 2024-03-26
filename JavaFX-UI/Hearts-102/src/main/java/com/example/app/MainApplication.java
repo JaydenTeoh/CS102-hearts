@@ -261,7 +261,7 @@ public class MainApplication extends Application {
     }
 
     public void enableCards() {
-        ArrayList<Card> playableCards = playerList.get(0).getHand().getPlayableCards(round, round.getCurrentTrick());
+        ArrayList<Card> playableCards = playerList.get(0).getHand().getPlayableCards(round.getCurrentTrick());
         
         System.out.println("\nPlayable Cards:");
         for (Card c : playableCards) {

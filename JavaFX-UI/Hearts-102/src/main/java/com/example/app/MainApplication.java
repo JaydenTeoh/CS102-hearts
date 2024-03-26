@@ -43,17 +43,17 @@ import java.util.List;
 
 public class MainApplication extends Application {
 
-    private static final double WINDOW_WIDTH = 1500;
-    private static final double WINDOW_HEIGHT = 800;
-    private static final int CARD_WIDTH = 95;
-    private static final int CARD_HEIGHT = 140;
+    public static final double WINDOW_WIDTH = 1500;
+    public static final double WINDOW_HEIGHT = 800;
+    public static final int CARD_WIDTH = 95;
+    public static final int CARD_HEIGHT = 140;
 
-    private static final int PLAYER_AREA_WIDTH = 600;
-    private static final int PLAYER_AREA_HEIGHT = 250;
+    public static final int PLAYER_AREA_WIDTH = 600;
+    public static final int PLAYER_AREA_HEIGHT = 250;
 
-    private static final int PLAY_AREA_WIDTH = 400;
-    private static final int PLAY_AREA_HEIGHT = 200;
-    private static final int SPACING = -65;
+    public static final int PLAY_AREA_WIDTH = 400;
+    public static final int PLAY_AREA_HEIGHT = 200;
+    public static final int SPACING = -65;
 
     private int currentPlayer;
     private List<Player> playerList;
@@ -163,7 +163,7 @@ public class MainApplication extends Application {
         // Create Player Areas
         setupPlayerAreas(playerList, round);
 
-        disableCards();
+        CardViewUtility.disableCards(root);
 
         // Set Playable Cards to starting player
         currentPlayer = round.getPlayerStartingFirst();
@@ -236,7 +236,7 @@ public class MainApplication extends Application {
         Trick currTrick = round.getCurrentTrick();
 
         if (currTrick.getCardsInTrick().size() == 4) {
-            PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
+            PauseTransition pause = new PauseTransition(Duration.seconds(1));
 
             // Define what to do after the pause
             pause.setOnFinished(event -> {
@@ -270,7 +270,7 @@ public class MainApplication extends Application {
             if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
                 round.setHeartsBroken(true);
             }
-            ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(currentPlayer);
+            ObservableList<Node> currentPlayerCardViews = CardViewUtility.getCardViewsOfPlayer(root, currentPlayer);
             for (Node node : currentPlayerCardViews) {
                 Card card = (Card) node.getUserData();
                 if (card.isSameAs(cardPlayed)) {
@@ -288,38 +288,15 @@ public class MainApplication extends Application {
         // round.startNewTrick();
     }
 
-    // used to differentiate player panes and score panes
-    private static boolean isNumeric(String str) {
-        try {
-            Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private ObservableList<Node> getCardViewsOfPlayer(int id) {
-        for (Node node : root.getChildren()) {
-            if (node.getId() != null)
-                if (isNumeric(node.getId()))
-                    if (Integer.parseInt(node.getId()) == id) {
-                        Pane pane = (Pane) node;
-                        return pane.getChildren();
-                    }
-        }
-
-        // Empty List
-        return FXCollections.observableArrayList();
-    }
-
-    private void enableCards() {
-        Player player = playerList.get(0);
-        ArrayList<Card> playableCards = player.getHand().getPlayableCards(round, round.getCurrentTrick());
+    public void enableCards() {
+        ArrayList<Card> playableCards = playerList.get(0).getHand().getPlayableCards(round, round.getCurrentTrick());
+        
         System.out.println("\nPlayable Cards:");
         for (Card c : playableCards) {
             System.out.println(c);
         }
         System.out.println();
+
         for (Node child : root.getChildren()) {
             if ("0".equals(child.getId())) {
                 child.toFront();
@@ -327,56 +304,37 @@ public class MainApplication extends Application {
             }
         }
 
-        ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
-        disableCards();
+        ObservableList<Node> cards = CardViewUtility.getCardViewsOfPlayer(root, 0);
+
+        CardViewUtility.disableCards(root);
         for (Node cardView : cards) {
             Card selectedCard = (Card) cardView.getUserData();
 
             if (!playableCards.contains(selectedCard)) {
                 continue;
             }
-            addHoverEffect((ImageView) cardView);
+            CardViewUtility.addHoverEffect((ImageView) cardView);
             cardView.setEffect(null);
             cardView.setOpacity(1);
             cardView.getStyleClass().add("card-active");
             cardView.setOnMouseClicked(event -> {
-                disableCards();
-                currentCardViewsInTrick.add(cardView);
+                CardViewUtility.disableCards(root);
                 Card cardPlayed = (Card) cardView.getUserData();
-                // shift this into a function?? idk but ill clean this up later
-                if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
-                    round.setHeartsBroken(true);
-                }
                 // Move card to play area
                 moveCard(cardView, cardPlayed);
             });
         }
     }
 
-    private void disableCards() {
-        ObservableList<Node> cards = getCardViewsOfPlayer(currentPlayer);
-        for (Node card : cards) {
-            card.setOnMouseClicked(null);
-            card.getStyleClass().remove("card-active");
-            card.setOnMouseEntered(null);
-            card.setOnMouseExited(null);
-            ColorAdjust grayscale = new ColorAdjust();
-            grayscale.setBrightness(-0.5); // Lower brightness by 50%
-            grayscale.setContrast(-0.5); // Lower contrast by 50%
-            card.setEffect(grayscale);
-            TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), card);
-            hoverTransition.setToY(0);
-            hoverTransition.play();
-
-        }
-    }
 
     private void moveCard(Node cardView, Card cardPlayed) {
+        currentCardViewsInTrick.add(cardView);
+        // shift this into a function?? idk but ill clean this up later
+        if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
+            round.setHeartsBroken(true);
+        }
         TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);
-        cardView.setOnMouseEntered(null);
-        cardView.setOnMouseExited(null);
-        cardView.setEffect(null); // Remove drop shadow effect when mouse exits
-        cardView.setCursor(Cursor.DEFAULT); // Change cursor back to default
+        CardViewUtility.disableHover((ImageView) cardView);
         // Find the player who played the card
         Player playerNow = null;
         for (Player player : playerList) {
@@ -474,7 +432,7 @@ public class MainApplication extends Application {
                 // boolean isPlayable = hand.contains(card);
                 // Apply hover effect
                 if (player instanceof HumanPlayer) {
-                    addHoverEffect(cardView);
+                    CardViewUtility.addHoverEffect(cardView);
                 }
 
                 // cardView.setId(card.getRank().getSymbol()+card.getSuit().getSymbol());
@@ -564,28 +522,6 @@ public class MainApplication extends Application {
         stage.setHeight(WINDOW_HEIGHT);
         stage.setTitle("Hearts");
         stage.show();
-    }
-
-    private void addHoverEffect(ImageView cardView) {
-        cardView.setOnMouseEntered(event -> {
-            cardView.setEffect(new DropShadow()); // Apply drop shadow effect when mouse enters
-            cardView.setCursor(Cursor.HAND); // Change cursor to hand
-
-            // Translate animation to move the card up
-            TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
-            hoverTransition.setToY(-20); // Adjust this value to change the hover distance
-            hoverTransition.play();
-        });
-
-        cardView.setOnMouseExited(event -> {
-            cardView.setEffect(null); // Remove drop shadow effect when mouse exits
-            cardView.setCursor(Cursor.DEFAULT); // Change cursor back to default
-
-            // Translate animation to move the card back down
-            TranslateTransition hoverTransition = new TranslateTransition(Duration.seconds(0.2), cardView);
-            hoverTransition.setToY(0);
-            hoverTransition.play();
-        });
     }
 
     private void setScorePaneLayout(Pane scorePane, double layoutX, double layoutY) {

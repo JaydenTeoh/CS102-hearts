@@ -54,15 +54,9 @@ public class Round {
     // if there was a previous trick, allocate points of the trick to the player who won it
     public void startNewTrick() {
         if (currentTrick != null) {
-            playerStartingFirst = this.getWinner();
+            playerStartingFirst = this.getWinnerOfCurrentTrick();
             System.out.println("Winner of trick: Player " + (playerStartingFirst + 1));
             numTricksPlayed++;
-
-            Player winnerOfTrick = belongsToGame.getPlayers().get(playerStartingFirst);
-            int pointsInTrick = currentTrick.getNumPoints();
-            int previousPoints = playersPointsInCurrentRound.get(winnerOfTrick);
-
-            playersPointsInCurrentRound.replace(winnerOfTrick, pointsInTrick + previousPoints);
         }
 
         this.currentTrick = new Trick(belongsToGame.getPlayers());
@@ -107,7 +101,7 @@ public class Round {
         this.currentTrick = currentTrick;
     }
 
-    public int getWinner() {
+    public int getWinnerOfCurrentTrick() {
         int winningCardIndex = currentTrick.getWinningCardIndex();
         int winner = (winningCardIndex + playerStartingFirst) % Game.NUM_PLAYERS;
 

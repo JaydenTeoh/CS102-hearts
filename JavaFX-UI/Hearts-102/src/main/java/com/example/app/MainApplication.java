@@ -113,7 +113,6 @@ public class MainApplication extends Application {
 
         game = new Game();
         roundLabel = new Label("Round 1");
-        RoundDisplayUtility.initializeRoundDisplay(root, roundLabel);
 
         playerList = new ArrayList<>();
         try {
@@ -136,6 +135,7 @@ public class MainApplication extends Application {
         game.incrementNumRounds();
         ScoreDisplayUtility.createAndAddAllScorePanes(root);
         ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
+        RoundDisplayUtility.initializeRoundDisplay(root, roundLabel);
         RoundDisplayUtility.updateRoundDisplay(root, roundLabel, game.getNumRounds());
 
         currentCardViewsInTrick = new ArrayList<>();
@@ -157,7 +157,7 @@ public class MainApplication extends Application {
         playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
         root.getChildren().add(playArea);
 
-        // updateScoresDisplay();
+        ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
         round.startNewTrick();
 
         // Create Player Areas
@@ -174,6 +174,7 @@ public class MainApplication extends Application {
     private void processNextTrick(Trick currTrick) {
         System.out.println("------------------------");
 
+        updateScoresAfterCurrentTrickBackend(currTrick);
         ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
 
         // start new trick
@@ -188,29 +189,46 @@ public class MainApplication extends Application {
 
     private void processNextRound() {
         HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
-            Iterator<Player> iter = roundPoints.keySet().iterator();
+        Iterator<Player> iter = roundPoints.keySet().iterator();
 
-            while (iter.hasNext()) {
-                Player p = iter.next();
-                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
-            }
+        while (iter.hasNext()) {
+            Player p = iter.next();
+            game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
+        }
 
-            ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
+        // ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
 
-            // make new background for next round
-            root.getChildren().clear();
-            Region background = new Region();
-            background.setPrefSize(1500, 800);
-            background.setStyle("-fx-background-color: green");
-            root.getChildren().add(background);
+        // make new background for next round
+        root.getChildren().clear();
+        Region background = new Region();
+        background.setPrefSize(1500, 800);
+        background.setStyle("-fx-background-color: green");
+        root.getChildren().add(background);
 
-            // start new round
-            if (!game.isEnded()) {
-                startRound();
-                return;
-            } 
+        // start new round
+        if (!game.isEnded()) {
+            startRound();
+            return;
+        } 
 
-            // display final scores if game ended
+        // display final scores if game ended
+    }
+
+    private void updateScoresAfterCurrentTrickBackend(Trick currTrick) {
+        currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
+        int pointsInCurrTrick = currTrick.getNumPoints();
+        int winningCardIndexInTrick = currTrick.getWinningCardIndex();
+        int shift = Game.NUM_PLAYERS - 1 - currentPlayer; // because current player is last player of trick
+        int winnerIndexInPlayerList = winningCardIndexInTrick - shift;
+        if (winnerIndexInPlayerList < 0) {
+            winnerIndexInPlayerList += 4;
+        }
+
+        Player winner = playerList.get(winnerIndexInPlayerList);
+        round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
+
+        // displays transition of the player that won the trick
+        animateTrickToPlayerArea(winnerIndexInPlayerList);
     }
 
     private void nextTurn() {
@@ -219,10 +237,7 @@ public class MainApplication extends Application {
         if (currTrick.getCardsInTrick().size() == 4) {
             PauseTransition pause = new PauseTransition(Duration.seconds(1));
 
-            // Define what to do after the pause
             pause.setOnFinished(event -> {
-                // Actions to perform after the 1-second pause
-                System.out.println("Pause finished. Continue with operations.");
                 processNextTrick(currTrick);
                 currentPlayer = round.getPlayerStartingFirst();
                 if (round.getNumTricksPlayed() == 13) {
@@ -242,8 +257,6 @@ public class MainApplication extends Application {
             // ^ idk if this is ugly but 
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
-
-        System.out.println("Next Player: Player " + (currentPlayer + 1));
 
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
@@ -377,16 +390,13 @@ public class MainApplication extends Application {
         stage.show();
     }
 
-    
-
-    
-
     private void animateTrickToPlayerArea(int winnerPlayerIndex) {
         try {
             String currentDirectory = System.getProperty("user.dir");
             File file = new File(currentDirectory + "/images/" + "/fourCards.png");
-            // Print out whether the file exists
-            System.out.println("File exists: " + file.exists());
+            
+            // // Print out whether the file exists
+            // System.out.println("File exists: " + file.exists());
 
             // Load the image
             Image image = new Image(new FileInputStream(file));

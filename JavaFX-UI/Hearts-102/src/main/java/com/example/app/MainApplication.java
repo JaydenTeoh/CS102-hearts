@@ -63,7 +63,6 @@ public class MainApplication extends Application {
     private Game game;
     private Round round;
     private Label roundLabel;
-    private int currentRound;
 
     private Parent createContent() {
         root.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -115,7 +114,6 @@ public class MainApplication extends Application {
     private void startGame() {
         game = new Game();
         initializeRoundDisplay();
-        currentRound = 0;
 
         playerList = new ArrayList<>();
         try {
@@ -135,10 +133,10 @@ public class MainApplication extends Application {
 
     private void startRound() {
         round = new Round(0, game);
-        currentRound++;
+        game.incrementNumRounds();
         createAndAddAllScorePanes();
         updateScoresDisplay();
-        updateRoundDisplay(currentRound);
+        updateRoundDisplay(game.getNumRounds());
 
         currentCardViewsInTrick = new ArrayList<>();
         round.dealHands();

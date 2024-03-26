@@ -45,18 +45,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.sound.sampled.LineUnavailableException;
 
 public class MainApplication extends Application {
-
     public static final double WINDOW_WIDTH = 1500;
     public static final double WINDOW_HEIGHT = 800;
-    public static final int CARD_WIDTH = 95;
-    public static final int CARD_HEIGHT = 140;
-
-    public static final int PLAYER_AREA_WIDTH = 600;
-    public static final int PLAYER_AREA_HEIGHT = 250;
-
-    public static final int PLAY_AREA_WIDTH = 400;
-    public static final int PLAY_AREA_HEIGHT = 200;
-    public static final int SPACING = -65;
 
     private int currentPlayer;
     private List<Player> playerList;
@@ -115,9 +105,11 @@ public class MainApplication extends Application {
     }
 
     private void startGame() {
+        // // initialise instance variable root here
+        // root = new Pane();
+
         game = new Game();
         roundLabel = new Label("Round 1");
-        RoundDisplayUtility.initializeRoundDisplay(root, roundLabel);
 
         playerList = new ArrayList<>();
         try {
@@ -139,7 +131,10 @@ public class MainApplication extends Application {
         round = new Round(0, game);
         game.incrementNumRounds();
         ScoreDisplayUtility.createAndAddAllScorePanes(root);
+
+        // this adds previous round's score to game
         ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
+        RoundDisplayUtility.initializeRoundDisplay(root, roundLabel);
         RoundDisplayUtility.updateRoundDisplay(root, roundLabel, game.getNumRounds());
 
         currentCardViewsInTrick = new ArrayList<>();
@@ -161,11 +156,10 @@ public class MainApplication extends Application {
         playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
         root.getChildren().add(playArea);
 
-        // updateScoresDisplay();
         round.startNewTrick();
 
         // Create Player Areas
-        setupPlayerAreas(playerList, round);
+        PlayAreaUtility.setupPlayerAreas(playerList, round, root);
 
         CardViewUtility.disableCards(root);
 
@@ -175,27 +169,10 @@ public class MainApplication extends Application {
         nextTurn();
     }
 
-    private void updateScoresAfterCurrentTrickBackend(Trick currTrick) {
-        currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
-        int pointsInCurrTrick = currTrick.getNumPoints();
-        int winningCardIndexInTrick = currTrick.getWinningCardIndex();
-        int shift = Game.NUM_PLAYERS - 1 - currentPlayer; // because current player is last player of trick
-        int winnerIndexInPlayerList = winningCardIndexInTrick - shift;
-        if (winnerIndexInPlayerList < 0) {
-            winnerIndexInPlayerList += 4;
-        }
-
-        Player winner = playerList.get(winnerIndexInPlayerList);
-        round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
-
-        // displays transition of the player that won the trick
-        animateTrickToPlayerArea(winnerIndexInPlayerList);
-    }
-
     private void processNextTrick(Trick currTrick) {
         System.out.println("------------------------");
 
-        updateScoresAfterCurrentTrickBackend(currTrick);
+        ScoreDisplayUtility.updateScoresAfterCurrentTrickBackend(root, currTrick, round, currentPlayer, playerList);
         ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
 
         // start new trick
@@ -210,30 +187,29 @@ public class MainApplication extends Application {
 
     private void processNextRound() {
         HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
-            Iterator<Player> iter = roundPoints.keySet().iterator();
+        Iterator<Player> iter = roundPoints.keySet().iterator();
 
-            while (iter.hasNext()) {
-                Player p = iter.next();
-                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
-            }
+        while (iter.hasNext()) {
+            Player p = iter.next();
+            game.setPlayersPointsInCurrentGame(p, roundPoints.get(p) % 26);
+        }
 
-            // updateScoresAfterCurrentTrickBackend(currTrick);
-            ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
+        // ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
 
-            // make new background for next round
-            root.getChildren().clear();
-            Region background = new Region();
-            background.setPrefSize(1500, 800);
-            background.setStyle("-fx-background-color: green");
-            root.getChildren().add(background);
+        // make new background for next round
+        root.getChildren().clear();
+        Region background = new Region();
+        background.setPrefSize(1500, 800);
+        background.setStyle("-fx-background-color: green");
+        root.getChildren().add(background);
 
-            // start new round
-            if (!game.isEnded()) {
-                startRound();
-                return;
-            } 
+        // start new round
+        if (!game.isEnded()) {
+            startRound();
+            return;
+        } 
 
-            // display final scores if game ended
+        // display final scores if game ended
     }
 
     private void nextTurn() {
@@ -242,10 +218,7 @@ public class MainApplication extends Application {
         if (currTrick.getCardsInTrick().size() == 4) {
             PauseTransition pause = new PauseTransition(Duration.seconds(1));
 
-            // Define what to do after the pause
             pause.setOnFinished(event -> {
-                // Actions to perform after the 1-second pause
-                System.out.println("Pause finished. Continue with operations.");
                 processNextTrick(currTrick);
                 currentPlayer = round.getPlayerStartingFirst();
                 if (round.getNumTricksPlayed() == 13) {
@@ -262,11 +235,8 @@ public class MainApplication extends Application {
             return;
 
         } else if (currTrick.getCardsInTrick().size() != 0 || round.getNumTricksPlayed() != 0 ){
-            // ^ idk if this is ugly but 
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
-
-        System.out.println("Next Player: Player " + (currentPlayer + 1));
 
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer) {
@@ -288,8 +258,6 @@ public class MainApplication extends Application {
         } else {
             enableCards();
         }
-
-        // round.startNewTrick();
     }
 
     public void enableCards() {
@@ -330,7 +298,6 @@ public class MainApplication extends Application {
         }
     }
 
-
     private void moveCard(Node cardView, Card cardPlayed) {
         currentCardViewsInTrick.add(cardView);
         // shift this into a function?? idk but ill clean this up later
@@ -351,16 +318,16 @@ public class MainApplication extends Application {
 
         // Adjust the transition based on the player number
         if (playerNo == 1) { // Bottom player
-            transition.setToY(-(PLAYER_AREA_HEIGHT) + 90);
-            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
+            transition.setToY(-(PlayAreaUtility.PLAYER_AREA_HEIGHT) + 90);
+            transition.setToX(((PlayAreaUtility.PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CardViewUtility.CARD_WIDTH / 2);
         } else if (playerNo == 2) { // Left player
-            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToY((((PlayAreaUtility.PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CardViewUtility.CARD_HEIGHT / 2)+180);
             transition.setToX(500);
         } else if (playerNo == 3) { // Top player
             transition.setToY(180);
-            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
+            transition.setToX(((PlayAreaUtility.PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CardViewUtility.CARD_WIDTH / 2);
         } else if (playerNo == 4) { // Right player
-            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToY((((PlayAreaUtility.PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CardViewUtility.CARD_HEIGHT / 2)+180);
             transition.setToX(-350);
         }
 
@@ -384,94 +351,7 @@ public class MainApplication extends Application {
         });
 
         transition.play();
-
     }
-
-    private Pane createCardViewsOfPlayer(Pane playerArea, Player player) {
-        try {
-            String currentDirectory = System.getProperty("user.dir");
-            List<Card> hand = player.getHand().getCards();
-            int playerIndex = playerList.indexOf(player);
-
-            for (int i = 0; i < hand.size(); i++) {
-                Card card = hand.get(i);
-
-                File faceUpFile = new File(currentDirectory + "/images/" + card.getFilename());
-                Image faceUpImage = new Image(new FileInputStream(faceUpFile));
-                File faceDownFile = new File(currentDirectory + "/images/" + "/face_down_image.png");
-                Image faceDownImage = new Image(new FileInputStream(faceDownFile));
-                CardImageView cardView = new CardImageView(faceUpImage, faceDownImage);
-                if (player instanceof HumanPlayer) {
-                    cardView.setImage(true);
-                }
-                cardView.setFitWidth(CARD_WIDTH);
-                cardView.setFitHeight(CARD_HEIGHT);
-
-                double xPos, yPos;
-                if (playerIndex == 0) { // Bottom player
-                    xPos = i *  (CARD_WIDTH + SPACING); // Normal horizontal spacing
-                    yPos = 0; // Align with top edge
-                } else if (playerIndex == 1) { // Left player
-                    xPos = 0; // Align with left edge
-                    yPos = i * 30; // Vertical spacing
-                } else if (playerIndex == 2) { // Top player
-                    xPos = i * (CARD_WIDTH + SPACING); // Normal horizontal spacing
-                    yPos = 0; // Align with top edge
-                } else { // Right player
-                    xPos = 0; // Align with left edge
-                    yPos = i * 30; // Vertical spacing
-                }
-
-                cardView.setLayoutX(xPos);
-                cardView.setLayoutY(yPos);
-
-
-                // cardView.setRotate(-90);
-                // Rotate cards for left and right players
-                if (playerIndex == 1 || playerIndex == 3) {
-                    cardView.setRotate(90); // Rotate 90 degrees for left and right players
-                }
-
-                // Determine if the card is playable
-                // boolean isPlayable = hand.contains(card);
-                // Apply hover effect
-                if (player instanceof HumanPlayer) {
-                    CardViewUtility.addHoverEffect(cardView);
-                }
-
-                // cardView.setId(card.getRank().getSymbol()+card.getSuit().getSymbol());
-                cardView.setId(i + "");
-
-                cardView.setUserData(card);
-
-                playerArea.getChildren().add(cardView);
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return playerArea;
-    }
-
-    private void setupPlayerAreas(List<Player> playerList, Round round) {
-        for (int i = 0; i < playerList.size(); i++) {
-            int position = i;
-            Pane playerArea = PlayAreaUtility.createPlayerArea(position);
-            PlayAreaUtility.positionPlayerArea(playerArea, position);
-
-            // Create Cards
-            playerArea = createCardViewsOfPlayer(playerArea, playerList.get(i));
-            playerArea.setId(i + "");
-            // final String playerAreaId = playerArea.getId();
-            // playerArea.setOnMouseEntered(event -> {
-            //     // Print the node's ID or any other identifying detail
-            //     System.out.println("Mouse entered: " + playerAreaId);
-            // });
-
-
-            root.getChildren().add(playerArea);
-        }
-    }
-
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -491,72 +371,6 @@ public class MainApplication extends Application {
         stage.setHeight(WINDOW_HEIGHT);
         stage.setTitle("Hearts");
         stage.show();
-    }
-
-    
-
-    
-
-    private void animateTrickToPlayerArea(int winnerPlayerIndex) {
-        try {
-            String currentDirectory = System.getProperty("user.dir");
-            File file = new File(currentDirectory + "/images/" + "/fourCards.png");
-            // Print out whether the file exists
-            System.out.println("File exists: " + file.exists());
-
-            // Load the image
-            Image image = new Image(new FileInputStream(file));
-
-            ImageView imageView = new ImageView(image);
-            imageView.setPreserveRatio(true);
-
-            // Set initial size and position of the image
-            imageView.setFitWidth(50); // Initial width
-            imageView.setFitHeight(50); // Initial height
-            imageView.setLayoutX((root.getPrefWidth() - imageView.getFitWidth()) / 2);
-            imageView.setLayoutY((root.getPrefHeight() - imageView.getFitHeight()) / 2);
-
-            root.getChildren().add(imageView);
-
-            // Animation to scale up
-            ScaleTransition scaleUp = new ScaleTransition(Duration.seconds(1), imageView);
-            scaleUp.setToX(2); // Double the width
-            scaleUp.setToY(2); // Double the height
-
-            // Animation to scale down
-            ScaleTransition scaleDown = new ScaleTransition(Duration.seconds(1), imageView);
-            scaleDown.setToX(1); // Original width
-            scaleDown.setToY(1); // Original height
-
-            TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), imageView);
-            // Animation to move to player areadou
-            switch (winnerPlayerIndex) {
-                case 0: // Bottom player
-                    transition.setToX(250);
-                    transition.setToY(350);
-                    break;
-                case 1: // Left player
-                    transition.setToX(-660);
-                    transition.setToY(237);
-                    break;
-                case 2: // Top player
-                    transition.setToX(250);
-                    transition.setToY(-320);
-                    break;
-                case 3: // Right player
-                    transition.setToX(660);
-                    transition.setToY(237);
-                    break;
-                default:
-                    break;
-            }
-            // Start the animation
-            scaleUp.play();
-            transition.play();
-        } catch (FileNotFoundException e) {
-            System.out.println("Error loading image: " + e.getMessage());
-            e.printStackTrace();
-        }
     }
 
     public static void main(String[] args) {

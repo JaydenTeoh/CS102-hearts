@@ -1,20 +1,27 @@
 package com.example.app;
 
+import java.util.List;
+
+import com.example.gameplay.Round;
+import com.example.players.Player;
+
 import javafx.scene.layout.Pane;
 
 public class PlayAreaUtility {
     private static final double WINDOW_WIDTH = 1500;
     private static final double WINDOW_HEIGHT = 800;
-    private static final int PLAYER_AREA_WIDTH = 600;
-    private static final int PLAYER_AREA_HEIGHT = 250;
-    private static final int PLAY_AREA_WIDTH = 400;
-    private static final int PLAY_AREA_HEIGHT = 200;
+    public static final int PLAYER_AREA_WIDTH = 600;
+    public static final int PLAYER_AREA_HEIGHT = 250;
+    public static final int PLAY_AREA_WIDTH = 400;
+    public static final int PLAY_AREA_HEIGHT = 200;
+
     public static Pane createPlayArea() {
         Pane playArea = new Pane();
         playArea.setPrefSize(PLAY_AREA_WIDTH, PLAY_AREA_HEIGHT);
         playArea.setStyle("-fx-background-color: beige; -fx-border-color: black;");
         return playArea;
     }
+
     // Method to create a player area
     public static Pane createPlayerArea(int position) {
         Pane playerArea = new Pane();
@@ -51,7 +58,6 @@ public class PlayAreaUtility {
         playerArea.setLayoutY(yPos);
     }
 
-
     public static void setupPlayArea(Pane gameBoard){
         Pane playArea = new Pane();
         playArea.setPrefSize(PLAY_AREA_WIDTH, PLAY_AREA_HEIGHT);
@@ -61,4 +67,22 @@ public class PlayAreaUtility {
         gameBoard.getChildren().add(playArea);
     }
 
+    public static void setupPlayerAreas(List<Player> playerList, Round round, Pane root) {
+        for (int i = 0; i < playerList.size(); i++) {
+            int position = i;
+            Pane playerArea = PlayAreaUtility.createPlayerArea(position);
+            PlayAreaUtility.positionPlayerArea(playerArea, position);
+
+            // Create Cards
+            playerArea = CardViewUtility.createCardViewsOfPlayer(playerArea, playerList.get(i), playerList);
+            playerArea.setId(i + "");
+            // final String playerAreaId = playerArea.getId();
+            // playerArea.setOnMouseEntered(event -> {
+            //     // Print the node's ID or any other identifying detail
+            //     System.out.println("Mouse entered: " + playerAreaId);
+            // });
+
+            root.getChildren().add(playerArea);
+        }
+    }
 }

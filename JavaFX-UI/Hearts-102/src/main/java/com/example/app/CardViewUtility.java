@@ -24,6 +24,10 @@ import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 
 public class CardViewUtility {
+    public static final int CARD_WIDTH = 95;
+    public static final int CARD_HEIGHT = 140;
+    public static final int SPACING = -65;
+
     public static ObservableList<Node> getCardViewsOfPlayer(Pane root, int id) {
         for (Node node : root.getChildren()) {
             if (node.getId() != null && node.getId().equals(id + "")) {
@@ -47,8 +51,6 @@ public class CardViewUtility {
                 card.setOnMouseEntered(null);
                 card.setOnMouseExited(null);
                 card.getStyleClass().remove("card-active");
-
-                
             }
         }
     }
@@ -84,5 +86,70 @@ public class CardViewUtility {
         grayscale.setBrightness(-0.5); // Lower brightness by 50%
         grayscale.setContrast(-0.5); // Lower contrast by 50%
         cardView.setEffect(grayscale);
+    }
+
+    public static Pane createCardViewsOfPlayer(Pane playerArea, Player player, List<Player> playerList) {
+        try {
+            String currentDirectory = System.getProperty("user.dir");
+            List<Card> hand = player.getHand().getCards();
+            int playerIndex = playerList.indexOf(player);
+
+            for (int i = 0; i < hand.size(); i++) {
+                Card card = hand.get(i);
+
+                File faceUpFile = new File(currentDirectory + "/images/" + card.getFilename());
+                Image faceUpImage = new Image(new FileInputStream(faceUpFile));
+                File faceDownFile = new File(currentDirectory + "/images/" + "/face_down_image.png");
+                Image faceDownImage = new Image(new FileInputStream(faceDownFile));
+                CardImageView cardView = new CardImageView(faceUpImage, faceDownImage);
+                if (player instanceof HumanPlayer) {
+                    cardView.setImage(true);
+                }
+                cardView.setFitWidth(CARD_WIDTH);
+                cardView.setFitHeight(CARD_HEIGHT);
+
+                double xPos, yPos;
+                if (playerIndex == 0) { // Bottom player
+                    xPos = i *  (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                    yPos = 0; // Align with top edge
+                } else if (playerIndex == 1) { // Left player
+                    xPos = 0; // Align with left edge
+                    yPos = i * 30; // Vertical spacing
+                } else if (playerIndex == 2) { // Top player
+                    xPos = i * (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                    yPos = 0; // Align with top edge
+                } else { // Right player
+                    xPos = 0; // Align with left edge
+                    yPos = i * 30; // Vertical spacing
+                }
+
+                cardView.setLayoutX(xPos);
+                cardView.setLayoutY(yPos);
+
+
+                // cardView.setRotate(-90);
+                // Rotate cards for left and right players
+                if (playerIndex == 1 || playerIndex == 3) {
+                    cardView.setRotate(90); // Rotate 90 degrees for left and right players
+                }
+
+                // Determine if the card is playable
+                // boolean isPlayable = hand.contains(card);
+                // Apply hover effect
+                if (player instanceof HumanPlayer) {
+                    CardViewUtility.addHoverEffect(cardView);
+                }
+
+                // cardView.setId(card.getRank().getSymbol()+card.getSuit().getSymbol());
+                cardView.setId(i + "");
+
+                cardView.setUserData(card);
+
+                playerArea.getChildren().add(cardView);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return playerArea;
     }
 }

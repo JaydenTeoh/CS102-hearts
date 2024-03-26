@@ -15,7 +15,6 @@ import com.example.pokercards.*;
 //Methods:
 //addCardToTrick(Card card): Adds a card to the trick.
 //getCardsInTrick(): ArrayList<Card>: Returns the cards currently in the trick.
-//setLeadingCard(Card card): Sets the leading card of the trick.
 //getLeadingCard(): Card: Returns the leading card of the trick.
 //setWinningCard(Card card): Sets the winning card of the trick.
 //getWinningCard(): Card: Returns the winning card of the trick.
@@ -121,10 +120,6 @@ public class Trick {
 
     public boolean isHeartsBroken() {
         return heartsBroken;
-    }
-
-    public void setHeartsBroken(boolean heartsBroken) {
-        this.heartsBroken = heartsBroken;
     }
 
     public int getWinner() {

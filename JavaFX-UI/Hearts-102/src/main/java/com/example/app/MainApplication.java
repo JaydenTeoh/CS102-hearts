@@ -113,7 +113,8 @@ public class MainApplication extends Application {
 
     private void startGame() {
         game = new Game();
-        initializeRoundDisplay();
+        roundLabel = new Label("Round 1");
+        RoundDisplayUtility.initializeRoundDisplay(root, roundLabel);
 
         playerList = new ArrayList<>();
         try {
@@ -134,9 +135,9 @@ public class MainApplication extends Application {
     private void startRound() {
         round = new Round(0, game);
         game.incrementNumRounds();
-        createAndAddAllScorePanes();
-        updateScoresDisplay();
-        updateRoundDisplay(game.getNumRounds());
+        ScoreDisplayUtility.createAndAddAllScorePanes(root);
+        ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
+        RoundDisplayUtility.updateRoundDisplay(root, roundLabel, game.getNumRounds());
 
         currentCardViewsInTrick = new ArrayList<>();
         round.dealHands();
@@ -192,7 +193,7 @@ public class MainApplication extends Application {
         System.out.println("------------------------");
 
         updateScoresAfterCurrentTrickBackend(currTrick);
-        updateScoresDisplay();
+        ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
 
         // start new trick
         for (Node cardView: currentCardViewsInTrick) {
@@ -214,7 +215,7 @@ public class MainApplication extends Application {
             }
 
             // updateScoresAfterCurrentTrickBackend(currTrick);
-            updateScoresDisplay();
+            ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
 
             // make new background for next round
             root.getChildren().clear();
@@ -524,106 +525,9 @@ public class MainApplication extends Application {
         stage.show();
     }
 
-    private void setScorePaneLayout(Pane scorePane, double layoutX, double layoutY) {
-        scorePane.setLayoutX(layoutX);
-        scorePane.setLayoutY(layoutY);
-    }
+    
 
-    private Pane createScoreArea(int playerIndex) {
-        Pane scorePane = new Pane();
-        scorePane.setPrefSize(90, 82);
-        scorePane.setStyle("-fx-background-color: black; -fx-border-color: black;");
-
-        // Assign an ID to the score pane based on the player's position
-        scorePane.setId("scorePanePlayer" + (playerIndex + 1));
-
-        // Create the score label
-        Label scoreLabel = new Label();
-        scoreLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-        scoreLabel.setLayoutX(5);
-        scoreLabel.setLayoutY(10);
-
-        // Add the score label to the score pane
-        scorePane.getChildren().add(scoreLabel);
-
-        return scorePane;
-    }
-
-    private void createAndAddScorePane(double layoutX, double layoutY, int playerIndex) {
-        Pane scorePane = createScoreArea(playerIndex);
-        setScorePaneLayout(scorePane, layoutX, layoutY);
-        root.getChildren().add(scorePane);
-    }
-
-    private void createAndAddAllScorePanes() {
-        // is there anyway to get exact location where we should put or just hard code?
-        double xPos, yPos;
-
-        for (int i = 0; i < Game.NUM_PLAYERS; i++) {
-            switch (i) {
-                case 0:
-                    xPos = WINDOW_WIDTH - 540;
-                    yPos = WINDOW_HEIGHT - 250;
-                    break;
-                case 1:
-                    xPos = 160;
-                    yPos = 100;
-                    break;
-                case 2:
-                    xPos = WINDOW_WIDTH - 540;
-                    yPos = 168;
-                    break;
-                case 3:
-                    xPos = WINDOW_WIDTH - 250;
-                    yPos = WINDOW_HEIGHT - 183;
-                    break;
-                default:
-                    xPos = 0;
-                    yPos = 0;
-                    break;
-            }
-
-            createAndAddScorePane(xPos, yPos, i);
-        }
-    }
-
-    private void initializeRoundDisplay() {
-        roundLabel = new Label("Round 1");
-        roundLabel.setLayoutX(10);
-        roundLabel.setLayoutY(10);
-        roundLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-
-        root.getChildren().add(roundLabel);
-    }
-
-    private void updateRoundDisplay(int currentRound) {
-        if (roundLabel != null) {
-            roundLabel.setText("Round " + currentRound);
-        } else {
-            // If roundLabel is null, it means it hasn't been initialized yet
-            initializeRoundDisplay();
-            roundLabel.setText("Round " + currentRound); // Update the label after initialization
-        }
-    }
-
-    private void updateScoresDisplay() {
-        HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();
-        HashMap<Player, Integer> pointsInCurrentGame = game.getPlayersPointsInCurrentGame();
-
-        for (int i = 0; i < playerList.size(); i++) {
-            Player player = playerList.get(i);
-            int roundPoints = pointsInCurrentRound.get(player);
-            int gamePoints = pointsInCurrentGame.get(player);
-
-            // Find the score pane for the current player
-            Pane scorePane = (Pane) root.lookup("#scorePanePlayer" + (i + 1));
-            if (scorePane != null) {
-                // Update the score label text
-                Label scoreLabel = (Label) scorePane.getChildren().get(0); // Assuming the score label is the first child
-                scoreLabel.setText("Player " + (i + 1) + ":\nRound = " + roundPoints + "\nGame = " + gamePoints);
-            }
-        }
-    }
+    
 
     private void animateTrickToPlayerArea(int winnerPlayerIndex) {
         try {

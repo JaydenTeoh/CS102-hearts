@@ -40,6 +40,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.sound.sampled.LineUnavailableException;
 
 public class MainApplication extends Application {
 
@@ -472,6 +475,13 @@ public class MainApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        try {
+            Clip clip = MusicUtility.loadMusic();
+            clip.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+        
         Scene scene = new Scene(createContent());
 
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());

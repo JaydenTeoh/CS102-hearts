@@ -42,18 +42,14 @@ import java.util.Iterator;
 import java.util.List;
 
 public class MainApplication extends Application {
-
     public static final double WINDOW_WIDTH = 1500;
     public static final double WINDOW_HEIGHT = 800;
-    public static final int CARD_WIDTH = 95;
-    public static final int CARD_HEIGHT = 140;
 
     public static final int PLAYER_AREA_WIDTH = 600;
     public static final int PLAYER_AREA_HEIGHT = 250;
 
     public static final int PLAY_AREA_WIDTH = 400;
     public static final int PLAY_AREA_HEIGHT = 200;
-    public static final int SPACING = -65;
 
     private int currentPlayer;
     private List<Player> playerList;
@@ -112,6 +108,9 @@ public class MainApplication extends Application {
     }
 
     private void startGame() {
+        // // initialise instance variable root here
+        // root = new Pane();
+
         game = new Game();
         roundLabel = new Label("Round 1");
         RoundDisplayUtility.initializeRoundDisplay(root, roundLabel);
@@ -162,7 +161,7 @@ public class MainApplication extends Application {
         round.startNewTrick();
 
         // Create Player Areas
-        setupPlayerAreas(playerList, round);
+        PlayAreaUtility.setupPlayerAreas(playerList, round, root);
 
         CardViewUtility.disableCards(root);
 
@@ -172,27 +171,9 @@ public class MainApplication extends Application {
         nextTurn();
     }
 
-    private void updateScoresAfterCurrentTrickBackend(Trick currTrick) {
-        currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
-        int pointsInCurrTrick = currTrick.getNumPoints();
-        int winningCardIndexInTrick = currTrick.getWinningCardIndex();
-        int shift = Game.NUM_PLAYERS - 1 - currentPlayer; // because current player is last player of trick
-        int winnerIndexInPlayerList = winningCardIndexInTrick - shift;
-        if (winnerIndexInPlayerList < 0) {
-            winnerIndexInPlayerList += 4;
-        }
-
-        Player winner = playerList.get(winnerIndexInPlayerList);
-        round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
-
-        // displays transition of the player that won the trick
-        animateTrickToPlayerArea(winnerIndexInPlayerList);
-    }
-
     private void processNextTrick(Trick currTrick) {
         System.out.println("------------------------");
 
-        updateScoresAfterCurrentTrickBackend(currTrick);
         ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
 
         // start new trick
@@ -214,7 +195,6 @@ public class MainApplication extends Application {
                 game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
             }
 
-            // updateScoresAfterCurrentTrickBackend(currTrick);
             ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
 
             // make new background for next round
@@ -349,15 +329,15 @@ public class MainApplication extends Application {
         // Adjust the transition based on the player number
         if (playerNo == 1) { // Bottom player
             transition.setToY(-(PLAYER_AREA_HEIGHT) + 90);
-            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
+            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CardViewUtility.CARD_WIDTH / 2);
         } else if (playerNo == 2) { // Left player
-            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CardViewUtility.CARD_HEIGHT / 2)+180);
             transition.setToX(500);
         } else if (playerNo == 3) { // Top player
             transition.setToY(180);
-            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
+            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CardViewUtility.CARD_WIDTH / 2);
         } else if (playerNo == 4) { // Right player
-            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CardViewUtility.CARD_HEIGHT / 2)+180);
             transition.setToX(-350);
         }
 
@@ -383,92 +363,6 @@ public class MainApplication extends Application {
         transition.play();
 
     }
-
-    private Pane createCardViewsOfPlayer(Pane playerArea, Player player) {
-        try {
-            String currentDirectory = System.getProperty("user.dir");
-            List<Card> hand = player.getHand().getCards();
-            int playerIndex = playerList.indexOf(player);
-
-            for (int i = 0; i < hand.size(); i++) {
-                Card card = hand.get(i);
-
-                File faceUpFile = new File(currentDirectory + "/images/" + card.getFilename());
-                Image faceUpImage = new Image(new FileInputStream(faceUpFile));
-                File faceDownFile = new File(currentDirectory + "/images/" + "/face_down_image.png");
-                Image faceDownImage = new Image(new FileInputStream(faceDownFile));
-                CardImageView cardView = new CardImageView(faceUpImage, faceDownImage);
-                if (player instanceof HumanPlayer) {
-                    cardView.setImage(true);
-                }
-                cardView.setFitWidth(CARD_WIDTH);
-                cardView.setFitHeight(CARD_HEIGHT);
-
-                double xPos, yPos;
-                if (playerIndex == 0) { // Bottom player
-                    xPos = i *  (CARD_WIDTH + SPACING); // Normal horizontal spacing
-                    yPos = 0; // Align with top edge
-                } else if (playerIndex == 1) { // Left player
-                    xPos = 0; // Align with left edge
-                    yPos = i * 30; // Vertical spacing
-                } else if (playerIndex == 2) { // Top player
-                    xPos = i * (CARD_WIDTH + SPACING); // Normal horizontal spacing
-                    yPos = 0; // Align with top edge
-                } else { // Right player
-                    xPos = 0; // Align with left edge
-                    yPos = i * 30; // Vertical spacing
-                }
-
-                cardView.setLayoutX(xPos);
-                cardView.setLayoutY(yPos);
-
-
-                // cardView.setRotate(-90);
-                // Rotate cards for left and right players
-                if (playerIndex == 1 || playerIndex == 3) {
-                    cardView.setRotate(90); // Rotate 90 degrees for left and right players
-                }
-
-                // Determine if the card is playable
-                // boolean isPlayable = hand.contains(card);
-                // Apply hover effect
-                if (player instanceof HumanPlayer) {
-                    CardViewUtility.addHoverEffect(cardView);
-                }
-
-                // cardView.setId(card.getRank().getSymbol()+card.getSuit().getSymbol());
-                cardView.setId(i + "");
-
-                cardView.setUserData(card);
-
-                playerArea.getChildren().add(cardView);
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return playerArea;
-    }
-
-    private void setupPlayerAreas(List<Player> playerList, Round round) {
-        for (int i = 0; i < playerList.size(); i++) {
-            int position = i;
-            Pane playerArea = PlayAreaUtility.createPlayerArea(position);
-            PlayAreaUtility.positionPlayerArea(playerArea, position);
-
-            // Create Cards
-            playerArea = createCardViewsOfPlayer(playerArea, playerList.get(i));
-            playerArea.setId(i + "");
-            // final String playerAreaId = playerArea.getId();
-            // playerArea.setOnMouseEntered(event -> {
-            //     // Print the node's ID or any other identifying detail
-            //     System.out.println("Mouse entered: " + playerAreaId);
-            // });
-
-
-            root.getChildren().add(playerArea);
-        }
-    }
-
 
     @Override
     public void start(Stage stage) throws IOException {

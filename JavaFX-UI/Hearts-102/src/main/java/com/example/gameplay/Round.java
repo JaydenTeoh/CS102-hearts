@@ -62,7 +62,7 @@ public class Round {
             int pointsInTrick = currentTrick.getNumPoints();
             int previousPoints = playersPointsInCurrentRound.get(winnerOfTrick);
 
-            // playersPointsInCurrentRound.replace(winnerOfTrick, pointsInTrick + previousPoints);
+            playersPointsInCurrentRound.replace(winnerOfTrick, pointsInTrick + previousPoints);
         }
 
         this.currentTrick = new Trick(belongsToGame.getPlayers());

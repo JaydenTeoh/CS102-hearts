@@ -118,7 +118,7 @@ public class AIPlayer implements Player {
          */
         if (trick.getCardsInTrick().isEmpty()) {
             if (currHand.isAllHearts()) {
-                return currHand.getLowest(Suit.HEARTS);
+                return currHand.getLowestOfSuit(Suit.HEARTS);
             }
 
             // if early on, short-suit yourself if possible in this order
@@ -153,14 +153,14 @@ public class AIPlayer implements Player {
 
             // only dangerous high cards, probably near end-game
             if (getHand().hasSuit(Suit.DIAMONDS)) {
-                return getHand().getLowest(Suit.DIAMONDS);
+                return getHand().getLowestOfSuit(Suit.DIAMONDS);
             } else if (getHand().hasSuit(Suit.CLUBS)) {
-                return getHand().getLowest(Suit.CLUBS);
+                return getHand().getLowestOfSuit(Suit.CLUBS);
             } else if (getHand().hasSuit(Suit.HEARTS) && round.isHeartsBroken()) {
-                return getHand().getLowest(Suit.HEARTS);
+                return getHand().getLowestOfSuit(Suit.HEARTS);
             }
             // otherwise you only have spades
-            return getHand().getLowest(Suit.SPADES);
+            return getHand().getLowestOfSuit(Suit.SPADES);
         }
 
 
@@ -173,7 +173,7 @@ public class AIPlayer implements Player {
             Suit suitToFollow = trick.getLeadingSuit();
             Rank currentWinningRank = trick.getLeadingCard().getRank();
             Card highestFollowCard = getHand().getHighest(suitToFollow); // highest card of suit
-            Card lowestFollowCard = getHand().getLowest(suitToFollow);
+            Card lowestFollowCard = getHand().getLowestOfSuit(suitToFollow);
             Card highestSafeFollowCard = getHand().getHighestSafe(suitToFollow, currentWinningRank); // highest card of suit that is lower than winning rank
             // Case 4a: I only have one card of the suit, there is no choice available
             if (currHand.hasExactlyOne(trick.getLeadingSuit())) {

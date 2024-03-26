@@ -5,13 +5,13 @@ import com.example.app.*;
 import com.example.pokercards.*;
 
 public class Hand {
-    private ArrayList<Card> cards;
+    private List<Card> cards;
 
     public Hand(ArrayList<Card> cards) {
         this.cards = cards;
     }
 
-    public ArrayList<Card> getCards() {
+    public List<Card> getCards() {
         return cards;
     }
 
@@ -75,29 +75,27 @@ public class Hand {
     public Card getHighestSafe(Suit suit, Rank rank) {
         Card highestSafe = null;
         for (Card card : cards) {
-        if (card.getSuit().compareTo(suit) == 0 & rank.compareTo(card.getRank()) > 0) {
-            if (highestSafe == null) {
-                highestSafe = card;
-            } else if (highestSafe.getRank().compareTo(card.getRank()) < 0) {
-                highestSafe = card;
-            }
-        }
-        }
-        return highestSafe;
-    }
-
-    public Card getLowest(Suit suit) {
-        Card highestOfSuit = null;
-        for (Card card : cards) {
-            if (card.getSuit().compareTo(suit) == 0) {
-                if (highestOfSuit == null) {
-                    highestOfSuit = card;
-                } else if (highestOfSuit.compareTo(card) > 0) {
-                    highestOfSuit = card;
+            if (card.getSuit().compareTo(suit) == 0 && rank.compareTo(card.getRank()) > 0) {
+                if (highestSafe == null || highestSafe.getRank().compareTo(card.getRank()) < 0) {
+                    highestSafe = card;
                 }
             }
         }
-        return highestOfSuit;
+
+        return highestSafe;
+    }
+
+    public Card getLowestOfSuit(Suit suit) {
+        Card lowestOfSuit = null;
+        for (Card card : cards) {
+            if (card.getSuit().compareTo(suit) == 0) {
+                if (lowestOfSuit == null || lowestOfSuit.compareTo(card) > 0) {
+                    lowestOfSuit = card;
+                }
+            }
+        }
+
+        return lowestOfSuit;
     }
 
     public ArrayList<Card> getPlayableCards(Trick trick) {
@@ -116,7 +114,7 @@ public class Hand {
         // if player is the first player of the trick, can play any card that isn't hearts if hearts is not yet broken. else, can play anything
         if (trick.getCardsInTrick().isEmpty()) {
             if (heartsBroken) {
-                return cards; // can play any card to start trick
+                return new ArrayList<Card>(cards); // can play any card to start trick
             } 
 
             for (Card c : cards) {
@@ -127,7 +125,7 @@ public class Hand {
             }
 
             return playableCards;
-            }
+        }
         
 
         // if player isn't starting the trick, get leading card of trick
@@ -141,7 +139,7 @@ public class Hand {
 
         // player has no card belonging to the trick's suit -> can play any card
         if (playableCards.isEmpty()) {
-            return cards;
+            return new ArrayList<Card>(cards);
         }
 
         return playableCards;

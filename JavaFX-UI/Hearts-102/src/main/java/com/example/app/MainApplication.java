@@ -14,6 +14,7 @@ import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -23,13 +24,14 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.Cursor;
 import javafx.util.Duration;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.animation.ScaleTransition;
 
 import java.io.File;
@@ -40,6 +42,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.sound.sampled.LineUnavailableException;
@@ -61,17 +65,17 @@ public class MainApplication extends Application {
         root.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 
         Region background = new Region();
-        background.setPrefSize(1500, 800);
+        background.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         background.setStyle("-fx-background-color: green");
 
-        Button btn = new Button();
-        btn.setText("Start");
+        Button startButton = new Button();
+        startButton.setText("Start");
 
-        btn.setPrefSize(200, 50);
-        btn.setStyle("-fx-font-size: 20px;");
+        startButton.setPrefSize(200, 50);
+        startButton.setStyle("-fx-font-size: 20px;");
 
         // Set the action event handler to call handleButtonClick method
-        btn.setOnAction(event -> {
+        startButton.setOnAction(event -> {
             FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.4), root);
             fadeOut.setToValue(0); // Fade to transparent
             fadeOut.setOnFinished(event2 -> {
@@ -81,24 +85,24 @@ public class MainApplication extends Application {
                 fadeIn.setToValue(1); // Fade to opaque
                 fadeIn.play();
                 startGame();
-                root.getChildren().remove(btn); // Removes the button from the root pane
+                root.getChildren().remove(startButton); // Removes the button from the root pane
             });
             fadeOut.play();
         });
 
-        root.getChildren().addAll(background, btn);
+        root.getChildren().addAll(background, startButton);
 
         root.widthProperty().addListener((obs, oldVal, newVal) -> {
-            btn.setLayoutX(newVal.doubleValue() / 2 - btn.getWidth() / 2);
+            startButton.setLayoutX(newVal.doubleValue() / 2 - startButton.getWidth() / 2);
         });
 
         root.heightProperty().addListener((obs, oldVal, newVal) -> {
-            btn.setLayoutY(newVal.doubleValue() / 2 - btn.getHeight() / 2);
+            startButton.setLayoutY(newVal.doubleValue() / 2 - startButton.getHeight() / 2);
         });
 
-        btn.layoutBoundsProperty().addListener((obs, oldVal, newVal) -> {
-            btn.setLayoutX((WINDOW_WIDTH - newVal.getWidth()) / 2);
-            btn.setLayoutY((WINDOW_HEIGHT - newVal.getHeight()) / 2);
+        startButton.layoutBoundsProperty().addListener((obs, oldVal, newVal) -> {
+            startButton.setLayoutX((WINDOW_WIDTH - newVal.getWidth()) / 2);
+            startButton.setLayoutY((WINDOW_HEIGHT - newVal.getHeight()) / 2);
         });
 
         return root;
@@ -210,6 +214,7 @@ public class MainApplication extends Application {
         } 
 
         // display final scores if game ended
+        PlayAreaUtility.displayLeaderboard(root, playerList, game);
     }
 
     private void nextTurn() {
@@ -300,12 +305,14 @@ public class MainApplication extends Application {
 
     private void moveCard(Node cardView, Card cardPlayed) {
         currentCardViewsInTrick.add(cardView);
-        // shift this into a function?? idk but ill clean this up later
+
         if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
             round.setHeartsBroken();
         }
+
         TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), cardView);
         CardViewUtility.disableHover((ImageView) cardView);
+
         // Find the player who played the card
         Player playerNow = null;
         for (Player player : playerList) {
@@ -314,6 +321,7 @@ public class MainApplication extends Application {
                 break;
             }
         }
+
         int playerNo = playerList.indexOf(playerNow) + 1; // Player number is the index in the list + 1
 
         // Adjust the transition based on the player number

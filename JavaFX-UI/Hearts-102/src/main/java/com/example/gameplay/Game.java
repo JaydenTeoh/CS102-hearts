@@ -3,10 +3,7 @@ import com.example.exceptions.*;
 import com.example.app.*;
 import com.example.pokercards.*;
 import com.example.players.*;
-
-import java.io.PrintStream;
 import java.util.*;
-//import javax.swing.ImageIcon;
 
 public class Game {
     private int numRounds;
@@ -16,7 +13,7 @@ public class Game {
     private HashMap<Player, Integer> playersPointsInCurrentGame;
     private ArrayList<Player> players;
 
-    public static final int MAX_POINTS = 50;
+    public static final int MAX_POINTS = 5;
     public static final int NUM_PLAYERS = 4;
     public static final int MAX_NUMBER_OF_CARDS_PER_PLAYER = 13;
 
@@ -36,7 +33,6 @@ public class Game {
 
     public void incrementNumRounds() {
         numRounds++;
-        return;
     }
 
     public ArrayList<Player> getPlayers() {
@@ -51,8 +47,6 @@ public class Game {
         } else {
             throw new PlayerException("There can only be 4 players in one game, so we cannot add any more players.");
         }
-
-        return;
     }
 
     public void removePlayer(Player p) {
@@ -61,8 +55,6 @@ public class Game {
             playersPointsInCurrentGame.remove(p);
             players.remove(p);
         }
-
-        return;
     }
 
     public HashMap<Player, Integer> getPlayersPointsInCurrentGame() {
@@ -75,8 +67,6 @@ public class Game {
         } else {
             throw new PlayerException("We cannot add points because the player does not exist.");
         }
-
-        return;
     }
 
     public boolean isEnded() {

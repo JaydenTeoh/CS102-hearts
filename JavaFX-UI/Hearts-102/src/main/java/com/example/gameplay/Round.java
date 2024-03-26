@@ -19,11 +19,11 @@ public class Round {
         this.belongsToGame = belongsToGame;
         heartsBroken = false;
 
-        // need to implement Game.getPlayers later on
         currentTrick = null;
 
         // initialising the hashmap, every player starts with 0 points
         playersPointsInCurrentRound = new HashMap<>();
+
         for (Player p: belongsToGame.getPlayers()) {
             playersPointsInCurrentRound.put(p, 0);
         }
@@ -61,8 +61,6 @@ public class Round {
         this.currentTrick = new Trick(belongsToGame.getPlayers(), numTricksPlayed, heartsBroken, playerStartingFirst);
     }
 
-
-    // Need to add the static variables later on
     public void dealHands() {
         ArrayList<Hand> hands = new ArrayList<>();
 

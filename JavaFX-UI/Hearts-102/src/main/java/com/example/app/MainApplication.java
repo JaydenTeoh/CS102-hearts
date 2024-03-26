@@ -219,6 +219,7 @@ public class MainApplication extends Application {
 
     private void nextTurn() {
         Trick currTrick = round.getCurrentTrick();
+        System.out.println();
 
         if (currTrick.getCardsInTrick().size() == 4) {
             PauseTransition pause = new PauseTransition(Duration.seconds(1));
@@ -226,6 +227,7 @@ public class MainApplication extends Application {
             pause.setOnFinished(event -> {
                 processNextTrick(currTrick);
                 currentPlayer = round.getPlayerStartingFirst();
+                System.out.println(currentPlayer);
                 if (round.getNumTricksPlayed() == 13) {
                     // when all tricks have been played, start a new round
                     processNextRound();
@@ -239,7 +241,7 @@ public class MainApplication extends Application {
             pause.play();
             return;
 
-        } else if (currTrick.getCardsInTrick().size() != 0 || round.getNumTricksPlayed() != 0 ){
+        } else if (currTrick.getCardsInTrick().size() != 0){
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
 

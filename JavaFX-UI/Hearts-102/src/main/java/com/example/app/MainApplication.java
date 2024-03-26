@@ -188,7 +188,7 @@ public class MainApplication extends Application {
 
         while (iter.hasNext()) {
             Player p = iter.next();
-            game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
+            game.setPlayersPointsInCurrentGame(p, roundPoints.get(p) % 26);
         }
 
         // ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);

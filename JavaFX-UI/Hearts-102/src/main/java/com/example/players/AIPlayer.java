@@ -26,6 +26,7 @@ public class AIPlayer implements Player {
         this.hand = hand;
     }
 
+    @Override
     public List<Card> passCards() {
         Hand currHand = getHand();
         int numLeft = 3;

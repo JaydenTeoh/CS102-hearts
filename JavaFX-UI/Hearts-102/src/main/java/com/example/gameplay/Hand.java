@@ -137,11 +137,13 @@ public class Hand {
         return highestOfSuit;
     }
 
-    public ArrayList<Card> getPlayableCards(Round round, Trick trick) {
+    public ArrayList<Card> getPlayableCards(Trick trick) {
         ArrayList<Card> playableCards = new ArrayList<Card>();
+        int trickNo = trick.getTrickNo();
+        boolean heartsBroken = trick.isHeartsBroken();
 
         // if it's the first trick and the player has the starting card
-        if (round.getNumTricksPlayed() == 0) {
+        if (trickNo == 0) {
             if (cards.contains(Game.ROUND_STARTING_CARD)) {
                 playableCards.add(Game.ROUND_STARTING_CARD);
                 return playableCards;
@@ -150,7 +152,7 @@ public class Hand {
 
         // if player is the first player of the trick, can play any card that isn't hearts if hearts is not yet broken. else, can play anything
         if (trick.getCardsInTrick().isEmpty()) {
-            if (round.isHeartsBroken()) {
+            if (heartsBroken) {
                 return cards; // can play any card to start trick
             } 
 
@@ -184,8 +186,7 @@ public class Hand {
 
     public void addCard(Card card) {
         cards.add(card);
-        
-        return;
+
     }
 
     // for AI player to decide whether to dump spades

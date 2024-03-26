@@ -28,12 +28,19 @@ import java.util.List;
 
 public class Trick {
     private int numPoints;
-    private ArrayList<Card> cardsInTrick;
+    private int trickNo;
+    private boolean heartsBroken;
+    private int playerStartingFirst;
+    private List<Card> cardsInTrick;
+
 
     // Constructor
-    public Trick(ArrayList<Player> players) {
-        this.cardsInTrick = new ArrayList<Card>();
-        this.numPoints = 0; // Initialize numPoints to 0
+    public Trick(List<Player> players, int trickNo, boolean heartsBroken, int playerStartingFirst) {
+        cardsInTrick = new ArrayList<Card>();
+        numPoints = 0; // Initialize numPoints to 0
+        this.trickNo = trickNo;
+        this.heartsBroken = heartsBroken;
+        this.playerStartingFirst = playerStartingFirst;
     }
 
     // Method to add a card to the trick
@@ -102,6 +109,31 @@ public class Trick {
     // Method to get the number of points accumulated in the trick
     public int getNumPoints() {
         return numPoints;
+    }
+
+    public int getTrickNo() {
+        return trickNo;
+    }
+
+    public void setTrickNo(int trickNo) {
+        this.trickNo = trickNo;
+    }
+
+    public boolean isHeartsBroken() {
+        return heartsBroken;
+    }
+
+    public void setHeartsBroken(boolean heartsBroken) {
+        this.heartsBroken = heartsBroken;
+    }
+
+    public int getWinner() {
+        if (cardsInTrick.size() != 4) {
+            return -1;
+        }
+        
+        int winningCardIndex = getWinningCardIndex();
+        return (winningCardIndex + playerStartingFirst) % Game.NUM_PLAYERS;
     }
 }
 

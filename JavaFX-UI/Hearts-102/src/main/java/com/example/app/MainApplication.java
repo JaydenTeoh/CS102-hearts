@@ -246,8 +246,13 @@ public class MainApplication extends Application {
         }
 
         // Check if player is Human or AI
-        if (playerList.get(currentPlayer) instanceof AIPlayer) {
-            Card cardPlayed = playerList.get(currentPlayer).playCard(round, round.getCurrentTrick());
+        if (playerList.get(currentPlayer) instanceof AIPlayer AI) {
+            Card leadingCard = round.getCurrentTrick().getLeadingCard();
+            int roundNo = round.getNumTricksPlayed();
+            boolean heartsBroken = round.isHeartsBroken();
+            int trickSize = round.getCurrentTrick().getCardsInTrick().size();
+            int trickPoints = round.getCurrentTrick().getNumPoints();
+            Card cardPlayed = AI.playCard(leadingCard, roundNo, heartsBroken, trickSize, trickPoints);
             if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
                 round.setHeartsBroken();
             }

@@ -264,7 +264,7 @@ public class MainApplication extends Application {
                     CardImageView cardView = (CardImageView) node;
                     cardView.setImage(true); // Flip the card to face up
                     CardViewUtility.moveCard(cardView, cardPlayed, currentCardViewsInTrick, playerList, () -> {
-                        // remove card from current player's hand
+                        // remove Card from AI player's hand
                         playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
                         // add card to current trick
                         round.getCurrentTrick().addCardToTrick(cardPlayed);

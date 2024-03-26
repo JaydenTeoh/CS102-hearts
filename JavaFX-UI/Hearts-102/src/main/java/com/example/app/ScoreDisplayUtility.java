@@ -1,13 +1,22 @@
 package com.example.app;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 import com.example.gameplay.Game;
 import com.example.players.Player;
 import com.example.gameplay.Round;
+import com.example.gameplay.Trick;
 
+import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.util.Duration;
 
 public class ScoreDisplayUtility {
 
@@ -73,6 +82,85 @@ public class ScoreDisplayUtility {
         }
     }
 
+    public static void animateTrickToPlayerArea(Pane root, int winnerPlayerIndex) {
+        try {
+            String currentDirectory = System.getProperty("user.dir");
+            File file = new File(currentDirectory + "/images/" + "/fourCards.png");
+            
+            // // Print out whether the file exists
+            // System.out.println("File exists: " + file.exists());
+
+            // Load the image
+            Image image = new Image(new FileInputStream(file));
+
+            ImageView imageView = new ImageView(image);
+            imageView.setPreserveRatio(true);
+
+            // Set initial size and position of the image
+            imageView.setFitWidth(50); // Initial width
+            imageView.setFitHeight(50); // Initial height
+            imageView.setLayoutX((root.getPrefWidth() - imageView.getFitWidth()) / 2);
+            imageView.setLayoutY((root.getPrefHeight() - imageView.getFitHeight()) / 2);
+
+            root.getChildren().add(imageView);
+
+            // Animation to scale up
+            ScaleTransition scaleUp = new ScaleTransition(Duration.seconds(1), imageView);
+            scaleUp.setToX(2); // Double the width
+            scaleUp.setToY(2); // Double the height
+
+            // Animation to scale down
+            ScaleTransition scaleDown = new ScaleTransition(Duration.seconds(1), imageView);
+            scaleDown.setToX(1); // Original width
+            scaleDown.setToY(1); // Original height
+
+            TranslateTransition transition = new TranslateTransition(Duration.seconds(0.5), imageView);
+            // Animation to move to player areadou
+            switch (winnerPlayerIndex) {
+                case 0: // Bottom player
+                    transition.setToX(250);
+                    transition.setToY(350);
+                    break;
+                case 1: // Left player
+                    transition.setToX(-660);
+                    transition.setToY(237);
+                    break;
+                case 2: // Top player
+                    transition.setToX(250);
+                    transition.setToY(-320);
+                    break;
+                case 3: // Right player
+                    transition.setToX(660);
+                    transition.setToY(237);
+                    break;
+                default:
+                    break;
+            }
+            // Start the animation
+            scaleUp.play();
+            transition.play();
+        } catch (FileNotFoundException e) {
+            System.out.println("Error loading image: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public static void updateScoresAfterCurrentTrickBackend(Pane root, Trick currTrick, Round round, int currentPlayer, List<Player> playerList) {
+        currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
+        int pointsInCurrTrick = currTrick.getNumPoints();
+        int winningCardIndexInTrick = currTrick.getWinningCardIndex();
+        int shift = Game.NUM_PLAYERS - 1 - currentPlayer; // because current player is last player of trick
+        int winnerIndexInPlayerList = winningCardIndexInTrick - shift;
+        if (winnerIndexInPlayerList < 0) {
+            winnerIndexInPlayerList += 4;
+        }
+
+        Player winner = playerList.get(winnerIndexInPlayerList);
+        round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
+
+        // displays transition of the player that won the trick
+        animateTrickToPlayerArea(root, winnerIndexInPlayerList);
+    }
 
     public static void updateScoresDisplay(Pane root, Game game, Round round, List<Player> playerList) {
         HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();

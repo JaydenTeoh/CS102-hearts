@@ -10,10 +10,10 @@ import javafx.scene.layout.Pane;
 public class PlayAreaUtility {
     private static final double WINDOW_WIDTH = 1500;
     private static final double WINDOW_HEIGHT = 800;
-    private static final int PLAYER_AREA_WIDTH = 600;
-    private static final int PLAYER_AREA_HEIGHT = 250;
-    private static final int PLAY_AREA_WIDTH = 400;
-    private static final int PLAY_AREA_HEIGHT = 200;
+    public static final int PLAYER_AREA_WIDTH = 600;
+    public static final int PLAYER_AREA_HEIGHT = 250;
+    public static final int PLAY_AREA_WIDTH = 400;
+    public static final int PLAY_AREA_HEIGHT = 200;
 
     public static Pane createPlayArea() {
         Pane playArea = new Pane();

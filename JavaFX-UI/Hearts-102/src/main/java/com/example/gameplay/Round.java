@@ -55,7 +55,7 @@ public class Round {
             numTricksPlayed++;
         } 
 
-        this.currentTrick = new Trick(players, numTricksPlayed, heartsBroken, playerStartingFirst);
+        this.currentTrick = new Trick(numTricksPlayed, heartsBroken, playerStartingFirst);
     }
 
     public void dealHands() {

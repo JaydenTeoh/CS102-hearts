@@ -1,26 +1,6 @@
 package com.example.gameplay;
-import com.example.players.*;
-import com.example.exceptions.*;
 import com.example.app.*;
 import com.example.pokercards.*;
-
-//Variables:
-//numPoints: Stores the number of points accumulated in the trick.
-//cardsInTrick: ArrayList storing the cards currently in the trick.
-//leadingCardOfTrick: Stores the Card that was played first in a trick.
-//winningCardOfTrick: Stores the Card that won the trick.
-
-//Constructors:
-//Trick(List<Card> cards, List<Player> players): Initializes a new Trick object with the specified list of cards and players. Sets up the trick's initial state, including cards in the trick, leading card, winning card, and calculates the number of points.
-//Methods:
-//addCardToTrick(Card card): Adds a card to the trick.
-//getCardsInTrick(): ArrayList<Card>: Returns the cards currently in the trick.
-//getLeadingCard(): Card: Returns the leading card of the trick.
-//setWinningCard(Card card): Sets the winning card of the trick.
-//getWinningCard(): Card: Returns the winning card of the trick.
-//setNumPoints(): Calculates and sets the number of points in the trick.
-//getNumPoints(): int: Returns the number of points accumulated in the trick.
-//returnWinningCardIndex(): int: Return the index of the winning card in the cardsInTrick list
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +14,7 @@ public class Trick {
 
 
     // Constructor
-    public Trick(List<Player> players, int trickNo, boolean heartsBroken, int playerStartingFirst) {
+    public Trick(int trickNo, boolean heartsBroken, int playerStartingFirst) {
         cardsInTrick = new ArrayList<Card>();
         numPoints = 0; // Initialize numPoints to 0
         this.trickNo = trickNo;

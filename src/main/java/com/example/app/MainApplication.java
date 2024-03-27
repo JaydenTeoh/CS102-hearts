@@ -207,7 +207,6 @@ public class MainApplication extends Application {
     private void startRound() {
         // changes Round instance variable in game to a new Round
         game.nextRound();
-        game.incrementNumRounds();
         ScoreDisplayUtility.createAndAddAllScorePanes(root);
 
         // this adds previous round's score to game

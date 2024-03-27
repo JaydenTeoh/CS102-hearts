@@ -1,11 +1,11 @@
-package com.example.utility;
+package utility;
 
 import java.util.List;
 
-import com.example.functional.NextTurnAction;
-import com.example.gameplay.Game;
-import com.example.players.Player;
-import com.example.pokercards.Card;
+import functional.NextTurnAction;
+import gameplay.Game;
+import players.Player;
+import pokercards.Card;
 
 import javafx.animation.TranslateTransition;
 import javafx.collections.ObservableList;

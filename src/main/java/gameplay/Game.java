@@ -1,8 +1,8 @@
-package com.example.gameplay;
-import com.example.exceptions.*;
-import com.example.app.*;
-import com.example.pokercards.*;
-import com.example.players.*;
+package gameplay;
+import exceptions.*;
+import app.*;
+import pokercards.*;
+import players.*;
 import java.util.*;
 
 public class Game {

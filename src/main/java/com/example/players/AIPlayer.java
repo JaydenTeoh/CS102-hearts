@@ -60,10 +60,7 @@ public class AIPlayer implements Player {
         if (currHand.howManyOfSuit(Suit.CLUBS) <= numLeft) {
             numLeft -= currHand.howManyOfSuit(Suit.CLUBS);
             cardsToPass.addAll(currHand.getAll(Suit.CLUBS));
-        }
-
-        // if you can leave yourself with 1 club left, that's okay also, you can dump it on first trick anyways
-        if (currHand.howManyOfSuit(Suit.CLUBS) == numLeft + 1) {
+        } else if (currHand.howManyOfSuit(Suit.CLUBS) == numLeft + 1) {
             for (Card c : currHand.getAll(Suit.CLUBS)) {
                 if (c.equals(currHand.getHighest(Suit.CLUBS))) {
                     continue;

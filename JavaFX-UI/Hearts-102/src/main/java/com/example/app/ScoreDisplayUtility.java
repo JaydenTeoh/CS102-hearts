@@ -7,6 +7,7 @@ import java.util.*;
 
 import com.example.gameplay.Game;
 import com.example.players.Player;
+import com.example.gameplay.Round;
 import com.example.gameplay.Trick;
 
 import javafx.animation.ScaleTransition;
@@ -96,8 +97,8 @@ public class ScoreDisplayUtility {
             imageView.setPreserveRatio(true);
 
             // Set initial size and position of the image
-            imageView.setFitWidth(50); // Initial width
-            imageView.setFitHeight(50); // Initial height
+            imageView.setFitWidth(35); // Initial width
+            imageView.setFitHeight(35); // Initial height
             imageView.setLayoutX(750);
             imageView.setLayoutY(400);
 
@@ -117,20 +118,20 @@ public class ScoreDisplayUtility {
             // Animation to move to player areadou
             switch (winnerPlayerIndex) {
                 case 0: // Bottom player
-                    transition.setToX(250);
-                    transition.setToY(280);
+                    transition.setToX(40);
+                    transition.setToY(320);
                     break;
                 case 1: // Left player
-                    transition.setToX(-660);
-                    transition.setToY(237);
+                    transition.setToX(-620);
+                    transition.setToY(30);
                     break;
                 case 2: // Top player
-                    transition.setToX(250);
-                    transition.setToY(-320);
+                    transition.setToX(40);
+                    transition.setToY(-365);
                     break;
                 case 3: // Right player
-                    transition.setToX(620);
-                    transition.setToY(237);
+                    transition.setToX(585);
+                    transition.setToY(30);
                     break;
                 default:
                     break;
@@ -144,7 +145,7 @@ public class ScoreDisplayUtility {
         }
     }
 
-    public static void updateScoresAfterCurrentTrickBackend(Pane root, Trick currTrick, Game game, int currentPlayer, List<Player> playerList) {
+    public static void updateScoresAfterCurrentTrickBackend(Pane root, Trick currTrick, Round round, int currentPlayer, List<Player> playerList) {
         currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
         int pointsInCurrTrick = currTrick.getNumPoints();
         int winningCardIndexInTrick = currTrick.getWinningCardIndex();
@@ -155,14 +156,14 @@ public class ScoreDisplayUtility {
         }
 
         Player winner = playerList.get(winnerIndexInPlayerList);
-        game.getRound().setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
+        round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
 
         // displays transition of the player that won the trick
         animateTrickToPlayerArea(root, winnerIndexInPlayerList);
     }
 
-    public static void updateScoresDisplay(Pane root, Game game, List<Player> playerList) {
-        HashMap<Player, Integer> pointsInCurrentRound = game.getRound().getPlayersPointsInCurrentRound();
+    public static void updateScoresDisplay(Pane root, Game game, Round round, List<Player> playerList) {
+        HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();
         HashMap<Player, Integer> pointsInCurrentGame = game.getPlayersPointsInCurrentGame();
 
         for (int i = 0; i < playerList.size(); i++) {

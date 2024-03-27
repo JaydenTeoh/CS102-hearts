@@ -19,11 +19,11 @@ public class Round {
         this.belongsToGame = belongsToGame;
         heartsBroken = false;
 
-        // need to implement Game.getPlayers later on
         currentTrick = null;
 
         // initialising the hashmap, every player starts with 0 points
         playersPointsInCurrentRound = new HashMap<>();
+
         for (Player p: belongsToGame.getPlayers()) {
             playersPointsInCurrentRound.put(p, 0);
         }
@@ -46,30 +46,21 @@ public class Round {
         return heartsBroken;
     }
 
-    public void setHeartsBroken(boolean heartsBroken) {
-        this.heartsBroken = heartsBroken;
+    public void setHeartsBroken() {
+        heartsBroken = true;
     }
 
     // starts a new trick
-    // if there was a previous trick, allocate points of the trick to the player who won it
     public void startNewTrick() {
         if (currentTrick != null) {
-            playerStartingFirst = this.getWinner();
+            playerStartingFirst = currentTrick.getWinner();
             System.out.println("Winner of trick: Player " + (playerStartingFirst + 1));
             numTricksPlayed++;
-
-            Player winnerOfTrick = belongsToGame.getPlayers().get(playerStartingFirst);
-            int pointsInTrick = currentTrick.getNumPoints();
-            int previousPoints = playersPointsInCurrentRound.get(winnerOfTrick);
-
-            // playersPointsInCurrentRound.replace(winnerOfTrick, pointsInTrick + previousPoints);
         }
 
-        this.currentTrick = new Trick(belongsToGame.getPlayers());
+        this.currentTrick = new Trick(belongsToGame.getPlayers(), numTricksPlayed, heartsBroken, playerStartingFirst);
     }
 
-
-    // Need to add the static variables later on
     public void dealHands() {
         ArrayList<Hand> hands = new ArrayList<>();
 
@@ -107,13 +98,6 @@ public class Round {
         this.currentTrick = currentTrick;
     }
 
-    public int getWinner() {
-        int winningCardIndex = currentTrick.getWinningCardIndex();
-        int winner = (winningCardIndex + playerStartingFirst) % Game.NUM_PLAYERS;
-
-        return winner;
-    }
-
     public HashMap<Player, Integer> getPlayersPointsInCurrentRound() {
         return this.playersPointsInCurrentRound;
     }
@@ -124,7 +108,5 @@ public class Round {
         } else {
             throw new PlayerException("We cannot add points because the player does not exist.");
         }
-
-        return;
     }
 }

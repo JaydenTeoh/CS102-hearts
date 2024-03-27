@@ -99,13 +99,13 @@ public class AIPlayer implements Player {
     }
 
 
-    @Override
-    public Card playCard(Round round, Trick trick) {
+    public Card playCard(Card leadingCard, int roundNo, boolean heartsBroken, int trickSize, int trickPoints) {
         Hand currHand = getHand();
+        
         /*
          * Case 1: First trick of the round
          */
-        if (round.getNumTricksPlayed() == 0) {
+        if (roundNo == 0) {
             // must play starting card if have
             if (currHand.hasCard(Game.ROUND_STARTING_CARD)) {
                 return Game.ROUND_STARTING_CARD;
@@ -116,13 +116,13 @@ public class AIPlayer implements Player {
          * Information 1: Not the first trick of the round
          * Case 2: Leading the trick (first player of the trick)
          */
-        if (trick.getCardsInTrick().isEmpty()) {
+        if (leadingCard == null) {
             if (currHand.isAllHearts()) {
-                return currHand.getLowest(Suit.HEARTS);
+                return currHand.getLowestOfSuit(Suit.HEARTS);
             }
 
             // if early on, short-suit yourself if possible in this order
-            if (round.getNumTricksPlayed() < 4) {
+            if (roundNo < 4) {
                 if (getHand().hasExactlyOne(Suit.DIAMONDS)) {
                     return getHand().getHighest(Suit.DIAMONDS);
                 }
@@ -134,7 +134,7 @@ public class AIPlayer implements Player {
             // if you have a safeish card, lead with it
             if (getHand().getHighestSafe(Suit.SPADES, Rank.QUEEN) != null && !currHand.poorSpadesHand()) {
                 return getHand().getHighestSafe(Suit.SPADES, Rank.QUEEN); // bleed out Spades early so that you don't risk getting dumped with Queen Spades
-            } else if (getHand().getHighestSafe(Suit.HEARTS, Rank.SIX) != null && round.isHeartsBroken()) {
+            } else if (getHand().getHighestSafe(Suit.HEARTS, Rank.SIX) != null && heartsBroken) {
                 return getHand().getHighestSafe(Suit.HEARTS, Rank.SIX);
             } else if (getHand().getHighestSafe(Suit.CLUBS, Rank.SIX) != null) {
                 return getHand().getHighestSafe(Suit.CLUBS, Rank.SIX);
@@ -147,20 +147,20 @@ public class AIPlayer implements Player {
                 return getHand().getHighestSafe(Suit.DIAMONDS, Rank.NINE);
             } else if (getHand().getHighestSafe(Suit.CLUBS, Rank.NINE) != null) {
                 return getHand().getHighestSafe(Suit.CLUBS, Rank.NINE);
-            } else if (getHand().getHighestSafe(Suit.HEARTS, Rank.NINE) != null && round.isHeartsBroken()) {
+            } else if (getHand().getHighestSafe(Suit.HEARTS, Rank.NINE) != null && heartsBroken) {
                 return getHand().getHighestSafe(Suit.HEARTS, Rank.NINE);
             }
 
             // only dangerous high cards, probably near end-game
             if (getHand().hasSuit(Suit.DIAMONDS)) {
-                return getHand().getLowest(Suit.DIAMONDS);
+                return getHand().getLowestOfSuit(Suit.DIAMONDS);
             } else if (getHand().hasSuit(Suit.CLUBS)) {
-                return getHand().getLowest(Suit.CLUBS);
-            } else if (getHand().hasSuit(Suit.HEARTS) && round.isHeartsBroken()) {
-                return getHand().getLowest(Suit.HEARTS);
+                return getHand().getLowestOfSuit(Suit.CLUBS);
+            } else if (getHand().hasSuit(Suit.HEARTS) && heartsBroken) {
+                return getHand().getLowestOfSuit(Suit.HEARTS);
             }
             // otherwise you only have spades
-            return getHand().getLowest(Suit.SPADES);
+            return getHand().getLowestOfSuit(Suit.SPADES);
         }
 
 
@@ -169,14 +169,15 @@ public class AIPlayer implements Player {
          * Information 2: Not leading the trick
          * Case 3: We have to follow suit, let's check if we can avoid picking up points
          */
-        if (currHand.hasSuit(trick.getLeadingSuit())) {
-            Suit suitToFollow = trick.getLeadingSuit();
-            Rank currentWinningRank = trick.getLeadingCard().getRank();
-            Card highestFollowCard = getHand().getHighest(suitToFollow); // highest card of suit
-            Card lowestFollowCard = getHand().getLowest(suitToFollow);
-            Card highestSafeFollowCard = getHand().getHighestSafe(suitToFollow, currentWinningRank); // highest card of suit that is lower than winning rank
+
+        Suit leadingSuit = leadingCard.getSuit();
+        Rank leadingRank = leadingCard.getRank();
+        if (currHand.hasSuit(leadingSuit)) {
+            Card highestFollowCard = getHand().getHighest(leadingSuit); // highest card of suit
+            Card lowestFollowCard = getHand().getLowestOfSuit(leadingSuit);
+            Card highestSafeFollowCard = getHand().getHighestSafe(leadingSuit, leadingRank); // highest card of suit that is lower than winning rank
             // Case 4a: I only have one card of the suit, there is no choice available
-            if (currHand.hasExactlyOne(trick.getLeadingSuit())) {
+            if (currHand.hasExactlyOne(leadingSuit)) {
                 return highestFollowCard; // highestFollowCard = lowestFollowCard
             }
 
@@ -184,10 +185,10 @@ public class AIPlayer implements Player {
              * Case 4b: Leading suit is Spades and I have Queen of Spades, 
              * have to be careful not to dump Queen of Spades on myself
              */
-            if (trick.getLeadingSuit().compareTo(Suit.SPADES) == 0) {
+            if (leadingSuit.compareTo(Suit.SPADES) == 0) {
                 if (currHand.hasCard(Game.QUEEN_OF_SPADES)) {
                     // leading Card is ACE Spade or King Spade
-                    if (trick.getLeadingCard().compareTo(Game.QUEEN_OF_SPADES) > 0) {
+                    if (leadingCard.compareTo(Game.QUEEN_OF_SPADES) > 0) {
                         return Game.QUEEN_OF_SPADES; // let's dump our Queen of Spades on someone else
                     } else {
                         // we can't dump our Queen of Spades on someone else but at least we can clear
@@ -203,9 +204,9 @@ public class AIPlayer implements Player {
             }
 
             // Case 4c: I am last player in the trick
-            if (trick.getCardsInTrick().size() == Game.NUM_PLAYERS - 1) {
+            if (trickSize == Game.NUM_PLAYERS - 1) {
                 // Case 4c(i): There are no points in the trick (just dump highest card)
-                if (trick.getNumPoints() == 0) {
+                if (trickPoints == 0) {
                     return highestFollowCard;
                 } else { // Case 4c(ii): there are points in trick, we want to avoid eating those points if possible
                     if (highestSafeFollowCard != null) {

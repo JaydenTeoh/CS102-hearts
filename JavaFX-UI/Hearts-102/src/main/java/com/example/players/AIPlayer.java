@@ -74,7 +74,7 @@ public class AIPlayer implements Player {
         }
 
 
-        for (int rankIndex = Rank.VALUES_ACE_HIGH.size(); rankIndex >= 0; rankIndex--) {
+        for (int rankIndex = Rank.VALUES_ACE_HIGH.size()-1; rankIndex >= 0; rankIndex--) {
             Rank currRank = Rank.VALUES_ACE_HIGH.get(rankIndex);
             List<Suit> dumpingSuitOrder = Arrays.asList( new Suit[] { Suit.HEARTS, Suit.SPADES, Suit.DIAMONDS, Suit.CLUBS } );
 

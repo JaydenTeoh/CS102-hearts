@@ -7,7 +7,9 @@ import com.example.gameplay.Round;
 import com.example.gameplay.Game;
 import com.example.players.Player;
 
+import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -75,6 +77,16 @@ public class PlayAreaUtility {
 
             root.getChildren().add(playerArea);
         }
+    }
+
+    public static Pane getPlayerArea(Pane root, int id){
+        for (Node node : root.getChildren()) {
+            if (node.getId() != null && node.getId().equals(id + "")) {
+                Pane pane = (Pane) node;
+                return pane;
+            }
+        }
+        return new Pane();
     }
 
     public static void displayLeaderboard(Pane root, List<Player> playerList, Game game) {

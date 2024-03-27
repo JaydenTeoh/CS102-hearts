@@ -9,7 +9,9 @@ import com.example.players.HumanPlayer;
 import com.example.players.Player;
 import com.example.pokercards.Card;
 import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
+import javafx.animation.RotateTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -40,6 +42,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,12 +73,19 @@ public class MainApplication extends Application {
     private List<Player> playerList;
     private List<Node> currentCardViewsInTrick;
 
-    private Pane root = new Pane();
+    private Pane root;
     private Game game;
     private Round round;
     private Label roundLabel;
+    private int currentRound;
+    private List<CardImageView> cardViewsToPass = new ArrayList<>();
+
+    Button passCardbutton = new Button();
 
     private Parent createContent() {
+        root = new Pane();
+        root.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        
         // Declare background outside the method
         Region background = new Region();
         background.setPrefSize(1500, 800);
@@ -232,7 +242,6 @@ public class MainApplication extends Application {
 
     private void startGame() {
         // // initialise instance variable root here
-        // root = new Pane();
 
         game = new Game();
         roundLabel = new Label("Round 1");
@@ -266,26 +275,112 @@ public class MainApplication extends Application {
         currentCardViewsInTrick = new ArrayList<>();
         round.dealHands();
 
-        for (int i = 0; i < Game.NUM_PLAYERS; i++) {
-            List<Card> hand = playerList.get(i).getHand().getCards();
-            for (Card c : hand) {
-                // set 2 of clubs to start first, as per game rules
-                if (c.equals(Game.ROUND_STARTING_CARD)) {
-                    round.setPlayerStartingFirst(i);
-                }
-            }
-        }
+        // Create Play Area
+        Pane playArea = new Pane();
+        playArea.setPrefSize(1000, 600);
+        playArea.setLayoutX((root.getPrefWidth() - playArea.getPrefWidth()) / 2);
+        playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
+        root.getChildren().add(playArea);
+
+        initialisePassCardButton(playArea);
+
         round.startNewTrick();
 
         // Create Player Areas
         PlayAreaUtility.setupPlayerAreas(playerList, round, root);
 
-        CardViewUtility.disableCards(root);
+        // CardViewUtility.disableCards(root);
 
-        // Set Playable Cards to starting player
-        currentPlayer = round.getPlayerStartingFirst();
+        selectCardsToPass();
+        // nextTurn();
+    }
 
-        nextTurn();
+    private void startPassingProcess() {
+        CardViewUtility.processPlayerCards(0, playerList, cardViewsToPass, game.getNumRounds(), root, () -> {
+            passCardbutton.setVisible(false);
+            cardViewsToPass.clear();
+
+            for (int i = 0; i < Game.NUM_PLAYERS; i++) {
+                List<Card> hand = playerList.get(i).getHand().getCards();
+                for (Card c : hand) {
+                    // set 2 of clubs to start first, as per game rules
+                    if (c.equals(Game.ROUND_STARTING_CARD)) {
+                        round.setPlayerStartingFirst(i);
+                    }
+                }
+            }
+
+            // Set Playable Cards to starting player
+            currentPlayer = round.getPlayerStartingFirst();
+
+            nextTurn();
+        });
+    }
+
+    private void enablePassCardButton() {
+        cardViewsToPass.clear();
+        passCardbutton.setVisible(true);
+    }
+
+    private void initialisePassCardButton(Pane playArea) {
+        passCardbutton.setText("Pass 3 cards");
+
+        passCardbutton.setPrefSize(200, 50);
+        passCardbutton.setStyle("-fx-font-size: 20px;");
+
+        // Set the action event handler to call handleButtonClick method
+        passCardbutton.setOnAction(event -> {
+            if (cardViewsToPass.size() == 3) {
+                System.out.println("Pass 3 cards");
+                startPassingProcess();
+            } else {
+                System.out.println("Please select 3 cards");
+            }
+        });
+
+        double xPos = (playArea.getPrefWidth() - passCardbutton.getPrefWidth()) / 2;
+        double yPos = (playArea.getPrefHeight() - passCardbutton.getPrefHeight()) / 2;
+
+        passCardbutton.setLayoutX(xPos);
+        passCardbutton.setLayoutY(yPos);
+
+        playArea.getChildren().add(passCardbutton);
+    }
+
+    private void selectCardsToPass() {
+        ObservableList<Node> cards = CardViewUtility.getCardViewsOfPlayer(root, 0);
+        for (Node cardView : cards) {
+            cardView.setEffect(null);
+            cardView.setOpacity(1);
+
+            // In createCardViewsOfPlayer, there is a instanceof HumanPlayer -> add hover
+            // effect, idk if removing it will break anything so I set these to null here
+            // first
+            cardView.setOnMouseEntered(null);
+            cardView.setOnMouseExited(null);
+
+            cardView.setOnMouseClicked(event -> {
+                // Card card = (Card) cardView.getUserData();
+
+                boolean cardActivated = cardViewsToPass.contains(cardView);
+
+                if (cardViewsToPass.size() == 3 && !cardActivated) {
+                    System.out.println("Max cards selected");
+                } else {
+                    double translateYDistance = cardActivated ? 0 : -50;
+
+                    TranslateTransition transition = new TranslateTransition(Duration.seconds(0.35), cardView);
+                    transition.setToY(translateYDistance);
+                    transition.play();
+
+                    if (cardActivated) {
+                        cardViewsToPass.remove(cardView);
+                    } else {
+                        cardViewsToPass.add((CardImageView) cardView);
+                    }
+                }
+            });
+        }
     }
 
     private void processNextTrick(Trick currTrick) {
@@ -295,7 +390,7 @@ public class MainApplication extends Application {
         ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
 
         // start new trick
-        for (Node cardView: currentCardViewsInTrick) {
+        for (Node cardView : currentCardViewsInTrick) {
             ((ImageView) cardView).setImage(null);
         }
 
@@ -324,9 +419,10 @@ public class MainApplication extends Application {
 
         // start new round
         if (!game.isEnded()) {
+            enablePassCardButton();
             startRound();
             return;
-        } 
+        }
 
         // display final scores if game ended
         PlayAreaUtility.displayLeaderboard(root, playerList, game);
@@ -349,14 +445,14 @@ public class MainApplication extends Application {
                 } else {
                     nextTurn();
                 }
-                
+
             });
 
             // Start the pause
             pause.play();
             return;
 
-        } else if (currTrick.getCardsInTrick().size() != 0){
+        } else if (currTrick.getCardsInTrick().size() != 0) {
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
 
@@ -395,7 +491,7 @@ public class MainApplication extends Application {
 
     public void enableCards() {
         ArrayList<Card> playableCards = playerList.get(0).getHand().getPlayableCards(round.getCurrentTrick());
-        
+
         System.out.println("\nPlayable Cards:");
         for (Card c : playableCards) {
             System.out.println(c);
@@ -445,7 +541,7 @@ public class MainApplication extends Application {
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
-        
+
         Scene scene = new Scene(createContent());
 
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
@@ -456,6 +552,7 @@ public class MainApplication extends Application {
         stage.setTitle("Hearts");
         stage.show();
     }
+
 
     public static void main(String[] args) {
         launch();

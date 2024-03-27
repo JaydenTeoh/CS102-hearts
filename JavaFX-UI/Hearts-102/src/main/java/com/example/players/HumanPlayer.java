@@ -24,8 +24,15 @@ public class HumanPlayer implements Player {
         this.hand = hand;
     }
 
-    public List<Card> passCards() {
-        // not implemented yet
-        return null;
-    }
+    //@Override
+    // public Card playCard(Round round, Trick trick) {
+    //     // not implemented yet
+    //     return null;
+    // }
+
+    // @Override
+    // public void passCards(List<Card> cards, Player player) {
+    //     hand.getCards().removeAll(cards);
+    //     player.getHand().getCards().addAll(cards);
+    // }
 }

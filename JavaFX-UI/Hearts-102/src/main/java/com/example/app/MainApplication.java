@@ -75,7 +75,6 @@ public class MainApplication extends Application {
 
     private Pane root;
     private Game game;
-    private Round round;
     private Label roundLabel;
     private int currentRound;
     private List<CardImageView> cardViewsToPass = new ArrayList<>();
@@ -95,10 +94,10 @@ public class MainApplication extends Application {
         heartsLabel.setFont(Font.font("Impact", FontWeight.BOLD, 72)); // Set font size and style
         heartsLabel.setTextFill(Color.WHITE); // Set text color
 
-// Center horizontally
+        // Center horizontally
         heartsLabel.setLayoutX((WINDOW_WIDTH/2 - heartsLabel.prefWidth(-1))-200);
 
-// Set vertical position
+        // Set vertical position
         heartsLabel.setLayoutY(300);
 
         // Background setup
@@ -230,11 +229,9 @@ public class MainApplication extends Application {
         popup.show(root.getScene().getWindow(), 950, 150); //location
     }
 
-
-
     private void updateBackgroundImage(String imageUrl, Region background) {
         BackgroundImage backgroundImage = new BackgroundImage(
-                new Image(imageUrl, 1500, 800, false, true),
+                new Image(imageUrl, PlayAreaUtility.WINDOW_WIDTH, PlayAreaUtility.WINDOW_HEIGHT, false, true),
                 BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
                 BackgroundPosition.DEFAULT, BackgroundSize.DEFAULT);
         background.setBackground(new Background(backgroundImage));
@@ -263,17 +260,18 @@ public class MainApplication extends Application {
     }
 
     private void startRound() {
-        round = new Round(0, game);
+        // changes Round instance variable in game to a new Round
+        game.nextRound(0);
         game.incrementNumRounds();
         ScoreDisplayUtility.createAndAddAllScorePanes(root);
 
         // this adds previous round's score to game
-        ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
+        ScoreDisplayUtility.updateScoresDisplay(root, game, playerList);
         RoundDisplayUtility.initializeRoundDisplay(root, roundLabel);
         RoundDisplayUtility.updateRoundDisplay(root, roundLabel, game.getNumRounds());
 
         currentCardViewsInTrick = new ArrayList<>();
-        round.dealHands();
+        game.getRound().dealHands();
 
         // Create Play Area
         Pane playArea = new Pane();
@@ -284,10 +282,10 @@ public class MainApplication extends Application {
 
         initialisePassCardButton(playArea);
 
-        round.startNewTrick();
+        game.getRound().startNewTrick();
 
         // Create Player Areas
-        PlayAreaUtility.setupPlayerAreas(playerList, round, root);
+        PlayAreaUtility.setupPlayerAreas(playerList, root);
 
         // CardViewUtility.disableCards(root);
 
@@ -305,13 +303,13 @@ public class MainApplication extends Application {
                 for (Card c : hand) {
                     // set 2 of clubs to start first, as per game rules
                     if (c.equals(Game.ROUND_STARTING_CARD)) {
-                        round.setPlayerStartingFirst(i);
+                        game.getRound().setPlayerStartingFirst(i);
                     }
                 }
             }
 
             // Set Playable Cards to starting player
-            currentPlayer = round.getPlayerStartingFirst();
+            currentPlayer = game.getRound().getPlayerStartingFirst();
 
             nextTurn();
         });
@@ -386,8 +384,8 @@ public class MainApplication extends Application {
     private void processNextTrick(Trick currTrick) {
         System.out.println("------------------------");
 
-        ScoreDisplayUtility.updateScoresAfterCurrentTrickBackend(root, currTrick, round, currentPlayer, playerList);
-        ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
+        ScoreDisplayUtility.updateScoresAfterCurrentTrickBackend(root, currTrick, game, currentPlayer, playerList);
+        ScoreDisplayUtility.updateScoresDisplay(root, game, playerList);
 
         // start new trick
         for (Node cardView : currentCardViewsInTrick) {
@@ -396,19 +394,17 @@ public class MainApplication extends Application {
 
         currentCardViewsInTrick = new ArrayList<>();
 
-        round.startNewTrick();
+        game.getRound().startNewTrick();
     }
 
     private void processNextRound() {
-        HashMap<Player, Integer> roundPoints = round.getPlayersPointsInCurrentRound();
+        HashMap<Player, Integer> roundPoints = game.getRound().getPlayersPointsInCurrentRound();
         Iterator<Player> iter = roundPoints.keySet().iterator();
 
         while (iter.hasNext()) {
             Player p = iter.next();
             game.setPlayersPointsInCurrentGame(p, roundPoints.get(p) % 26);
         }
-
-        // ScoreDisplayUtility.updateScoresDisplay(root, game, round, playerList);
 
         // make new background for next round
         root.getChildren().clear();
@@ -429,7 +425,7 @@ public class MainApplication extends Application {
     }
 
     private void nextTurn() {
-        Trick currTrick = round.getCurrentTrick();
+        Trick currTrick = game.getRound().getCurrentTrick();
         System.out.println();
 
         if (currTrick.getCardsInTrick().size() == 4) {
@@ -437,9 +433,9 @@ public class MainApplication extends Application {
 
             pause.setOnFinished(event -> {
                 processNextTrick(currTrick);
-                currentPlayer = round.getPlayerStartingFirst();
+                currentPlayer = game.getRound().getPlayerStartingFirst();
                 System.out.println(currentPlayer);
-                if (round.getNumTricksPlayed() == 13) {
+                if (game.getRound().getNumTricksPlayed() == 13) {
                     // when all tricks have been played, start a new round
                     processNextRound();
                 } else {
@@ -458,14 +454,14 @@ public class MainApplication extends Application {
 
         // Check if player is Human or AI
         if (playerList.get(currentPlayer) instanceof AIPlayer AI) {
-            Card leadingCard = round.getCurrentTrick().getLeadingCard();
-            int roundNo = round.getNumTricksPlayed();
-            boolean heartsBroken = round.isHeartsBroken();
-            int trickSize = round.getCurrentTrick().getCardsInTrick().size();
-            int trickPoints = round.getCurrentTrick().getNumPoints();
+            Card leadingCard = game.getRound().getCurrentTrick().getLeadingCard();
+            int roundNo = game.getRound().getNumTricksPlayed();
+            boolean heartsBroken = game.getRound().isHeartsBroken();
+            int trickSize = game.getRound().getCurrentTrick().getCardsInTrick().size();
+            int trickPoints = game.getRound().getCurrentTrick().getNumPoints();
             Card cardPlayed = AI.playCard(leadingCard, roundNo, heartsBroken, trickSize, trickPoints);
-            if (cardPlayed.isHeart() && !round.isHeartsBroken()) {
-                round.setHeartsBroken();
+            if (cardPlayed.isHeart() && !game.getRound().isHeartsBroken()) {
+                game.getRound().setHeartsBroken();
             }
             ObservableList<Node> currentPlayerCardViews = CardViewUtility.getCardViewsOfPlayer(root, currentPlayer);
             for (Node node : currentPlayerCardViews) {
@@ -478,7 +474,7 @@ public class MainApplication extends Application {
                         // remove Card from AI player's hand
                         playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
                         // add card to current trick
-                        round.getCurrentTrick().addCardToTrick(cardPlayed);
+                        game.getRound().getCurrentTrick().addCardToTrick(cardPlayed);
                         nextTurn();
                     });
                     currentCardViewsInTrick.add(node);
@@ -490,7 +486,7 @@ public class MainApplication extends Application {
     }
 
     public void enableCards() {
-        ArrayList<Card> playableCards = playerList.get(0).getHand().getPlayableCards(round.getCurrentTrick());
+        ArrayList<Card> playableCards = playerList.get(0).getHand().getPlayableCards(game.getRound().getCurrentTrick());
 
         System.out.println("\nPlayable Cards:");
         for (Card c : playableCards) {
@@ -526,7 +522,7 @@ public class MainApplication extends Application {
                     // remove card from current player's hand
                     playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
                     // add card to current trick
-                    round.getCurrentTrick().addCardToTrick(cardPlayed);
+                    game.getRound().getCurrentTrick().addCardToTrick(cardPlayed);
                     nextTurn();
                 });
             });

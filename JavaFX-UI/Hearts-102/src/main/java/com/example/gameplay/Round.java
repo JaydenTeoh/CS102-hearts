@@ -10,13 +10,12 @@ public class Round {
     private int playerStartingFirst;
     private int numTricksPlayed;
     private Trick currentTrick;
-    private Game belongsToGame;
     private HashMap<Player, Integer> playersPointsInCurrentRound;
+    private ArrayList<Player> players;
 
-
-    public Round(int playerStartingFirst, Game belongsToGame) {
+    public Round(int playerStartingFirst, ArrayList<Player> players) {
         this.playerStartingFirst = playerStartingFirst;
-        this.belongsToGame = belongsToGame;
+        this.players = players;
         heartsBroken = false;
 
         currentTrick = null;
@@ -24,7 +23,7 @@ public class Round {
         // initialising the hashmap, every player starts with 0 points
         playersPointsInCurrentRound = new HashMap<>();
 
-        for (Player p: belongsToGame.getPlayers()) {
+        for (Player p: players) {
             playersPointsInCurrentRound.put(p, 0);
         }
     }
@@ -58,7 +57,7 @@ public class Round {
             numTricksPlayed++;
         }
 
-        this.currentTrick = new Trick(belongsToGame.getPlayers(), numTricksPlayed, heartsBroken, playerStartingFirst);
+        this.currentTrick = new Trick(players, numTricksPlayed, heartsBroken, playerStartingFirst);
     }
 
     public void dealHands() {
@@ -85,7 +84,7 @@ public class Round {
 
         for (int i = 0; i < Game.NUM_PLAYERS; i++) {
             hands.get(i).sortCards();
-            belongsToGame.getPlayers().get(i).setHand(hands.get(i));
+            players.get(i).setHand(hands.get(i));
         }
     }
 

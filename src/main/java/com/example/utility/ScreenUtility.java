@@ -82,7 +82,6 @@ public class ScreenUtility {
         background.setBackground(new Background(backgroundImage));
     }
 
-
     public static void displayLeaderboard(Pane root, List<Player> playerList, Game game) {
         Pane leaderboardScreen = new Pane();
         leaderboardScreen.setPrefSize(PlayAreaUtility.WINDOW_WIDTH, PlayAreaUtility.WINDOW_HEIGHT);

@@ -59,7 +59,7 @@ public class Trick {
 
         for (int i = 1; i < cardsInTrick.size(); i++) {
             Card card = cardsInTrick.get(i);
-            if (card.getSuit() == leadSuit) {
+            if (card.getSuit().equals(leadSuit)) {
                 // Card is of the lead suit
                 if (card.getRank().compareTo(highestRank) > 0) {
                     // This card is currently the highest of the lead suit

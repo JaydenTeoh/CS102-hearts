@@ -3,7 +3,6 @@ package com.example.app;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.example.gameplay.Round;
 import com.example.gameplay.Game;
 import com.example.players.Player;
 
@@ -18,8 +17,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class PlayAreaUtility {
-    private static final double WINDOW_WIDTH = 1500;
-    private static final double WINDOW_HEIGHT = 800;
+    public static final double WINDOW_WIDTH = 1500;
+    public static final double WINDOW_HEIGHT = 800;
     public static final int PLAYER_AREA_WIDTH = 600;
     public static final int PLAYER_AREA_HEIGHT = 250;
     public static final int PLAY_AREA_WIDTH = 400;
@@ -60,7 +59,8 @@ public class PlayAreaUtility {
         playerArea.setLayoutX(xPos);
         playerArea.setLayoutY(yPos);
     }
-    public static void setupPlayerAreas(List<Player> playerList, Round round, Pane root) {
+    
+    public static void setupPlayerAreas(List<Player> playerList, Pane root) {
         for (int i = 0; i < playerList.size(); i++) {
             int position = i;
             Pane playerArea = PlayAreaUtility.createPlayerArea(position);

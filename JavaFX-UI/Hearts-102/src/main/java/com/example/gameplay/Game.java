@@ -12,8 +12,9 @@ public class Game {
     // this hashmap stores players and their points in the current game
     private HashMap<Player, Integer> playersPointsInCurrentGame;
     private ArrayList<Player> players;
+    private Round round;
 
-    public static final int MAX_POINTS = 5;
+    public static final int MAX_POINTS = 50;
     public static final int NUM_PLAYERS = 4;
     public static final int MAX_NUMBER_OF_CARDS_PER_PLAYER = 13;
 
@@ -25,6 +26,14 @@ public class Game {
         currentNumPlayers = 0;
         playersPointsInCurrentGame = new HashMap<>();
         players = new ArrayList<>();
+    }
+
+    public Round getRound() {
+        return round;
+    }
+
+    public void nextRound(int playerStartingFirst) {
+        round = new Round(playerStartingFirst, players);
     }
 
     public int getNumRounds() {

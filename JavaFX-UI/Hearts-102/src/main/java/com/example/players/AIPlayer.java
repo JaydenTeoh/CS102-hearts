@@ -35,14 +35,17 @@ public class AIPlayer implements Player {
         if (currHand.poorSpadesHand()) {
             if (currHand.hasCard(Game.QUEEN_OF_SPADES)) {
                 cardsToPass.add(Game.QUEEN_OF_SPADES);
+                currHand.removeCard(Game.QUEEN_OF_SPADES);
                 numLeft--;
             }
             if (currHand.hasCard(Suit.SPADES, Rank.ACE)) {
                 cardsToPass.add(new Card(Suit.SPADES, Rank.ACE));
+                currHand.removeCard(new Card(Suit.SPADES, Rank.ACE));
                 numLeft--;
             }
             if (currHand.hasCard(Suit.SPADES, Rank.KING)) {
                 cardsToPass.add(new Card(Suit.SPADES, Rank.KING));
+                currHand.removeCard(new Card(Suit.SPADES, Rank.KING));
                 numLeft--;
             }
         }
@@ -55,17 +58,37 @@ public class AIPlayer implements Player {
         if (currHand.howManyOfSuit(Suit.DIAMONDS) <= numLeft) {
             numLeft -= currHand.howManyOfSuit(Suit.DIAMONDS);
             cardsToPass.addAll(currHand.getAll(Suit.DIAMONDS));
+            for (Card c : currHand.getAll(Suit.DIAMONDS)) {
+                currHand.removeCard(c);
+            }
         }
+        if (numLeft == 0) {
+            return cardsToPass;
+        }
+
         
         if (currHand.howManyOfSuit(Suit.CLUBS) <= numLeft) {
-            numLeft -= currHand.howManyOfSuit(Suit.DIAMONDS);
-            cardsToPass.addAll(currHand.getAll(Suit.DIAMONDS));
+            numLeft -= currHand.howManyOfSuit(Suit.CLUBS);
+            cardsToPass.addAll(currHand.getAll(Suit.CLUBS));
+            for (Card c: currHand.getAll(Suit.CLUBS)) {
+                currHand.removeCard(c);
+            }
         }
+        if (numLeft == 0) {
+            return cardsToPass;
+        }
+
 
         // if you can leave yourself with 1 club left, that's okay also, you can dump it on first trick anyways
         if (currHand.howManyOfSuit(Suit.CLUBS) == numLeft + 1) {
-            List<Card> clubsCards = currHand.getAll(Suit.DIAMONDS);
-            clubsCards.remove(currHand.getHighest(Suit.CLUBS)); // keep the highest so you can possibly win first trick and lead next one
+
+            for (Card c: currHand.getAll(Suit.DIAMONDS)) {
+                if (c.equals(currHand.getHighest(Suit.CLUBS))) {
+                    continue;
+                }
+                currHand.removeCard(c);
+                cardsToPass.add(c);
+            }
             numLeft = 0;
         }
 
@@ -84,6 +107,7 @@ public class AIPlayer implements Player {
                     Card toDumpCard = new Card(dumpSuit, currRank);
                     if (!cardsToPass.contains(toDumpCard)) { // not already inside the cards to be dumped
                         cardsToPass.add(toDumpCard);
+                        currHand.removeCard(toDumpCard);
                         numLeft--;
                     }
 

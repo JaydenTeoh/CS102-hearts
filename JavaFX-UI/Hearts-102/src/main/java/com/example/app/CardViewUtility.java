@@ -259,36 +259,36 @@ public class CardViewUtility {
 
         Pane currentPlayerArea = PlayAreaUtility.getPlayerArea(root, currentPlayerIndex);
         Pane nextPlayerArea = PlayAreaUtility.getPlayerArea(root, nextPlayerIndex);
-
-        if (p instanceof AIPlayer) {
+        
+        System.out.println("Player "+ (currentPlayerIndex + 1));
+        System.out.println(p.getHand().getCards());
+        if (p instanceof AIPlayer AI) {
             System.out.println("Player " + p.getName() + " passes to Player " + nextPlayer.getName());
             System.out.println("Player is an AI");
 
             cardViewsToPass.clear();
 
-            // AIPlayer player = (AIPlayer) p;
-            // cardsToPass = player.passCards();
+            cardsToPass = AI.passCards();
 
-            cardsToPass.add((Card) currentPlayerCardViews.get(1).getUserData());
-            cardsToPass.add((Card) currentPlayerCardViews.get(2).getUserData());
-            cardsToPass.add((Card) currentPlayerCardViews.get(3).getUserData());
+            // cardsToPass.add((Card) currentPlayerCardViews.get(1).getUserData());
+            // cardsToPass.add((Card) currentPlayerCardViews.get(2).getUserData());
+            // cardsToPass.add((Card) currentPlayerCardViews.get(3).getUserData());
 
-            p.getHand().removeCard((Card) currentPlayerCardViews.get(1).getUserData());
-            p.getHand().removeCard((Card) currentPlayerCardViews.get(2).getUserData());
-            p.getHand().removeCard((Card) currentPlayerCardViews.get(3).getUserData());
+            // p.getHand().removeCard((Card) currentPlayerCardViews.get(1).getUserData());
+            // p.getHand().removeCard((Card) currentPlayerCardViews.get(2).getUserData());
+            // p.getHand().removeCard((Card) currentPlayerCardViews.get(3).getUserData());
 
-            nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(1).getUserData());
-            nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(2).getUserData());
-            nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(3).getUserData());
+            // nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(1).getUserData());
+            // nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(2).getUserData());
+            // nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(3).getUserData());
 
-            //System.out.println("Player AI: cards to pass");
-            //int count = 0 ;
-            //System.out.println(cardsToPass.size());
-            // for (Card c : cardsToPass) {
-            //     System.out.println(count);
-            //     System.out.println(c.getRank() + " of " + c.getSuit());
-            //     count++;
-            // }
+            System.out.println("Player AI: cards to pass");
+            int count = 0 ;
+            System.out.println(cardsToPass.size());
+            for (Card c : cardsToPass) {
+                System.out.println(c.getRank() + " of " + c.getSuit());
+                count++;
+            }
 
             // for(Node n: currentPlayerCardViews){
             //     Card c = (Card) n.getUserData();
@@ -300,19 +300,19 @@ public class CardViewUtility {
             // }
                         
             // System.out.println("Checking hand");
-            // System.out.println("Player "+currentPlayerIndex);
-            // System.out.println(player.getHand().getCards());
+            System.out.println("Player "+ (currentPlayerIndex + 1));
+            System.out.println(AI.getHand().getCards());
             // System.out.println(cardsToPass.size());
 
             // player.getHand().getCards().removeAll(cardsToPass);
-            // nextPlayer.getHand().getCards().addAll(cardsToPass);
+            nextPlayer.getHand().getCards().addAll(cardsToPass);
 
-            //final List<Card> finalCardsToPass = new ArrayList<>(cardsToPass);
+            final List<Card> finalCardsToPass = new ArrayList<>(cardsToPass);
 
             currentPlayerCardViews.stream()
                     .filter(node -> node.getUserData() instanceof Card)
                     .map(node -> (CardImageView) node)
-                    .filter(cardView -> cardsToPass.stream()
+                    .filter(cardView -> finalCardsToPass.stream()
                             .anyMatch(card -> card.isSameAs((Card) cardView.getUserData())))
                     .forEach(cardViewsToPass::add);
 

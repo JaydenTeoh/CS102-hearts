@@ -1,4 +1,4 @@
-package com.example.app;
+package com.example.utility;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,7 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.example.gameplay.Round;
+import com.example.functional.NextTurnAction;
+import com.example.gameplay.Game;
 import com.example.players.AIPlayer;
 import com.example.players.HumanPlayer;
 import com.example.players.Player;
@@ -45,6 +46,52 @@ public class CardViewUtility {
         // Empty List
         return FXCollections.observableArrayList();
     }
+
+    // disables unplayable cards and processes card click
+    public static void enableCards(Pane root, List<Player> playerList, List<Node> currentCardViewsInTrick, Game game, int currentPlayer, NextTurnAction nextTurnCallback) {
+        ArrayList<Card> playableCards = playerList.get(0).getHand().getPlayableCards(game.getRound().getCurrentTrick());
+
+        System.out.println("\nPlayable Cards:");
+        for (Card c : playableCards) {
+            System.out.println(c);
+        }
+        System.out.println();
+
+        for (Node child : root.getChildren()) {
+            if ("0".equals(child.getId())) {
+                child.toFront();
+                break; // Exit the loop once the desired node is found and brought to front
+            }
+        }
+
+        ObservableList<Node> cards = CardViewUtility.getCardViewsOfPlayer(root, 0);
+
+        CardViewUtility.disableCards(root);
+        for (Node cardView : cards) {
+            Card selectedCard = (Card) cardView.getUserData();
+
+            if (!playableCards.contains(selectedCard)) {
+                continue;
+            }
+            CardViewUtility.addHoverEffect((ImageView) cardView);
+            cardView.setEffect(null);
+            cardView.setOpacity(1);
+            cardView.getStyleClass().add("card-active");
+            cardView.setOnMouseClicked(event -> {
+                CardViewUtility.disableCards(root);
+                Card cardPlayed = (Card) cardView.getUserData();
+                // Move card to play area
+                CardViewUtility.moveCard(cardView, cardPlayed, currentCardViewsInTrick, playerList, () -> {
+                    // remove card from current player's hand
+                    playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
+                    // add card to current trick
+                    game.getRound().getCurrentTrick().addCardToTrick(cardPlayed);
+                    nextTurnCallback.execute();
+                });
+            });
+        }
+    }
+
 
     public static void disableCards(Pane root) {
         ObservableList<Node> cards = getCardViewsOfPlayer(root, 0);
@@ -206,7 +253,7 @@ public class CardViewUtility {
     }
 
     public static void processPlayerCards(int currentPlayerIndex, List<Player> playerList,
-            List<CardImageView> cardViewsToPass, int gameRound, Pane root, Runnable callback) {
+        List<CardImageView> cardViewsToPass, int gameRound, Pane root, Runnable callback) {
 
         if (currentPlayerIndex > playerList.size() - 1) {
             for (int index: addCards.keySet()){

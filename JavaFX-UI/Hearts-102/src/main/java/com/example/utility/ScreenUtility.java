@@ -1,4 +1,4 @@
-package com.example.app;
+package com.example.utility;
 
 import java.util.List;
 import java.util.stream.Collectors;

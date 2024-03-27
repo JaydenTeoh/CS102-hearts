@@ -1,6 +1,7 @@
 package com.example.app;
 
 import com.example.exceptions.PlayerException;
+import com.example.functional.NextTurnAction;
 import com.example.gameplay.Game;
 import com.example.gameplay.Round;
 import com.example.gameplay.Trick;
@@ -8,6 +9,8 @@ import com.example.players.AIPlayer;
 import com.example.players.HumanPlayer;
 import com.example.players.Player;
 import com.example.pokercards.Card;
+import com.example.utility.*;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
@@ -182,8 +185,6 @@ public class MainApplication extends Application {
     }
 
     private void startGame() {
-        // // initialise instance variable root here
-
         game = new Game();
         roundLabel = new Label("Round 1");
 
@@ -205,7 +206,7 @@ public class MainApplication extends Application {
 
     private void startRound() {
         // changes Round instance variable in game to a new Round
-        game.nextRound(0);
+        game.nextRound();
         game.incrementNumRounds();
         ScoreDisplayUtility.createAndAddAllScorePanes(root);
 
@@ -224,105 +225,14 @@ public class MainApplication extends Application {
         playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
         root.getChildren().add(playArea);
 
-        initialisePassCardButton(playArea);
+        PassCardUtility.initialisePassCardButton(root, playerList, playArea, passCardbutton, cardViewsToPass, game, this::nextTurn);
 
         game.getRound().startNewTrick();
-
+        
         // Create Player Areas
         PlayAreaUtility.setupPlayerAreas(playerList, root);
-
-        // CardViewUtility.disableCards(root);
-
-        selectCardsToPass();
-        // nextTurn();
-    }
-
-    private void startPassingProcess() {
-        CardViewUtility.processPlayerCards(0, playerList, cardViewsToPass, game.getNumRounds(), root, () -> {
-            passCardbutton.setVisible(false);
-            cardViewsToPass.clear();
-
-            for (int i = 0; i < Game.NUM_PLAYERS; i++) {
-                List<Card> hand = playerList.get(i).getHand().getCards();
-                for (Card c : hand) {
-                    // set 2 of clubs to start first, as per game rules
-                    if (c.equals(Game.ROUND_STARTING_CARD)) {
-                        game.getRound().setPlayerStartingFirst(i);
-                    }
-                }
-            }
-
-            // Set Playable Cards to starting player
-            currentPlayer = game.getRound().getPlayerStartingFirst();
-
-            nextTurn();
-        });
-    }
-
-    private void enablePassCardButton() {
-        cardViewsToPass.clear();
-        passCardbutton.setVisible(true);
-    }
-
-    private void initialisePassCardButton(Pane playArea) {
-        passCardbutton.setText("Pass 3 cards");
-
-        passCardbutton.setPrefSize(200, 50);
-        passCardbutton.setStyle("-fx-font-size: 20px;");
-
-        // Set the action event handler to call handleButtonClick method
-        passCardbutton.setOnAction(event -> {
-            if (cardViewsToPass.size() == 3) {
-                System.out.println("Pass 3 cards");
-                startPassingProcess();
-            } else {
-                System.out.println("Please select 3 cards");
-            }
-        });
-
-        double xPos = (playArea.getPrefWidth() - passCardbutton.getPrefWidth()) / 2;
-        double yPos = (playArea.getPrefHeight() - passCardbutton.getPrefHeight()) / 2;
-
-        passCardbutton.setLayoutX(xPos);
-        passCardbutton.setLayoutY(yPos);
-
-        playArea.getChildren().add(passCardbutton);
-    }
-
-    private void selectCardsToPass() {
-        ObservableList<Node> cards = CardViewUtility.getCardViewsOfPlayer(root, 0);
-        for (Node cardView : cards) {
-            cardView.setEffect(null);
-            cardView.setOpacity(1);
-
-            // In createCardViewsOfPlayer, there is a instanceof HumanPlayer -> add hover
-            // effect, idk if removing it will break anything so I set these to null here
-            // first
-            cardView.setOnMouseEntered(null);
-            cardView.setOnMouseExited(null);
-
-            cardView.setOnMouseClicked(event -> {
-                // Card card = (Card) cardView.getUserData();
-
-                boolean cardActivated = cardViewsToPass.contains(cardView);
-
-                if (cardViewsToPass.size() == 3 && !cardActivated) {
-                    System.out.println("Max cards selected");
-                } else {
-                    double translateYDistance = cardActivated ? 0 : -50;
-
-                    TranslateTransition transition = new TranslateTransition(Duration.seconds(0.35), cardView);
-                    transition.setToY(translateYDistance);
-                    transition.play();
-
-                    if (cardActivated) {
-                        cardViewsToPass.remove(cardView);
-                    } else {
-                        cardViewsToPass.add((CardImageView) cardView);
-                    }
-                }
-            });
-        }
+        
+        PassCardUtility.selectCardsToPass(root, cardViewsToPass);
     }
 
     private void processNextTrick(Trick currTrick) {
@@ -353,13 +263,13 @@ public class MainApplication extends Application {
         // make new background for next round
         root.getChildren().clear();
         Region background = new Region();
-        background.setPrefSize(1500, 800);
+        background.setPrefSize(PlayAreaUtility.WINDOW_WIDTH, PlayAreaUtility.WINDOW_HEIGHT);
         background.setStyle("-fx-background-color: green");
         root.getChildren().add(background);
 
         // start new round
         if (!game.isEnded()) {
-            enablePassCardButton();
+            PassCardUtility.enablePassCardButton(passCardbutton, cardViewsToPass);
             startRound();
             return;
         }
@@ -394,6 +304,9 @@ public class MainApplication extends Application {
 
         } else if (currTrick.getCardsInTrick().size() != 0) {
             currentPlayer = game.getNextPlayer(currentPlayer);
+        } else if (game.getRound().getNumTricksPlayed() == 0) {
+            // first trick of the round
+            currentPlayer = game.getRound().getPlayerStartingFirst();
         }
 
         // Check if player is Human or AI
@@ -425,51 +338,7 @@ public class MainApplication extends Application {
                 }
             }
         } else {
-            enableCards();
-        }
-    }
-
-    public void enableCards() {
-        ArrayList<Card> playableCards = playerList.get(0).getHand().getPlayableCards(game.getRound().getCurrentTrick());
-
-        System.out.println("\nPlayable Cards:");
-        for (Card c : playableCards) {
-            System.out.println(c);
-        }
-        System.out.println();
-
-        for (Node child : root.getChildren()) {
-            if ("0".equals(child.getId())) {
-                child.toFront();
-                break; // Exit the loop once the desired node is found and brought to front
-            }
-        }
-
-        ObservableList<Node> cards = CardViewUtility.getCardViewsOfPlayer(root, 0);
-
-        CardViewUtility.disableCards(root);
-        for (Node cardView : cards) {
-            Card selectedCard = (Card) cardView.getUserData();
-
-            if (!playableCards.contains(selectedCard)) {
-                continue;
-            }
-            CardViewUtility.addHoverEffect((ImageView) cardView);
-            cardView.setEffect(null);
-            cardView.setOpacity(1);
-            cardView.getStyleClass().add("card-active");
-            cardView.setOnMouseClicked(event -> {
-                CardViewUtility.disableCards(root);
-                Card cardPlayed = (Card) cardView.getUserData();
-                // Move card to play area
-                CardViewUtility.moveCard(cardView, cardPlayed, currentCardViewsInTrick, playerList, () -> {
-                    // remove card from current player's hand
-                    playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
-                    // add card to current trick
-                    game.getRound().getCurrentTrick().addCardToTrick(cardPlayed);
-                    nextTurn();
-                });
-            });
+            CardViewUtility.enableCards(root, playerList, currentCardViewsInTrick, game, currentPlayer, this::nextTurn);
         }
     }
 
@@ -492,7 +361,6 @@ public class MainApplication extends Application {
         stage.setTitle("Hearts");
         stage.show();
     }
-
 
     public static void main(String[] args) {
         launch();

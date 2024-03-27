@@ -1,10 +1,11 @@
-package com.example.app;
+package com.example.utility;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+import com.example.app.MainApplication;
 import com.example.gameplay.Game;
 import com.example.players.Player;
 import com.example.gameplay.Trick;

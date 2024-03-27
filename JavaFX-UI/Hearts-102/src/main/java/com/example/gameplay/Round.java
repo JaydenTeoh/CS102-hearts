@@ -13,8 +13,7 @@ public class Round {
     private HashMap<Player, Integer> playersPointsInCurrentRound;
     private ArrayList<Player> players;
 
-    public Round(int playerStartingFirst, ArrayList<Player> players) {
-        this.playerStartingFirst = playerStartingFirst;
+    public Round(ArrayList<Player> players) {
         this.players = players;
         heartsBroken = false;
 
@@ -32,7 +31,6 @@ public class Round {
         return playerStartingFirst;
     }
 
-    // Added for testing
     public void setPlayerStartingFirst(int playerStartingFirst) {
         this.playerStartingFirst = playerStartingFirst;
     }
@@ -55,7 +53,7 @@ public class Round {
             playerStartingFirst = currentTrick.getWinner();
             System.out.println("Winner of trick: Player " + (playerStartingFirst + 1));
             numTricksPlayed++;
-        }
+        } 
 
         this.currentTrick = new Trick(players, numTricksPlayed, heartsBroken, playerStartingFirst);
     }

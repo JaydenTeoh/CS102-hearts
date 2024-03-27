@@ -4,9 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.example.gameplay.Round;
+import com.example.players.AIPlayer;
 import com.example.players.HumanPlayer;
 import com.example.players.Player;
 import com.example.pokercards.Card;
@@ -195,5 +198,134 @@ public class CardViewUtility {
             callback.run();
         });
         transition.play();
+    }
+
+    public static void processPlayerCards(int currentPlayerIndex, List<Player> playerList, List<CardImageView> cardViewsToPass, int gameRound, Pane root, Runnable callback) {
+
+        if (currentPlayerIndex > playerList.size() - 1) {
+            callback.run();
+            return;
+        }
+
+        Player p = playerList.get(currentPlayerIndex);
+        int nextPlayerIndex = currentPlayerIndex; // Initialize with current player's index
+
+        switch (gameRound) {
+            case 1: // Pass forward (to the right)
+                nextPlayerIndex = (currentPlayerIndex + 1) % playerList.size();
+                break;
+            case 2: // Pass backward (to the left)
+                nextPlayerIndex = (currentPlayerIndex - 1 + playerList.size()) % playerList.size();
+                break;
+            // case 3: // Pass across
+            //     nextPlayerIndex = (currentPlayerIndex + 2) % playerList.size();
+            //     break;
+        }
+
+        Player nextPlayer = playerList.get(nextPlayerIndex);
+        List<Card> cardsToPass = new ArrayList<>();
+        ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(root, currentPlayerIndex);
+
+        if (p instanceof AIPlayer) {
+            System.out.println("Player " + p.getName() + " passes to Player " + nextPlayer.getName());
+            System.out.println("Player is an AI");
+
+            cardViewsToPass.clear();
+
+            cardsToPass.add((Card) currentPlayerCardViews.get(1).getUserData());
+            cardsToPass.add((Card) currentPlayerCardViews.get(2).getUserData());
+            cardsToPass.add((Card) currentPlayerCardViews.get(3).getUserData());
+
+            p.getHand().removeCard((Card) currentPlayerCardViews.get(1).getUserData());
+            p.getHand().removeCard((Card) currentPlayerCardViews.get(2).getUserData());
+            p.getHand().removeCard((Card) currentPlayerCardViews.get(3).getUserData());
+
+            nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(1).getUserData());
+            nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(2).getUserData());
+            nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(3).getUserData());
+
+            currentPlayerCardViews.stream()
+                    .filter(node -> node.getUserData() instanceof Card)
+                    .map(node -> (CardImageView) node)
+                    .filter(cardView -> cardsToPass.stream()
+                            .anyMatch(card -> card.isSameAs((Card) cardView.getUserData())))
+                    .forEach(cardViewsToPass::add);
+
+            System.out.println("Cards to pass");
+            for (Node n : cardViewsToPass) {
+                Card c = (Card) n.getUserData();
+                cardsToPass.add(c);
+                System.out.println(c.getRank() + " of " + c.getSuit());
+            }
+
+            // Pass card
+        } else {
+            System.out.println("Player " + p.getName() + " passes to Player " + nextPlayer.getName());
+            System.out.println("Player is a Human");
+            System.out.println("Cards to pass");
+            for (Node n : cardViewsToPass) {
+                Card c = (Card) n.getUserData();
+                cardsToPass.add(c);
+                System.out.println(c.getRank() + " of " + c.getSuit());
+            }
+
+            // Get next player to pass
+            p.passCards(cardsToPass, nextPlayer);
+        }
+
+    
+        ObservableList<Node> nextPlayerCards = CardViewUtility.getCardViewsOfPlayer(root, nextPlayerIndex);
+
+        // for(Node n : nextPlayerCards){
+        // Card c = (Card) n.getUserData();
+        // System.out.println(c.getRank()+" of "+c.getSuit());
+        // }
+
+        double xPos = nextPlayerCards.get(nextPlayerCards.size() - 1).getLayoutX();
+        double yPos = nextPlayerCards.get(nextPlayerCards.size() - 1).getLayoutY();
+
+        Set<CardImageView> animatingCards = new HashSet<>();
+
+        for (int i = 0; i < cardViewsToPass.size(); i++) {
+            CardImageView cardView = (CardImageView) cardViewsToPass.get(i);
+            if (nextPlayerIndex == 0 || nextPlayerIndex == 2) { // Bottom and Top player
+                xPos += (CARD_WIDTH + SPACING);
+                cardView.setLayoutY(0);
+                cardView.setRotate(180);
+            } else { // Left and Right player
+                cardView.setLayoutX(0);
+                cardView.setRotate(90);
+                yPos += 30;
+            }
+
+            currentPlayerCardViews.remove(cardView);
+            nextPlayerCards.add(cardView);
+
+            if (animatingCards.contains(cardView)) {
+                // Skip this card if it's already animating
+                continue;
+            }
+
+            TranslateTransition translateTransition = new TranslateTransition(Duration.seconds(0.5), cardView);
+            cardView.setImage(true); // Flip the card to face up
+
+            animatingCards.add(cardView);
+
+            translateTransition.setToY(yPos);
+            translateTransition.setToX(xPos);
+
+            translateTransition.setCycleCount(1);
+
+            translateTransition.setOnFinished(e -> {
+                // Remove from animating set when finished
+                animatingCards.remove(cardView);
+
+                if (animatingCards.size() == 0) {
+                    processPlayerCards(currentPlayerIndex + 1, playerList, cardViewsToPass, gameRound, root, callback);
+                }
+            });
+
+            translateTransition.play();
+        }
     }
 }

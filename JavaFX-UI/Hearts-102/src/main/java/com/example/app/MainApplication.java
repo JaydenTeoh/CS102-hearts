@@ -174,7 +174,7 @@ public class MainApplication extends Application {
         // Create Player Areas
         PlayAreaUtility.setupPlayerAreas(playerList, round, root);
 
-        //CardViewUtility.disableCards(root);
+        // CardViewUtility.disableCards(root);
 
         // Set Playable Cards to starting player
         currentPlayer = round.getPlayerStartingFirst();
@@ -183,149 +183,21 @@ public class MainApplication extends Application {
         // nextTurn();
     }
 
-    public void startPassingProcess() {
-        processPlayerCards(0);
-    }
-
-    private void processPlayerCards(int currentPlayerIndex) {
-        if (currentPlayerIndex > playerList.size() - 1) {
+    private void startPassingProcess() {
+        CardViewUtility.processPlayerCards(0, playerList, cardViewsToPass, game.getNumRounds(), root, () -> {
             passCardbutton.setVisible(false);
-            nextTurn();
-            return;
-        }
-
-        Player p = playerList.get(currentPlayerIndex);
-        int nextPlayerIndex = currentPlayerIndex; // Initialize with current player's index
-
-        // Determine the pattern based on the game round
-        int gameRound = game.getNumRounds() % 4; // Use modulo 4 to cycle through the patterns
-
-        switch (gameRound) {
-            case 0: // Pass forward (to the right)
-                nextPlayerIndex = (currentPlayerIndex + 1) % playerList.size();
-                break;
-            case 1: // Pass backward (to the left)
-                nextPlayerIndex = (currentPlayerIndex - 1 + playerList.size()) % playerList.size();
-                break;
-            case 2: // Pass across
-                nextPlayerIndex = (currentPlayerIndex + 2) % playerList.size();
-                break;
-        }
-
-        Player nextPlayer = playerList.get(nextPlayerIndex);
-        List<Card> cardsToPass = new ArrayList<>();
-        ObservableList<Node> currentPlayerCardViews = CardViewUtility.getCardViewsOfPlayer(root, currentPlayerIndex);
-
-        if (p instanceof AIPlayer) {
-            System.out.println("Player " + p.getName() + " passes to Player " + nextPlayer.getName());
-            System.out.println("Player is an AI");
-
-            cardsToPass.add((Card) currentPlayerCardViews.get(1).getUserData());
-            cardsToPass.add((Card) currentPlayerCardViews.get(2).getUserData());
-            cardsToPass.add((Card) currentPlayerCardViews.get(3).getUserData());
-
-            p.getHand().removeCard((Card) currentPlayerCardViews.get(1).getUserData());
-            p.getHand().removeCard((Card) currentPlayerCardViews.get(2).getUserData());
-            p.getHand().removeCard((Card) currentPlayerCardViews.get(3).getUserData());
-
-            nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(1).getUserData());
-            nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(2).getUserData());
-            nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(3).getUserData());
-
             cardViewsToPass.clear();
-
-            currentPlayerCardViews.stream()
-                    .filter(node -> node.getUserData() instanceof Card)
-                    .map(node -> (CardImageView) node)
-                    .filter(cardView -> cardsToPass.stream()
-                            .anyMatch(card -> card.isSameAs((Card) cardView.getUserData())))
-                    .forEach(cardViewsToPass::add);
-
-            System.out.println("Cards to pass");
-            for (Node n : cardViewsToPass) {
-                Card c = (Card) n.getUserData();
-                cardsToPass.add(c);
-                System.out.println(c.getRank() + " of " + c.getSuit());
-            }
-
-            // Pass card
-        } else {
-            System.out.println("Player " + p.getName() + " passes to Player " + nextPlayer.getName());
-            System.out.println("Player is a Human");
-            System.out.println("Cards to pass");
-            for (Node n : cardViewsToPass) {
-                Card c = (Card) n.getUserData();
-                cardsToPass.add(c);
-                System.out.println(c.getRank() + " of " + c.getSuit());
-            }
-
-            // Get next player to pass
-            p.passCards(cardsToPass, nextPlayer);
-        }
-
-    
-        ObservableList<Node> nextPlayerCards = CardViewUtility.getCardViewsOfPlayer(root, nextPlayerIndex);
-
-        // for(Node n : nextPlayerCards){
-        // Card c = (Card) n.getUserData();
-        // System.out.println(c.getRank()+" of "+c.getSuit());
-        // }
-
-        double xPos = nextPlayerCards.get(nextPlayerCards.size() - 1).getLayoutX();
-        double yPos = nextPlayerCards.get(nextPlayerCards.size() - 1).getLayoutY();
-
-        Set<CardImageView> animatingCards = new HashSet<>();
-
-        for (int i = 0; i < cardViewsToPass.size(); i++) {
-            CardImageView cardView = (CardImageView) cardViewsToPass.get(i);
-            if (nextPlayerIndex == 0 || nextPlayerIndex == 2) { // Bottom and Top player
-                xPos += (CARD_WIDTH + SPACING);
-                cardView.setLayoutY(0);
-                cardView.setRotate(180);
-            } else { // Left and Right player
-                cardView.setLayoutX(0);
-                cardView.setRotate(90);
-                yPos += 30;
-            }
-
-            currentPlayerCardViews.remove(cardView);
-            nextPlayerCards.add(cardView);
-
-            if (animatingCards.contains(cardView)) {
-                // Skip this card if it's already animating
-                continue;
-            }
-
-            TranslateTransition translateTransition = new TranslateTransition(Duration.seconds(0.5), cardView);
-            cardView.setImage(true); // Flip the card to face up
-
-            animatingCards.add(cardView);
-
-            translateTransition.setToY(yPos);
-            translateTransition.setToX(xPos);
-
-            translateTransition.setCycleCount(1);
-
-            translateTransition.setOnFinished(e -> {
-                // Remove from animating set when finished
-                animatingCards.remove(cardView);
-
-                if (animatingCards.size() == 0) {
-                    processPlayerCards(currentPlayerIndex + 1);
-                }
-            });
-
-            translateTransition.play();
-        }
+            nextTurn();
+        });
     }
 
-    private void enablePassCardButton(){
+    private void enablePassCardButton() {
         cardViewsToPass.clear();
         passCardbutton.setVisible(true);
     }
 
     private void initialisePassCardButton(Pane playArea) {
-        passCardbutton.setText("Pass card");
+        passCardbutton.setText("Pass 3 cards");
 
         passCardbutton.setPrefSize(200, 50);
         passCardbutton.setStyle("-fx-font-size: 20px;");
@@ -339,6 +211,12 @@ public class MainApplication extends Application {
                 System.out.println("Please select 3 cards");
             }
         });
+
+        double xPos = (playArea.getPrefWidth() - passCardbutton.getPrefWidth()) / 2;
+        double yPos = (playArea.getPrefHeight() - passCardbutton.getPrefHeight()) / 2;
+
+        passCardbutton.setLayoutX(xPos);
+        passCardbutton.setLayoutY(yPos);
 
         playArea.getChildren().add(passCardbutton);
     }
@@ -419,7 +297,7 @@ public class MainApplication extends Application {
             enablePassCardButton();
             startRound();
             return;
-        } 
+        }
 
         // display final scores if game ended
         PlayAreaUtility.displayLeaderboard(root, playerList, game);
@@ -449,7 +327,7 @@ public class MainApplication extends Application {
             pause.play();
             return;
 
-        } else if (currTrick.getCardsInTrick().size() != 0){
+        } else if (currTrick.getCardsInTrick().size() != 0) {
             currentPlayer = game.getNextPlayer(currentPlayer);
         }
 
@@ -488,7 +366,7 @@ public class MainApplication extends Application {
 
     public void enableCards() {
         ArrayList<Card> playableCards = playerList.get(0).getHand().getPlayableCards(round.getCurrentTrick());
-        
+
         System.out.println("\nPlayable Cards:");
         for (Card c : playableCards) {
             System.out.println(c);
@@ -538,7 +416,7 @@ public class MainApplication extends Application {
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
-        
+
         Scene scene = new Scene(createContent());
 
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());

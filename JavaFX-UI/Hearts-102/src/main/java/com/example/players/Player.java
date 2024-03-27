@@ -13,7 +13,7 @@ public interface Player {
 
     public void setHand(Hand hand);
 
-    public abstract Card playCard(Round round, Trick trick);
+    //public abstract Card playCard(Round round, Trick trick);
 
     public abstract void passCards(List<Card> cards, Player player);
 }

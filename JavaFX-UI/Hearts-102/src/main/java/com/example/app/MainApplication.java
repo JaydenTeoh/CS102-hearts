@@ -8,6 +8,8 @@ import com.example.players.AIPlayer;
 import com.example.players.HumanPlayer;
 import com.example.players.Player;
 import com.example.pokercards.Card;
+import com.example.utility.*;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
@@ -182,8 +184,6 @@ public class MainApplication extends Application {
     }
 
     private void startGame() {
-        // // initialise instance variable root here
-
         game = new Game();
         roundLabel = new Label("Round 1");
 
@@ -205,7 +205,7 @@ public class MainApplication extends Application {
 
     private void startRound() {
         // changes Round instance variable in game to a new Round
-        game.nextRound(0);
+        game.nextRound();
         game.incrementNumRounds();
         ScoreDisplayUtility.createAndAddAllScorePanes(root);
 
@@ -224,105 +224,17 @@ public class MainApplication extends Application {
         playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
         root.getChildren().add(playArea);
 
-        initialisePassCardButton(playArea);
-
+        PassCardUtility.initialisePassCardButton(root, playerList, playArea, passCardbutton, cardViewsToPass, game);
+        
         game.getRound().startNewTrick();
-
+        
         // Create Player Areas
         PlayAreaUtility.setupPlayerAreas(playerList, root);
-
+        
         // CardViewUtility.disableCards(root);
-
-        selectCardsToPass();
-        // nextTurn();
-    }
-
-    private void startPassingProcess() {
-        CardViewUtility.processPlayerCards(0, playerList, cardViewsToPass, game.getNumRounds(), root, () -> {
-            passCardbutton.setVisible(false);
-            cardViewsToPass.clear();
-
-            for (int i = 0; i < Game.NUM_PLAYERS; i++) {
-                List<Card> hand = playerList.get(i).getHand().getCards();
-                for (Card c : hand) {
-                    // set 2 of clubs to start first, as per game rules
-                    if (c.equals(Game.ROUND_STARTING_CARD)) {
-                        game.getRound().setPlayerStartingFirst(i);
-                    }
-                }
-            }
-
-            // Set Playable Cards to starting player
-            currentPlayer = game.getRound().getPlayerStartingFirst();
-
-            nextTurn();
-        });
-    }
-
-    private void enablePassCardButton() {
-        cardViewsToPass.clear();
-        passCardbutton.setVisible(true);
-    }
-
-    private void initialisePassCardButton(Pane playArea) {
-        passCardbutton.setText("Pass 3 cards");
-
-        passCardbutton.setPrefSize(200, 50);
-        passCardbutton.setStyle("-fx-font-size: 20px;");
-
-        // Set the action event handler to call handleButtonClick method
-        passCardbutton.setOnAction(event -> {
-            if (cardViewsToPass.size() == 3) {
-                System.out.println("Pass 3 cards");
-                startPassingProcess();
-            } else {
-                System.out.println("Please select 3 cards");
-            }
-        });
-
-        double xPos = (playArea.getPrefWidth() - passCardbutton.getPrefWidth()) / 2;
-        double yPos = (playArea.getPrefHeight() - passCardbutton.getPrefHeight()) / 2;
-
-        passCardbutton.setLayoutX(xPos);
-        passCardbutton.setLayoutY(yPos);
-
-        playArea.getChildren().add(passCardbutton);
-    }
-
-    private void selectCardsToPass() {
-        ObservableList<Node> cards = CardViewUtility.getCardViewsOfPlayer(root, 0);
-        for (Node cardView : cards) {
-            cardView.setEffect(null);
-            cardView.setOpacity(1);
-
-            // In createCardViewsOfPlayer, there is a instanceof HumanPlayer -> add hover
-            // effect, idk if removing it will break anything so I set these to null here
-            // first
-            cardView.setOnMouseEntered(null);
-            cardView.setOnMouseExited(null);
-
-            cardView.setOnMouseClicked(event -> {
-                // Card card = (Card) cardView.getUserData();
-
-                boolean cardActivated = cardViewsToPass.contains(cardView);
-
-                if (cardViewsToPass.size() == 3 && !cardActivated) {
-                    System.out.println("Max cards selected");
-                } else {
-                    double translateYDistance = cardActivated ? 0 : -50;
-
-                    TranslateTransition transition = new TranslateTransition(Duration.seconds(0.35), cardView);
-                    transition.setToY(translateYDistance);
-                    transition.play();
-
-                    if (cardActivated) {
-                        cardViewsToPass.remove(cardView);
-                    } else {
-                        cardViewsToPass.add((CardImageView) cardView);
-                    }
-                }
-            });
-        }
+        
+        PassCardUtility.selectCardsToPass(root, cardViewsToPass);
+        
     }
 
     private void processNextTrick(Trick currTrick) {
@@ -359,7 +271,7 @@ public class MainApplication extends Application {
 
         // start new round
         if (!game.isEnded()) {
-            enablePassCardButton();
+            PassCardUtility.enablePassCardButton(passCardbutton, cardViewsToPass);
             startRound();
             return;
         }

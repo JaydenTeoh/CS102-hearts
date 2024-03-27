@@ -1,20 +1,10 @@
-package com.example.app;
+package com.example.utility;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import com.example.gameplay.Game;
 import com.example.players.Player;
 
-import javafx.collections.FXCollections;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
-import javafx.stage.Stage;
 
 public class PlayAreaUtility {
     public static final double WINDOW_WIDTH = 1500;
@@ -66,14 +56,9 @@ public class PlayAreaUtility {
             Pane playerArea = PlayAreaUtility.createPlayerArea(position);
             PlayAreaUtility.positionPlayerArea(playerArea, position);
 
-            // Create Cards
+            // create card views
             playerArea = CardViewUtility.createCardViewsOfPlayer(playerArea, playerList.get(i), playerList);
             playerArea.setId(i + "");
-            // final String playerAreaId = playerArea.getId();
-            // playerArea.setOnMouseEntered(event -> {
-            //     // Print the node's ID or any other identifying detail
-            //     System.out.println("Mouse entered: " + playerAreaId);
-            // });
 
             root.getChildren().add(playerArea);
         }

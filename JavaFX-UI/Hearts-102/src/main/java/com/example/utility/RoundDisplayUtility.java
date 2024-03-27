@@ -1,4 +1,4 @@
-package com.example.app;
+package com.example.utility;
 
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -18,7 +18,7 @@ public class RoundDisplayUtility {
         } else {
             // If roundLabel is null, it means it hasn't been initialized yet
             initializeRoundDisplay(root, roundLabel);
-            roundLabel.setText("Round " + currentRound); // Update the label after initialization
+            roundLabel.setText("Round " + currentRound);
         }
     }
 }

@@ -32,8 +32,8 @@ public class Game {
         return round;
     }
 
-    public void nextRound(int playerStartingFirst) {
-        round = new Round(playerStartingFirst, players);
+    public void nextRound() {
+        round = new Round(players);
     }
 
     public int getNumRounds() {

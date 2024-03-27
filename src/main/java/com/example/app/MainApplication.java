@@ -162,13 +162,13 @@ public class MainApplication extends Application {
             String updatedImageUrl;
             switch (newMode) {
                 case "Casino":
-                    updatedImageUrl = "file:" + currentDirectory + "/background1.jpg";
+                    updatedImageUrl = "file:" + currentDirectory + "/images/background1.jpg";
                     break;
                 case "School":
-                    updatedImageUrl = "file:" + currentDirectory + "/background3.jpeg";
+                    updatedImageUrl = "file:" + currentDirectory + "/images/background3.jpeg";
                     break;
                 case "Holiday":
-                    updatedImageUrl = "file:" + currentDirectory + "/background4.jpeg";
+                    updatedImageUrl = "file:" + currentDirectory + "/images/background4.jpeg";
                     break;
                 default:
                     updatedImageUrl = ""; // Default or error case

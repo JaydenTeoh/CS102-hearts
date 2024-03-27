@@ -8,7 +8,7 @@ public class MusicUtility {
 
     public static Clip loadMusic() throws UnsupportedAudioFileException, IOException, LineUnavailableException{
         String currentDirectory = System.getProperty("user.dir");
-        File musicFile = new File(currentDirectory + "/hearts-music.wav");
+        File musicFile = new File(currentDirectory + "/images/hearts-music.wav");
         if (!musicFile.exists()) {
             throw new RuntimeException("Audio file not found: ");
         }

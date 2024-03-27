@@ -284,14 +284,21 @@ public class CardViewUtility {
             // nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(2).getUserData());
             // nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(3).getUserData());
 
-            final List<Card> finalCardsToPass = new ArrayList<>(cardsToPass);
+            for(Node n: currentPlayerCardViews){
+                Card c = (Card) n.getUserData();
+                for(Card card : cardsToPass){
+                    if(c == card){
+                        cardViewsToPass.add((CardImageView) n);
+                    }
+                }
+            }
 
-            currentPlayerCardViews.stream()
-                    .filter(node -> node.getUserData() instanceof Card)
-                    .map(node -> (CardImageView) node)
-                    .filter(cardView -> finalCardsToPass.stream()
-                            .anyMatch(card -> card.isSameAs((Card) cardView.getUserData())))
-                    .forEach(cardViewsToPass::add);
+            // currentPlayerCardViews.stream()
+            //         .filter(node -> node.getUserData() instanceof Card)
+            //         .map(node -> (CardImageView) node)
+            //         .filter(cardView -> finalCardsToPass.stream()
+            //                 .anyMatch(card -> card.isSameAs((Card) cardView.getUserData())))
+            //         .forEach(cardViewsToPass::add);
         } else {
             System.out.println("Player " + p.getName() + " passes to Player " + nextPlayer.getName());
             System.out.println("Player is a Human");

@@ -292,12 +292,14 @@ public class CardViewUtility {
                 xPos += (CARD_WIDTH + SPACING);
                 cardView.setLayoutY(0);
                 cardView.setRotate(180);
+                
             } else { // Left and Right player
                 cardView.setLayoutX(0);
                 cardView.setRotate(90);
                 yPos += 30;
             }
-
+            boolean isHuman = nextPlayer instanceof HumanPlayer;
+            cardView.setImage(isHuman); // Flip the card to face up
             currentPlayerCardViews.remove(cardView);
             nextPlayerCards.add(cardView);
 
@@ -307,7 +309,7 @@ public class CardViewUtility {
             }
 
             TranslateTransition translateTransition = new TranslateTransition(Duration.seconds(0.5), cardView);
-            cardView.setImage(true); // Flip the card to face up
+            
 
             animatingCards.add(cardView);
 

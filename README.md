@@ -27,12 +27,14 @@ cd JavaFX-UI/Hearts-102
 ```
 2. Compile the Java Code:  
 ```
-bash jfxcompile.bat
+bash compile.bat
 ```
 3. Run the Game:
 ```
-bash jfxrun.bat
+bash run.bat
 ```
+
+Source code is in `src/main/com/example`, sorry for nesting, JavaFX is weird!!!
 
 ---
 

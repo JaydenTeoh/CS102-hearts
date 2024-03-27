@@ -26,8 +26,7 @@ public class AIPlayer implements Player {
         this.hand = hand;
     }
 
-    @Override
-    public void passCards(List<Card> cards, Player player) {
+    public List<Card> passCards() {
         Hand currHand = getHand();
         int numLeft = 3;
         List<Card> cardsToPass = new ArrayList<>();
@@ -71,7 +70,7 @@ public class AIPlayer implements Player {
         }
 
         if (numLeft == 0) {
-            //return cardsToPass;
+            return cardsToPass;
         }
 
 
@@ -89,13 +88,13 @@ public class AIPlayer implements Player {
                     }
 
                     if (numLeft == 0) {
-                        //return cardsToPass;
+                        return cardsToPass;
                     }
                 }
             }
         }
 
-        //return cardsToPass;
+        return cardsToPass;
     }
 
 

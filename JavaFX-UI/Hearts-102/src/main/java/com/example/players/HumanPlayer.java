@@ -30,9 +30,9 @@ public class HumanPlayer implements Player {
     //     return null;
     // }
 
-    @Override
-    public void passCards(List<Card> cards, Player player) {
-        hand.getCards().removeAll(cards);
-        player.getHand().getCards().addAll(cards);
-    }
+    // @Override
+    // public void passCards(List<Card> cards, Player player) {
+    //     hand.getCards().removeAll(cards);
+    //     player.getHand().getCards().addAll(cards);
+    // }
 }

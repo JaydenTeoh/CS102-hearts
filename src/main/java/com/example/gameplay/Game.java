@@ -33,15 +33,12 @@ public class Game {
     }
 
     public void nextRound() {
+        numRounds++;
         round = new Round(players);
     }
 
     public int getNumRounds() {
         return numRounds;
-    }
-
-    public void incrementNumRounds() {
-        numRounds++;
     }
 
     public ArrayList<Player> getPlayers() {

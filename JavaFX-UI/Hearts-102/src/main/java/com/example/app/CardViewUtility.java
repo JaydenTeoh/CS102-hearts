@@ -198,7 +198,7 @@ public class CardViewUtility {
             System.out.println("Card played: " + cardPlayed + " by Player " + (playerNo));
             // Bring the card to the front
             cardView.toFront();
-            // Disable mouse interaction with the card
+
             cardView.setDisable(true);
             callback.run();
         });
@@ -215,57 +215,17 @@ public class CardViewUtility {
                     hand.add(card);
                 }
             }
-            for (int i = 0; i < playerList.size(); i++) {
-                Player p = playerList.get(i);
-                System.out.println("Player "+ (i + 1));
-                System.out.println(p.getHand().getCards());    
-            }
             addCards = new HashMap<>();
-            // System.out.println("Start regorganising");
-            // for (int i = 0; i < playerList.size(); i++) {
-            //     ObservableList<Node> playerCardViews = getCardViewsOfPlayer(root, i);
-            //     for (int j = 0; j < playerCardViews.size(); j++) {
-            //         Node cardView = playerCardViews.get(j);
-            //         if (i == 0 || i == 2) {
-            //             if (cardView.getLayoutX() == 0.0) {
-            //                 cardView.setLayoutX(75 + ((j + 11) * (CARD_WIDTH + SPACING)));
-            //             } else {
-            //                 cardView.setLayoutX(75 + (CARD_WIDTH + SPACING));
-            //             }
-                        
-            //             cardView.setLayoutX(-50);
-            //         } else {
-            //             if (cardView.getLayoutY() == 0.0) {
-            //                 cardView.setLayoutY(50 + ((j + 11) * 30));
-            //             } else {
-            //                 cardView.setLayoutY(80);
-            //             }
-
-
-            //         }
-
-
-            //     }
-            // }
-
             callback.run();
             return;
         }
 
         Player p = playerList.get(currentPlayerIndex);
-        int nextPlayerIndex = currentPlayerIndex; // Initialize with current player's index
+        int nextPlayerIndex = currentPlayerIndex;
 
-        switch (gameRound) {
-            case 1: // Pass forward (to the right)
-                nextPlayerIndex = (currentPlayerIndex + 1) % playerList.size();
-                break;
-            case 2: // Pass backward (to the left)
-                nextPlayerIndex = (currentPlayerIndex - 1 + playerList.size()) % playerList.size();
-                break;
-            // case 3: // Pass across
-            // nextPlayerIndex = (currentPlayerIndex + 2) % playerList.size();
-            // break;
-        }
+
+        nextPlayerIndex = (currentPlayerIndex + 1) % playerList.size();
+
 
         Player nextPlayer = playerList.get(nextPlayerIndex);
         List<Card> cardsToPass = new ArrayList<>();
@@ -273,57 +233,16 @@ public class CardViewUtility {
 
         Pane currentPlayerArea = PlayAreaUtility.getPlayerArea(root, currentPlayerIndex);
         Pane nextPlayerArea = PlayAreaUtility.getPlayerArea(root, nextPlayerIndex);
-        
-        System.out.println("Player "+ (currentPlayerIndex + 1));
-        System.out.println(p.getHand().getCards());
+
         if (p instanceof AIPlayer AI) {
-            System.out.println("Player " + p.getName() + " passes to Player " + nextPlayer.getName());
-            System.out.println("Player is an AI");
 
             cardViewsToPass.clear();
 
             cardsToPass = AI.passCards();
 
-            // cardsToPass.add((Card) currentPlayerCardViews.get(1).getUserData());
-            // cardsToPass.add((Card) currentPlayerCardViews.get(2).getUserData());
-            // cardsToPass.add((Card) currentPlayerCardViews.get(3).getUserData());
-
-            // p.getHand().removeCard((Card) currentPlayerCardViews.get(1).getUserData());
-            // p.getHand().removeCard((Card) currentPlayerCardViews.get(2).getUserData());
-            // p.getHand().removeCard((Card) currentPlayerCardViews.get(3).getUserData());
-
-            // nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(1).getUserData());
-            // nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(2).getUserData());
-            // nextPlayer.getHand().addCard((Card) currentPlayerCardViews.get(3).getUserData());
-
-            System.out.println("Player AI: cards to pass");
-            int count = 0 ;
-            System.out.println(cardsToPass.size());
-            for (Card c : cardsToPass) {
-                System.out.println(c.getRank() + " of " + c.getSuit());
-                count++;
-            }
-
-            // for(Node n: currentPlayerCardViews){
-            //     Card c = (Card) n.getUserData();
-            //     for(Card card : cardsToPass){
-            //         if(c == card){
-            //             cardViewsToPass.add((CardImageView) n);
-            //         }
-            //     }
-            // }
-                        
-            // System.out.println("Checking hand");
-            
-            // System.out.println(cardsToPass.size());
-
             AI.getHand().getCards().removeAll(cardsToPass);
-            // nextPlayer.getHand().getCards().addAll(cardsToPass);
 
             final List<Card> finalCardsToPass = new ArrayList<>(cardsToPass);
-
-            System.out.println("Player "+ (currentPlayerIndex + 1));
-            System.out.println(AI.getHand().getCards());
 
             currentPlayerCardViews.stream()
                     .filter(node -> node.getUserData() instanceof Card)
@@ -342,15 +261,8 @@ public class CardViewUtility {
                 System.out.println(c.getRank() + " of " + c.getSuit());
             }
 
-            // Get next player to pass
             p.getHand().getCards().removeAll(cardsToPass);
-            // nextPlayer.getHand().getCards().addAll(cardsToPass);
         }
-
-        // for(Node n : nextPlayerCards){
-        // Card c = (Card) n.getUserData();
-        // System.out.println(c.getRank()+" of "+c.getSuit());
-        // }
 
         addCards.put(nextPlayerIndex, cardsToPass);
 
@@ -364,9 +276,6 @@ public class CardViewUtility {
 
             boolean isHuman = nextPlayer instanceof HumanPlayer;
             cardView.setImage(isHuman); // Flip the card to face up
-
-            // currentPlayerCardViews.remove(cardView);
-            // nextPlayerCards.add(cardView);
 
             currentPlayerArea.getChildren().remove(cardView);
             nextPlayerArea.getChildren().add(cardView);
@@ -392,7 +301,6 @@ public class CardViewUtility {
             }
 
             if (animatingCards.contains(cardView)) {
-                // Skip this card if it's already animating
                 continue;
             }
 
@@ -406,7 +314,6 @@ public class CardViewUtility {
             translateTransition.setCycleCount(1);
 
             translateTransition.setOnFinished(e -> {
-                // Remove from animating set when finished
                 animatingCards.remove(cardView);
 
                 if (animatingCards.size() == 0) {

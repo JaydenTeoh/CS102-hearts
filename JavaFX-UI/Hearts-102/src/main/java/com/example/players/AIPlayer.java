@@ -58,14 +58,19 @@ public class AIPlayer implements Player {
         }
         
         if (currHand.howManyOfSuit(Suit.CLUBS) <= numLeft) {
-            numLeft -= currHand.howManyOfSuit(Suit.DIAMONDS);
-            cardsToPass.addAll(currHand.getAll(Suit.DIAMONDS));
+            numLeft -= currHand.howManyOfSuit(Suit.CLUBS);
+            cardsToPass.addAll(currHand.getAll(Suit.CLUBS));
         }
 
         // if you can leave yourself with 1 club left, that's okay also, you can dump it on first trick anyways
         if (currHand.howManyOfSuit(Suit.CLUBS) == numLeft + 1) {
-            List<Card> clubsCards = currHand.getAll(Suit.DIAMONDS);
-            clubsCards.remove(currHand.getHighest(Suit.CLUBS)); // keep the highest so you can possibly win first trick and lead next one
+            for (Card c : currHand.getAll(Suit.CLUBS)) {
+                if (c.equals(currHand.getHighest(Suit.CLUBS))) {
+                    continue;
+                }
+                cardsToPass.add(c);
+            }
+            
             numLeft = 0;
         }
 

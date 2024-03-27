@@ -7,7 +7,6 @@ import java.util.*;
 
 import com.example.gameplay.Game;
 import com.example.players.Player;
-import com.example.gameplay.Round;
 import com.example.gameplay.Trick;
 
 import javafx.animation.ScaleTransition;
@@ -145,7 +144,7 @@ public class ScoreDisplayUtility {
         }
     }
 
-    public static void updateScoresAfterCurrentTrickBackend(Pane root, Trick currTrick, Round round, int currentPlayer, List<Player> playerList) {
+    public static void updateScoresAfterCurrentTrickBackend(Pane root, Trick currTrick, Game game, int currentPlayer, List<Player> playerList) {
         currTrick.setNumPoints(); // this sets numPoints in trick based on the cards in it
         int pointsInCurrTrick = currTrick.getNumPoints();
         int winningCardIndexInTrick = currTrick.getWinningCardIndex();
@@ -156,14 +155,14 @@ public class ScoreDisplayUtility {
         }
 
         Player winner = playerList.get(winnerIndexInPlayerList);
-        round.setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
+        game.getRound().setPlayersPointsInCurrentRound(winner, pointsInCurrTrick);
 
         // displays transition of the player that won the trick
         animateTrickToPlayerArea(root, winnerIndexInPlayerList);
     }
 
-    public static void updateScoresDisplay(Pane root, Game game, Round round, List<Player> playerList) {
-        HashMap<Player, Integer> pointsInCurrentRound = round.getPlayersPointsInCurrentRound();
+    public static void updateScoresDisplay(Pane root, Game game, List<Player> playerList) {
+        HashMap<Player, Integer> pointsInCurrentRound = game.getRound().getPlayersPointsInCurrentRound();
         HashMap<Player, Integer> pointsInCurrentGame = game.getPlayersPointsInCurrentGame();
 
         for (int i = 0; i < playerList.size(); i++) {

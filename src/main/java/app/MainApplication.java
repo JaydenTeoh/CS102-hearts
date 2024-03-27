@@ -81,6 +81,8 @@ public class MainApplication extends Application {
     private Label roundLabel;
     private int currentRound;
     private List<CardImageView> cardViewsToPass = new ArrayList<>();
+    private String previousBackgroundImageUrl;
+
 
     Button passCardbutton = new Button();
 
@@ -104,8 +106,9 @@ public class MainApplication extends Application {
         heartsLabel.setLayoutY(300);
 
         // Background setup
-        background.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        background.setStyle("-fx-background-color: green");
+        String cDirectory = System.getProperty("user.dir");
+        String imageUrl1 = "file:" + cDirectory + "/images/classic.png";
+        ScreenUtility.updateBackgroundImage(imageUrl1, background);
 
         // Mode selection dropdown menu
         ChoiceBox<String> modeChoiceBox = new ChoiceBox<>();
@@ -156,27 +159,36 @@ public class MainApplication extends Application {
         });
 
         // Listener for mode selection change
-        // Listener for mode selection change
-        modeChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldMode, newMode) -> {
+         modeChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldMode, newMode) -> {
             String currentDirectory = System.getProperty("user.dir");
             String updatedImageUrl;
             switch (newMode) {
                 case "Casino":
                     updatedImageUrl = "file:" + currentDirectory + "/images/background1.jpg";
+                    ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
+                    previousBackgroundImageUrl = updatedImageUrl;
                     break;
                 case "School":
                     updatedImageUrl = "file:" + currentDirectory + "/images/background3.jpeg";
+                    ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
+                    previousBackgroundImageUrl = updatedImageUrl;
                     break;
                 case "Holiday":
                     updatedImageUrl = "file:" + currentDirectory + "/images/background4.jpeg";
+                    ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
+                    previousBackgroundImageUrl = updatedImageUrl;
+                    break;
+                case "Classic":
+                    updatedImageUrl = "file:" + currentDirectory + "/images/classic.png";
+                    ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
                     break;
                 default:
-                    updatedImageUrl = ""; // Default or error case
-                    background.setStyle("-fx-background-color: green"); // Green background for Classic mode
+                    updatedImageUrl = "file:" + currentDirectory + "/images/classic.png";
+                    ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
                     break;
             }
-            ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
         });
+
 
         // Add all components to root
         root.getChildren().addAll(background, heartsLabel, modeChoiceBox,howToPlayButton, startButton);
@@ -257,11 +269,10 @@ public class MainApplication extends Application {
             game.setPlayersPointsInCurrentGame(p, roundPoints.get(p) % 26);
         }
 
-        // make new background for next round
+        // Clear all existing content in the root pane
         root.getChildren().clear();
-        Region background = new Region();
-        background.setPrefSize(PlayAreaUtility.WINDOW_WIDTH, PlayAreaUtility.WINDOW_HEIGHT);
-        background.setStyle("-fx-background-color: green");
+        // Add the background
+        ScreenUtility.updateBackgroundImage(previousBackgroundImageUrl, background);
         root.getChildren().add(background);
 
         // start new round

@@ -151,16 +151,6 @@ public class MainApplication extends Application {
         currentCardViewsInTrick = new ArrayList<>();
         round.dealHands();
 
-        for (int i = 0; i < Game.NUM_PLAYERS; i++) {
-            List<Card> hand = playerList.get(i).getHand().getCards();
-            for (Card c : hand) {
-                // set 2 of clubs to start first, as per game rules
-                if (c.equals(Game.ROUND_STARTING_CARD)) {
-                    round.setPlayerStartingFirst(i);
-                }
-            }
-        }
-
         // Create Play Area
         Pane playArea = PlayAreaUtility.createPlayArea();
         playArea.setLayoutX((root.getPrefWidth() - playArea.getPrefWidth()) / 2);
@@ -176,9 +166,6 @@ public class MainApplication extends Application {
 
         // CardViewUtility.disableCards(root);
 
-        // Set Playable Cards to starting player
-        currentPlayer = round.getPlayerStartingFirst();
-
         selectCardsToPass();
         // nextTurn();
     }
@@ -187,6 +174,20 @@ public class MainApplication extends Application {
         CardViewUtility.processPlayerCards(0, playerList, cardViewsToPass, game.getNumRounds(), root, () -> {
             passCardbutton.setVisible(false);
             cardViewsToPass.clear();
+
+            for (int i = 0; i < Game.NUM_PLAYERS; i++) {
+                List<Card> hand = playerList.get(i).getHand().getCards();
+                for (Card c : hand) {
+                    // set 2 of clubs to start first, as per game rules
+                    if (c.equals(Game.ROUND_STARTING_CARD)) {
+                        round.setPlayerStartingFirst(i);
+                    }
+                }
+            }
+
+            // Set Playable Cards to starting player
+            currentPlayer = round.getPlayerStartingFirst();
+
             nextTurn();
         });
     }
@@ -222,8 +223,7 @@ public class MainApplication extends Application {
     }
 
     private void selectCardsToPass() {
-        currentPlayer = 0;
-        ObservableList<Node> cards = CardViewUtility.getCardViewsOfPlayer(root, currentPlayer);
+        ObservableList<Node> cards = CardViewUtility.getCardViewsOfPlayer(root, 0);
         for (Node cardView : cards) {
             cardView.setEffect(null);
             cardView.setOpacity(1);

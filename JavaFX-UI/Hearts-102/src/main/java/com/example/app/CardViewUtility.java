@@ -38,12 +38,11 @@ public class CardViewUtility {
             if (node.getId() != null && node.getId().equals(id + "")) {
                 Pane pane = (Pane) node;
                 return pane.getChildren();
-            }   
+            }
         }
         // Empty List
         return FXCollections.observableArrayList();
     }
-
 
     public static void disableCards(Pane root) {
         ObservableList<Node> cards = getCardViewsOfPlayer(root, 0);
@@ -61,9 +60,13 @@ public class CardViewUtility {
     }
 
     public static void addHoverEffect(ImageView cardView) {
-        cardView.setOnMouseEntered(event -> {enableHover(cardView);});
+        cardView.setOnMouseEntered(event -> {
+            enableHover(cardView);
+        });
 
-        cardView.setOnMouseExited(event -> {disableHover(cardView);});
+        cardView.setOnMouseExited(event -> {
+            disableHover(cardView);
+        });
     }
 
     public static void enableHover(ImageView cardView) {
@@ -115,7 +118,7 @@ public class CardViewUtility {
 
                 double xPos, yPos;
                 if (playerIndex == 0) { // Bottom player
-                    xPos = i *  (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                    xPos = i * (CARD_WIDTH + SPACING); // Normal horizontal spacing
                     yPos = 0; // Align with top edge
                 } else if (playerIndex == 1) { // Left player
                     xPos = 0; // Align with left edge
@@ -130,7 +133,6 @@ public class CardViewUtility {
 
                 cardView.setLayoutX(xPos);
                 cardView.setLayoutY(yPos);
-
 
                 // cardView.setRotate(-90);
                 // Rotate cards for left and right players
@@ -158,7 +160,8 @@ public class CardViewUtility {
         return playerArea;
     }
 
-     public static void moveCard(Node cardView, Card cardPlayed, List<Node> currentCardViewsInTrick, List<Player> playerList, Runnable callback) {
+    public static void moveCard(Node cardView, Card cardPlayed, List<Node> currentCardViewsInTrick,
+            List<Player> playerList, Runnable callback) {
         currentCardViewsInTrick.add(cardView);
         TranslateTransition transition = new TranslateTransition(Duration.seconds(1), cardView);
         disableHover((ImageView) cardView);
@@ -177,13 +180,13 @@ public class CardViewUtility {
             transition.setToY(-(PLAYER_AREA_HEIGHT) + 90);
             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
         } else if (playerNo == 2) { // Left player
-            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2) + 180);
             transition.setToX(500);
         } else if (playerNo == 3) { // Top player
             transition.setToY(180);
             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
         } else if (playerNo == 4) { // Right player
-            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2) + 180);
             transition.setToX(-350);
         }
 
@@ -200,9 +203,33 @@ public class CardViewUtility {
         transition.play();
     }
 
-    public static void processPlayerCards(int currentPlayerIndex, List<Player> playerList, List<CardImageView> cardViewsToPass, int gameRound, Pane root, Runnable callback) {
+    public static void processPlayerCards(int currentPlayerIndex, List<Player> playerList,
+            List<CardImageView> cardViewsToPass, int gameRound, Pane root, Runnable callback) {
 
         if (currentPlayerIndex > playerList.size() - 1) {
+            for (int i = 0; i < playerList.size(); i++) {
+                ObservableList<Node> playerCardViews = getCardViewsOfPlayer(root, i);
+                for (int j = 0; j < playerCardViews.size(); j++) {
+                    double xPos, yPos;
+                    if (i == 0) { // Bottom player
+                        xPos = j * (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                        yPos = 0; // Align with top edge
+                    } else if (i == 1) { // Left player
+                        xPos = 0; // Align with left edge
+                        yPos = j * 30; // Vertical spacing
+                    } else if (i == 2) { // Top player
+                        xPos = j * (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                        yPos = 0; // Align with top edge
+                    } else { // Right player
+                        xPos = 0; // Align with left edge
+                        yPos = j * 30; // Vertical spacing
+                    }
+
+                    playerCardViews.get(j).setLayoutX(xPos);
+                    playerCardViews.get(j).setLayoutY(yPos);
+                }
+            }
+
             callback.run();
             return;
         }
@@ -218,8 +245,8 @@ public class CardViewUtility {
                 nextPlayerIndex = (currentPlayerIndex - 1 + playerList.size()) % playerList.size();
                 break;
             // case 3: // Pass across
-            //     nextPlayerIndex = (currentPlayerIndex + 2) % playerList.size();
-            //     break;
+            // nextPlayerIndex = (currentPlayerIndex + 2) % playerList.size();
+            // break;
         }
 
         Player nextPlayer = playerList.get(nextPlayerIndex);
@@ -273,7 +300,6 @@ public class CardViewUtility {
             p.passCards(cardsToPass, nextPlayer);
         }
 
-    
         ObservableList<Node> nextPlayerCards = CardViewUtility.getCardViewsOfPlayer(root, nextPlayerIndex);
 
         // for(Node n : nextPlayerCards){
@@ -288,6 +314,9 @@ public class CardViewUtility {
 
         for (int i = 0; i < cardViewsToPass.size(); i++) {
             CardImageView cardView = (CardImageView) cardViewsToPass.get(i);
+
+            cardView.setImage(false); // Flip the card to face up
+
             if (nextPlayerIndex == 0 || nextPlayerIndex == 2) { // Bottom and Top player
                 xPos += (CARD_WIDTH + SPACING);
                 cardView.setLayoutY(0);

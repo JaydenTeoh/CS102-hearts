@@ -57,6 +57,9 @@ import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.paint.Color;
+import javafx.geometry.Insets;
+import javafx.stage.Popup;
+
 
 
 public class MainApplication extends Application {
@@ -115,6 +118,10 @@ public class MainApplication extends Application {
         howToPlayButton.setLayoutX(WINDOW_WIDTH / 2 - 100);
         howToPlayButton.setLayoutY(WINDOW_HEIGHT / 2 + 175); // Shifted downwards by 200 units
         howToPlayButton.setStyle("-fx-font-size: 20px;");
+        // Set action for the How to Play button
+        howToPlayButton.setOnAction(event -> {
+            showHowToPlayPopup();
+        });
 
         // Start button
         Button startButton = new Button("Start");
@@ -164,6 +171,56 @@ public class MainApplication extends Application {
 
         return root;
     }
+
+    private void showHowToPlayPopup() {
+        // Create a new popup
+        Popup popup = new Popup();
+
+        // Creating labels for the title
+        Label title = new Label("How to Play Hearts");
+        title.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #333;");
+
+        // Rules
+        String rulesText = "Rules:\n" +
+                "- Ace is high, 2 is low, there is no trump suit\n\n" +
+                "- Players pass 3 cards from their hand to an opponent\n" +
+                "  (tip: pass high cards, which will often win tricks)\n\n" +
+                "- Player with the 2 of clubs starts the hand;\n" +
+                "  other players must follow the suit being played;\n" +
+                "  the highest card in the leading suit wins\n\n" +
+                "- Player who won the last trick starts the next hand;\n " +
+                "  continue until out of cards";
+
+        // Create labels for the rules
+        Label rulesLabel = new Label(rulesText);
+        rulesLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: #555;");
+
+        // Information from the second image about goal and scoring
+        String goalAndScoringText =
+                "Goal: Player with the lowest score wins\n\n" +
+                "Tips: Avoid winning tricks with hearts / Q of spades\n\n" +
+                "Scoring: Hearts are 1 pts each, Q of spades is 13 pts";
+
+        // Create a label for the goal and scoring
+        Label goalAndScoringLabel = new Label(goalAndScoringText);
+        goalAndScoringLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: #555;");
+
+        // Adding a little styling to our VBox
+        VBox content = new VBox(10); // spacing between children is 10
+        content.setPadding(new Insets(30));
+        content.setStyle("-fx-background-color: #FFF59D; -fx-border-color: #FFA000; -fx-border-width: 2px;");
+        content.setPrefSize(520, 650);
+
+        // Add the title, rules, and goal and scoring to the VBox
+        content.getChildren().addAll(title, rulesLabel, goalAndScoringLabel);
+
+        // Set the content and show the popup
+        popup.getContent().add(content);
+        popup.setAutoHide(true); // Close the popup when clicking outside of it
+        popup.show(root.getScene().getWindow(), 950, 150); //location
+    }
+
+
 
     private void updateBackgroundImage(String imageUrl, Region background) {
         BackgroundImage backgroundImage = new BackgroundImage(

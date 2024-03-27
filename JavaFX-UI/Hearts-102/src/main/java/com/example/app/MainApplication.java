@@ -167,6 +167,8 @@ public class MainApplication extends Application {
         playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
         root.getChildren().add(playArea);
 
+        initialisePassCardButton(playArea);
+
         round.startNewTrick();
 
         // Create Player Areas

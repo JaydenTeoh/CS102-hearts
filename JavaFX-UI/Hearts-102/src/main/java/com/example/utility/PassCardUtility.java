@@ -78,7 +78,7 @@ public class PassCardUtility {
     }
 
     private static void startPassingProcess(Pane root, List<Player> playerList, Button passCardbutton, List<CardImageView> cardViewsToPass, Game game, NextTurnAction nextTurnCallback) {
-        CardViewUtility.processPlayerCards(0, playerList, cardViewsToPass, game.getNumRounds(), root, () -> {
+        CardViewUtility.processPlayerCards(0, playerList, cardViewsToPass, root, () -> {
             passCardbutton.setVisible(false);
             cardViewsToPass.clear();
 

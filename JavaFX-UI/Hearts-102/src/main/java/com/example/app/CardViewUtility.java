@@ -198,7 +198,7 @@ public class CardViewUtility {
             System.out.println("Card played: " + cardPlayed + " by Player " + (playerNo));
             // Bring the card to the front
             cardView.toFront();
-
+            // Disable mouse interaction with the card
             cardView.setDisable(true);
             callback.run();
         });
@@ -280,22 +280,28 @@ public class CardViewUtility {
             currentPlayerArea.getChildren().remove(cardView);
             nextPlayerArea.getChildren().add(cardView);
 
-            cardView.setLayoutX(0);
-            cardView.setLayoutY(0);
 
             if (nextPlayerIndex == 0) {
-                xPos = 75 + (13 + i) * (CARD_WIDTH + SPACING);
+                xPos = ((i+1) * (CARD_WIDTH + SPACING));
+                cardView.setLayoutX(75 + (12) * (CARD_WIDTH + SPACING));
+                cardView.setLayoutY(0);
+
                 cardView.setRotate(0);
             } else if (nextPlayerIndex == 1) {
-                yPos = 50 + ((13 + i) * 30);
+                yPos = -((i+1) * 30);
+
+                cardView.setLayoutY(50 + ((16) * 30));
+
                 cardView.setLayoutX(250);
                 cardView.setRotate(90);
             } else if (nextPlayerIndex == 2) {
                 xPos = 75 + (13 + i) * (CARD_WIDTH + SPACING);
+                cardView.setLayoutX(0);
                 cardView.setLayoutY(110);
                 cardView.setRotate(0);
             } else {
                 yPos = 50 + ((13 + i) * 30);
+                cardView.setLayoutY(0);
                 cardView.setLayoutX(-90);
                 cardView.setRotate(90);
             }

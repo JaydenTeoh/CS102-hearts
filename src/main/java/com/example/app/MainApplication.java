@@ -261,10 +261,29 @@ public class MainApplication extends Application {
     private void processNextRound() {
         HashMap<Player, Integer> roundPoints = game.getRound().getPlayersPointsInCurrentRound();
         Iterator<Player> iter = roundPoints.keySet().iterator();
+        boolean shotTheMoon = false;
 
         while (iter.hasNext()) {
             Player p = iter.next();
-            game.setPlayersPointsInCurrentGame(p, roundPoints.get(p) % 26);
+
+            if (roundPoints.get(p) == 26) {
+                shotTheMoon = true;
+            }
+        }
+
+        iter = roundPoints.keySet().iterator();
+
+        while (iter.hasNext()) {
+            Player p = iter.next();
+
+            if (shotTheMoon) {
+                // everyone who didnt shoot the moon + 26, guy who did dont change
+                if (roundPoints.get(p) == 0) {
+                    game.setPlayersPointsInCurrentGame(p, 26);
+                }
+            } else {
+                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
+            }
         }
 
         // Clear all existing content in the root pane

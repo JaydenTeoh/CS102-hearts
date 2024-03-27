@@ -57,20 +57,20 @@ public class ScoreDisplayUtility {
         for (int i = 0; i < Game.NUM_PLAYERS; i++) {
             switch (i) {
                 case 0:
-                    xPos = MainApplication.WINDOW_WIDTH - 540;
-                    yPos = MainApplication.WINDOW_HEIGHT - 250;
+                    xPos = MainApplication.WINDOW_WIDTH / 2  - 75;
+                    yPos = MainApplication.WINDOW_HEIGHT - 100;
                     break;
                 case 1:
-                    xPos = 160;
-                    yPos = 100;
+                    xPos = 100;
+                    yPos = MainApplication.WINDOW_HEIGHT / 2 - 75;
                     break;
                 case 2:
-                    xPos = MainApplication.WINDOW_WIDTH - 540;
-                    yPos = 168;
+                    xPos = MainApplication.WINDOW_WIDTH / 2 -75;
+                    yPos = 0;
                     break;
                 case 3:
-                    xPos = MainApplication.WINDOW_WIDTH - 250;
-                    yPos = MainApplication.WINDOW_HEIGHT - 183;
+                    xPos = 1300;
+                    yPos = MainApplication.WINDOW_HEIGHT / 2 - 75;
                     break;
                 default:
                     xPos = 0;
@@ -99,8 +99,8 @@ public class ScoreDisplayUtility {
             // Set initial size and position of the image
             imageView.setFitWidth(50); // Initial width
             imageView.setFitHeight(50); // Initial height
-            imageView.setLayoutX((root.getPrefWidth() - imageView.getFitWidth()) / 2);
-            imageView.setLayoutY((root.getPrefHeight() - imageView.getFitHeight()) / 2);
+            imageView.setLayoutX(750);
+            imageView.setLayoutY(400);
 
             root.getChildren().add(imageView);
 
@@ -119,7 +119,7 @@ public class ScoreDisplayUtility {
             switch (winnerPlayerIndex) {
                 case 0: // Bottom player
                     transition.setToX(250);
-                    transition.setToY(350);
+                    transition.setToY(280);
                     break;
                 case 1: // Left player
                     transition.setToX(-660);
@@ -130,7 +130,7 @@ public class ScoreDisplayUtility {
                     transition.setToY(-320);
                     break;
                 case 3: // Right player
-                    transition.setToX(660);
+                    transition.setToX(620);
                     transition.setToY(237);
                     break;
                 default:

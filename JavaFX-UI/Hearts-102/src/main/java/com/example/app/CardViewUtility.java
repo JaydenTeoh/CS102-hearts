@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ public class CardViewUtility {
     public static final int SPACING = -65;
     public static final int PLAYER_AREA_WIDTH = 600;
     public static final int PLAYER_AREA_HEIGHT = 250;
+    public static HashMap<Integer, List<Card>> addCards = new HashMap<>();
 
     public static ObservableList<Node> getCardViewsOfPlayer(Pane root, int id) {
         for (Node node : root.getChildren()) {
@@ -207,6 +209,18 @@ public class CardViewUtility {
             List<CardImageView> cardViewsToPass, int gameRound, Pane root, Runnable callback) {
 
         if (currentPlayerIndex > playerList.size() - 1) {
+            for (int index: addCards.keySet()){
+                List<Card> hand = playerList.get(index).getHand().getCards();
+                for(Card card: addCards.get(index)){
+                    hand.add(card);
+                }
+            }
+            for (int i = 0; i < playerList.size(); i++) {
+                Player p = playerList.get(i);
+                System.out.println("Player "+ (i + 1));
+                System.out.println(p.getHand().getCards());    
+            }
+            addCards = new HashMap<>();
             // System.out.println("Start regorganising");
             // for (int i = 0; i < playerList.size(); i++) {
             //     ObservableList<Node> playerCardViews = getCardViewsOfPlayer(root, i);
@@ -300,14 +314,16 @@ public class CardViewUtility {
             // }
                         
             // System.out.println("Checking hand");
-            System.out.println("Player "+ (currentPlayerIndex + 1));
-            System.out.println(AI.getHand().getCards());
+            
             // System.out.println(cardsToPass.size());
 
-            // player.getHand().getCards().removeAll(cardsToPass);
-            nextPlayer.getHand().getCards().addAll(cardsToPass);
+            AI.getHand().getCards().removeAll(cardsToPass);
+            // nextPlayer.getHand().getCards().addAll(cardsToPass);
 
             final List<Card> finalCardsToPass = new ArrayList<>(cardsToPass);
+
+            System.out.println("Player "+ (currentPlayerIndex + 1));
+            System.out.println(AI.getHand().getCards());
 
             currentPlayerCardViews.stream()
                     .filter(node -> node.getUserData() instanceof Card)
@@ -315,12 +331,6 @@ public class CardViewUtility {
                     .filter(cardView -> finalCardsToPass.stream()
                             .anyMatch(card -> card.isSameAs((Card) cardView.getUserData())))
                     .forEach(cardViewsToPass::add);
-
-                    for (Node n : cardViewsToPass) {
-                        Card c = (Card) n.getUserData();
-                        cardsToPass.add(c);
-                        System.out.println(c.getRank() + " of " + c.getSuit());
-                    }
         } else {
             System.out.println("Player " + p.getName() + " passes to Player " + nextPlayer.getName());
             System.out.println("Player is a Human");
@@ -334,13 +344,15 @@ public class CardViewUtility {
 
             // Get next player to pass
             p.getHand().getCards().removeAll(cardsToPass);
-            nextPlayer.getHand().getCards().addAll(cardsToPass);
+            // nextPlayer.getHand().getCards().addAll(cardsToPass);
         }
 
         // for(Node n : nextPlayerCards){
         // Card c = (Card) n.getUserData();
         // System.out.println(c.getRank()+" of "+c.getSuit());
         // }
+
+        addCards.put(nextPlayerIndex, cardsToPass);
 
         double xPos = 0;
         double yPos = 0;

@@ -88,49 +88,4 @@ public class PlayAreaUtility {
         }
         return new Pane();
     }
-
-    public static void displayLeaderboard(Pane root, List<Player> playerList, Game game) {
-        Pane leaderboardScreen = new Pane();
-        leaderboardScreen.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        leaderboardScreen.setStyle("-fx-background-color: green;");
-
-        VBox leaderboardBox = new VBox(10);
-        leaderboardBox.setAlignment(Pos.CENTER);
-        
-        // create a background for the leaderboard box
-        leaderboardBox.setStyle("-fx-background-color: black; -fx-padding: 30; -fx-background-radius: 10;");
-        
-        Text title = new Text("Final Scores");
-        title.setFill(Color.WHITE);
-        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
-        leaderboardBox.getChildren().add(title);
-
-        // find lowest score player(s)
-        int lowestScore = playerList.stream().mapToInt(p -> game.getPlayersPointsInCurrentGame().get(p)).min().orElse(Integer.MAX_VALUE);
-        List<Player> winners = playerList.stream().filter(p -> game.getPlayersPointsInCurrentGame().get(p) == lowestScore).collect(Collectors.toList());
-        
-        // display the winner(s)
-        Text winnersText = new Text("Winner" + (winners.size() > 1 ? "s: " : ": ") + "Player" + (winners.size() > 1 ? "s " : " ") + winners.stream().map(Player::getName).collect(Collectors.joining(", ")));
-        winnersText.setFill(Color.WHITE);
-        winnersText.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-        leaderboardBox.getChildren().add(winnersText);
-
-        // add text to show points
-        for (Player player : playerList) {
-            Text playerScore = new Text("Player " + player.getName() + ": " + game.getPlayersPointsInCurrentGame().get(player) + " points");
-            playerScore.setFill(Color.WHITE);
-            leaderboardBox.getChildren().add(playerScore);
-        }
-
-        leaderboardScreen.getChildren().add(leaderboardBox);
-
-        // reposition
-        leaderboardBox.layoutXProperty().bind(leaderboardScreen.widthProperty().subtract(leaderboardBox.widthProperty()).divide(2));
-        leaderboardBox.layoutYProperty().bind(leaderboardScreen.heightProperty().subtract(leaderboardBox.heightProperty()).divide(2));
-
-        Scene leaderboardScene = new Scene(leaderboardScreen, WINDOW_WIDTH, WINDOW_HEIGHT);
-        Stage primaryStage = (Stage) root.getScene().getWindow();
-        primaryStage.setScene(leaderboardScene);
-    }
-
 }

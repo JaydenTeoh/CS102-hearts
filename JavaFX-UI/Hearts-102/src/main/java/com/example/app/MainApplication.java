@@ -47,6 +47,17 @@ import java.util.stream.Collectors;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.sound.sampled.LineUnavailableException;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.control.Label;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.paint.Color;
+
 
 public class MainApplication extends Application {
     public static final double WINDOW_WIDTH = 1500;
@@ -62,50 +73,104 @@ public class MainApplication extends Application {
     private Label roundLabel;
 
     private Parent createContent() {
-        root.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-
+        // Declare background outside the method
         Region background = new Region();
+        background.setPrefSize(1500, 800);
+
+        // Create a label for "Hearts"
+        Label heartsLabel = new Label("\uD83D\uDC9D  Hearts  \uD83D\uDC9E");
+        heartsLabel.setFont(Font.font("Impact", FontWeight.BOLD, 72)); // Set font size and style
+        heartsLabel.setTextFill(Color.WHITE); // Set text color
+
+// Center horizontally
+        heartsLabel.setLayoutX((WINDOW_WIDTH/2 - heartsLabel.prefWidth(-1))-200);
+
+// Set vertical position
+        heartsLabel.setLayoutY(300);
+
+        // Background setup
         background.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         background.setStyle("-fx-background-color: green");
 
-        Button startButton = new Button();
-        startButton.setText("Start");
+        // Mode selection dropdown menu
+        ChoiceBox<String> modeChoiceBox = new ChoiceBox<>();
+        modeChoiceBox.getItems().addAll("Classic", "Casino", "School", "Holiday");
+        modeChoiceBox.setValue("Classic"); // Default mode
+        modeChoiceBox.setPrefSize(200, 50);
+        modeChoiceBox.setLayoutX(WINDOW_WIDTH / 2 - 100);
+        modeChoiceBox.setLayoutY(WINDOW_HEIGHT / 2 + 100); // Shifted downwards by 200 units
 
+        // Apply font size and alignment styles
+        String choiceBoxStyle = "-fx-font-size: 20px; -fx-alignment: center;";
+        modeChoiceBox.setStyle(choiceBoxStyle);
+
+        modeChoiceBox.setOnShown(event -> {
+            // Apply CSS styling to adjust the width and center alignment of dropdown items
+            modeChoiceBox.lookup(".choice-box").setStyle("-fx-pref-width: 200; -fx-alignment: center;");
+        });
+
+        // How to Play button
+        Button howToPlayButton = new Button("How To Play");
+        howToPlayButton.setPrefSize(200, 50);
+        howToPlayButton.setLayoutX(WINDOW_WIDTH / 2 - 100);
+        howToPlayButton.setLayoutY(WINDOW_HEIGHT / 2 + 175); // Shifted downwards by 200 units
+        howToPlayButton.setStyle("-fx-font-size: 20px;");
+
+        // Start button
+        Button startButton = new Button("Start");
         startButton.setPrefSize(200, 50);
         startButton.setStyle("-fx-font-size: 20px;");
-
-        // Set the action event handler to call handleButtonClick method
+        startButton.setLayoutX(WINDOW_WIDTH / 2 - 100);
+        startButton.setLayoutY(WINDOW_HEIGHT / 2 + 250); // Shifted downwards by 200 units
         startButton.setOnAction(event -> {
             FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.4), root);
-            fadeOut.setToValue(0); // Fade to transparent
+            fadeOut.setToValue(0);
             fadeOut.setOnFinished(event2 -> {
-                // Fade in the new scene
                 FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.4), root);
-                fadeIn.setFromValue(0); // Start from transparent
-                fadeIn.setToValue(1); // Fade to opaque
+                fadeIn.setFromValue(0);
+                fadeIn.setToValue(1);
                 fadeIn.play();
                 startGame();
-                root.getChildren().remove(startButton); // Removes the button from the root pane
+                root.getChildren().removeAll(startButton, heartsLabel, modeChoiceBox, howToPlayButton); // Remove buttons
             });
             fadeOut.play();
         });
 
-        root.getChildren().addAll(background, startButton);
-
-        root.widthProperty().addListener((obs, oldVal, newVal) -> {
-            startButton.setLayoutX(newVal.doubleValue() / 2 - startButton.getWidth() / 2);
+        // Listener for mode selection change
+        // Listener for mode selection change
+        modeChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldMode, newMode) -> {
+            String currentDirectory = System.getProperty("user.dir");
+            String updatedImageUrl;
+            switch (newMode) {
+                case "Casino":
+                    updatedImageUrl = "file:" + currentDirectory + "/background1.jpg";
+                    break;
+                case "School":
+                    updatedImageUrl = "file:" + currentDirectory + "/background3.jpeg";
+                    break;
+                case "Holiday":
+                    updatedImageUrl = "file:" + currentDirectory + "/background4.jpeg";
+                    break;
+                default:
+                    updatedImageUrl = ""; // Default or error case
+                    background.setStyle("-fx-background-color: green"); // Green background for Classic mode
+                    break;
+            }
+            updateBackgroundImage(updatedImageUrl, background);
         });
 
-        root.heightProperty().addListener((obs, oldVal, newVal) -> {
-            startButton.setLayoutY(newVal.doubleValue() / 2 - startButton.getHeight() / 2);
-        });
-
-        startButton.layoutBoundsProperty().addListener((obs, oldVal, newVal) -> {
-            startButton.setLayoutX((WINDOW_WIDTH - newVal.getWidth()) / 2);
-            startButton.setLayoutY((WINDOW_HEIGHT - newVal.getHeight()) / 2);
-        });
+        // Add all components to root
+        root.getChildren().addAll(background, heartsLabel, modeChoiceBox,howToPlayButton, startButton);
 
         return root;
+    }
+
+    private void updateBackgroundImage(String imageUrl, Region background) {
+        BackgroundImage backgroundImage = new BackgroundImage(
+                new Image(imageUrl, 1500, 800, false, true),
+                BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.DEFAULT, BackgroundSize.DEFAULT);
+        background.setBackground(new Background(backgroundImage));
     }
 
     private void startGame() {
@@ -153,13 +218,6 @@ public class MainApplication extends Application {
                 }
             }
         }
-
-        // Create Play Area
-        Pane playArea = PlayAreaUtility.createPlayArea();
-        playArea.setLayoutX((root.getPrefWidth() - playArea.getPrefWidth()) / 2);
-        playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
-        root.getChildren().add(playArea);
-
         round.startNewTrick();
 
         // Create Player Areas

@@ -112,17 +112,17 @@ public class CardViewUtility {
 
                 double xPos, yPos;
                 if (playerIndex == 0) { // Bottom player
-                    xPos = i *  (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                    xPos = 75 + i *  (CARD_WIDTH + SPACING); // Normal horizontal spacing
                     yPos = 0; // Align with top edge
                 } else if (playerIndex == 1) { // Left player
-                    xPos = 0; // Align with left edge
-                    yPos = i * 30; // Vertical spacing
+                    xPos = 250; // Align with left edge
+                    yPos = 50 + i * 30; // Vertical spacing
                 } else if (playerIndex == 2) { // Top player
-                    xPos = i * (CARD_WIDTH + SPACING); // Normal horizontal spacing
-                    yPos = 0; // Align with top edge
+                    xPos = 75 + i * (CARD_WIDTH + SPACING); // Normal horizontal spacing
+                    yPos = 110; // Align with top edge
                 } else { // Right player
-                    xPos = 0; // Align with left edge
-                    yPos = i * 30; // Vertical spacing
+                    xPos = -90; // Align with left edge
+                    yPos = 20 + i * 30; // Vertical spacing
                 }
 
                 cardView.setLayoutX(xPos);
@@ -169,20 +169,20 @@ public class CardViewUtility {
         }
         int playerNo = playerList.indexOf(playerNow) + 1; // Player number is the index in the list + 1
 
-        // Adjust the transition based on the player number
-        if (playerNo == 1) { // Bottom player
-            transition.setToY(-(PLAYER_AREA_HEIGHT) + 90);
-            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
-        } else if (playerNo == 2) { // Left player
-            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
-            transition.setToX(500);
-        } else if (playerNo == 3) { // Top player
-            transition.setToY(180);
-            transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
-        } else if (playerNo == 4) { // Right player
-            transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
-            transition.setToX(-350);
-        }
+         // Adjust the transition based on the player number
+         if (playerNo == 1) { // Bottom player
+             transition.setToY(-150);
+             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
+         } else if (playerNo == 2) { // Left player
+             transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+             transition.setToX(325);
+         } else if (playerNo == 3) { // Top player
+             transition.setToY(140);
+             transition.setToX(((PLAYER_AREA_WIDTH / 2) - cardView.getLayoutX()) - CARD_WIDTH / 2);
+         } else if (playerNo == 4) { // Right player
+             transition.setToY((((PLAYER_AREA_HEIGHT / 2) - cardView.getLayoutY()) - CARD_HEIGHT / 2)+180);
+             transition.setToX(-330);
+         }
 
         transition.setCycleCount(1);
 

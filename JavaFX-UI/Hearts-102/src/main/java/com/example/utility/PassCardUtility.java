@@ -2,6 +2,7 @@ package com.example.utility;
 
 import java.util.List;
 
+import com.example.functional.NextTurnAction;
 import com.example.gameplay.Game;
 import com.example.players.Player;
 import com.example.pokercards.Card;
@@ -14,7 +15,9 @@ import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 
 public class PassCardUtility {
-    public static void initialisePassCardButton(Pane root, List<Player> playerList, Pane playArea, Button passCardbutton, List<CardImageView> cardViewsToPass, Game game) {
+    public static int currentPlayer;
+
+    public static void initialisePassCardButton(Pane root, List<Player> playerList, Pane playArea, Button passCardbutton, List<CardImageView> cardViewsToPass, Game game, NextTurnAction nextTurnCallback) {
         passCardbutton.setText("Pass 3 cards");
 
         passCardbutton.setPrefSize(200, 50);
@@ -24,7 +27,7 @@ public class PassCardUtility {
         passCardbutton.setOnAction(event -> {
             if (cardViewsToPass.size() == 3) {
                 System.out.println("Pass 3 cards");
-                startPassingProcess(root, playerList, passCardbutton, cardViewsToPass, game);
+                startPassingProcess(root, playerList, passCardbutton, cardViewsToPass, game, nextTurnCallback);
             } else {
                 System.out.println("Please select 3 cards");
             }
@@ -75,10 +78,24 @@ public class PassCardUtility {
         }
     }
 
-    private static void startPassingProcess(Pane root, List<Player> playerList, Button passCardbutton, List<CardImageView> cardViewsToPass, Game game) {
+    private static void startPassingProcess(Pane root, List<Player> playerList, Button passCardbutton, List<CardImageView> cardViewsToPass, Game game, NextTurnAction nextTurnCallback) {
         CardViewUtility.processPlayerCards(0, playerList, cardViewsToPass, game.getNumRounds(), root, () -> {
             passCardbutton.setVisible(false);
             cardViewsToPass.clear();
+
+            for (int i = 0; i < Game.NUM_PLAYERS; i++) {
+                List<Card> hand = playerList.get(i).getHand().getCards();
+                for (Card c : hand) {
+                    // set 2 of clubs to start first, as per game rules
+                    if (c.equals(Game.ROUND_STARTING_CARD)) {
+                        game.getRound().setPlayerStartingFirst(i);
+                    }
+                }
+            }
+    
+            // Set Playable Cards to starting player, note that starting player is set in PassCardUtility's startPassingProcess method
+            currentPlayer = game.getRound().getPlayerStartingFirst();
+            nextTurnCallback.execute();
         });
     }
 

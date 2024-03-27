@@ -1,6 +1,7 @@
 package com.example.app;
 
 import com.example.exceptions.PlayerException;
+import com.example.functional.NextTurnAction;
 import com.example.gameplay.Game;
 import com.example.gameplay.Round;
 import com.example.gameplay.Trick;
@@ -224,32 +225,16 @@ public class MainApplication extends Application {
         playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
         root.getChildren().add(playArea);
 
-        PassCardUtility.initialisePassCardButton(root, playerList, playArea, passCardbutton, cardViewsToPass, game);
+        PassCardUtility.initialisePassCardButton(root, playerList, playArea, passCardbutton, cardViewsToPass, game, this::nextTurn);
         
-        
+        currentPlayer = PassCardUtility.currentPlayer;
 
         game.getRound().startNewTrick();
         
         // Create Player Areas
         PlayAreaUtility.setupPlayerAreas(playerList, root);
         
-        // CardViewUtility.disableCards(root);
-        
         PassCardUtility.selectCardsToPass(root, cardViewsToPass);
-        
-        for (int i = 0; i < Game.NUM_PLAYERS; i++) {
-            List<Card> hand = playerList.get(i).getHand().getCards();
-            for (Card c : hand) {
-                // set 2 of clubs to start first, as per game rules
-                if (c.equals(Game.ROUND_STARTING_CARD)) {
-                    game.getRound().setPlayerStartingFirst(i);
-                }
-            }
-        }
-
-        // Set Playable Cards to starting player, note that starting player is set in PassCardUtility's startPassingProcess method
-        currentPlayer = game.getRound().getPlayerStartingFirst();
-        nextTurn();
     }
 
     private void processNextTrick(Trick currTrick) {
@@ -280,7 +265,7 @@ public class MainApplication extends Application {
         // make new background for next round
         root.getChildren().clear();
         Region background = new Region();
-        background.setPrefSize(1500, 800);
+        background.setPrefSize(PlayAreaUtility.WINDOW_WIDTH, PlayAreaUtility.WINDOW_HEIGHT);
         background.setStyle("-fx-background-color: green");
         root.getChildren().add(background);
 
@@ -352,52 +337,7 @@ public class MainApplication extends Application {
                 }
             }
         } else {
-            enableCards();
-        }
-    }
-
-    // disables unplayable cards and processes card click
-    public void enableCards() {
-        ArrayList<Card> playableCards = playerList.get(0).getHand().getPlayableCards(game.getRound().getCurrentTrick());
-
-        System.out.println("\nPlayable Cards:");
-        for (Card c : playableCards) {
-            System.out.println(c);
-        }
-        System.out.println();
-
-        for (Node child : root.getChildren()) {
-            if ("0".equals(child.getId())) {
-                child.toFront();
-                break; // Exit the loop once the desired node is found and brought to front
-            }
-        }
-
-        ObservableList<Node> cards = CardViewUtility.getCardViewsOfPlayer(root, 0);
-
-        CardViewUtility.disableCards(root);
-        for (Node cardView : cards) {
-            Card selectedCard = (Card) cardView.getUserData();
-
-            if (!playableCards.contains(selectedCard)) {
-                continue;
-            }
-            CardViewUtility.addHoverEffect((ImageView) cardView);
-            cardView.setEffect(null);
-            cardView.setOpacity(1);
-            cardView.getStyleClass().add("card-active");
-            cardView.setOnMouseClicked(event -> {
-                CardViewUtility.disableCards(root);
-                Card cardPlayed = (Card) cardView.getUserData();
-                // Move card to play area
-                CardViewUtility.moveCard(cardView, cardPlayed, currentCardViewsInTrick, playerList, () -> {
-                    // remove card from current player's hand
-                    playerList.get(currentPlayer).getHand().removeCard(cardPlayed);
-                    // add card to current trick
-                    game.getRound().getCurrentTrick().addCardToTrick(cardPlayed);
-                    nextTurn();
-                });
-            });
+            CardViewUtility.enableCards(root, playerList, currentCardViewsInTrick, game, currentPlayer, this::nextTurn);
         }
     }
 
@@ -420,7 +360,6 @@ public class MainApplication extends Application {
         stage.setTitle("Hearts");
         stage.show();
     }
-
 
     public static void main(String[] args) {
         launch();

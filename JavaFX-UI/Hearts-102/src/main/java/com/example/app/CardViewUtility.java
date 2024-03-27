@@ -207,28 +207,21 @@ public class CardViewUtility {
             List<CardImageView> cardViewsToPass, int gameRound, Pane root, Runnable callback) {
 
         if (currentPlayerIndex > playerList.size() - 1) {
-            for (int i = 0; i < playerList.size(); i++) {
-                ObservableList<Node> playerCardViews = getCardViewsOfPlayer(root, i);
-                for (int j = 0; j < playerCardViews.size(); j++) {
-                    double xPos, yPos;
-                    if (i == 0) { // Bottom player
-                        xPos = j * (CARD_WIDTH + SPACING); // Normal horizontal spacing
-                        yPos = 0; // Align with top edge
-                    } else if (i == 1) { // Left player
-                        xPos = 0; // Align with left edge
-                        yPos = j * 30; // Vertical spacing
-                    } else if (i == 2) { // Top player
-                        xPos = j * (CARD_WIDTH + SPACING); // Normal horizontal spacing
-                        yPos = 0; // Align with top edge
-                    } else { // Right player
-                        xPos = 0; // Align with left edge
-                        yPos = j * 30; // Vertical spacing
-                    }
+            // for (int i = 0; i < playerList.size(); i++) {
+            // ObservableList<Node> playerCardViews = getCardViewsOfPlayer(root, i);
+            // for (int j = 0; j < playerCardViews.size(); j++) {
+            // double totalWidth =
+            // imageViews.stream().mapToDouble(ImageView::getFitWidth).sum();
+            // double spacing = (containerWidth - totalWidth) / (imageViews.size() + 1); //
+            // Dividing space equally
 
-                    playerCardViews.get(j).setLayoutX(xPos);
-                    playerCardViews.get(j).setLayoutY(yPos);
-                }
-            }
+            // double currentX = spacing; // Starting X position
+            // for (ImageView imageView : imageViews) {
+            // imageView.setTranslateX(currentX);
+            // currentX += imageView.getFitWidth() + spacing; // Move to the next position
+
+            // }
+            // }
 
             callback.run();
             return;
@@ -252,6 +245,9 @@ public class CardViewUtility {
         Player nextPlayer = playerList.get(nextPlayerIndex);
         List<Card> cardsToPass = new ArrayList<>();
         ObservableList<Node> currentPlayerCardViews = getCardViewsOfPlayer(root, currentPlayerIndex);
+
+        Pane currentPlayerArea = PlayAreaUtility.getPlayerArea(root, currentPlayerIndex);
+        Pane nextPlayerArea = PlayAreaUtility.getPlayerArea(root, nextPlayerIndex);
 
         if (p instanceof AIPlayer) {
             System.out.println("Player " + p.getName() + " passes to Player " + nextPlayer.getName());
@@ -321,7 +317,7 @@ public class CardViewUtility {
                 xPos += (CARD_WIDTH + SPACING);
                 cardView.setLayoutY(0);
                 cardView.setRotate(180);
-                
+
             } else { // Left and Right player
                 cardView.setLayoutX(0);
                 cardView.setRotate(90);
@@ -329,8 +325,12 @@ public class CardViewUtility {
             }
             boolean isHuman = nextPlayer instanceof HumanPlayer;
             cardView.setImage(isHuman); // Flip the card to face up
-            currentPlayerCardViews.remove(cardView);
-            nextPlayerCards.add(cardView);
+
+            // currentPlayerCardViews.remove(cardView);
+            // nextPlayerCards.add(cardView);
+
+            currentPlayerArea.getChildren().remove(cardView);
+            nextPlayerArea.getChildren().add(cardView);
 
             if (animatingCards.contains(cardView)) {
                 // Skip this card if it's already animating
@@ -338,7 +338,6 @@ public class CardViewUtility {
             }
 
             TranslateTransition translateTransition = new TranslateTransition(Duration.seconds(0.5), cardView);
-            
 
             animatingCards.add(cardView);
 

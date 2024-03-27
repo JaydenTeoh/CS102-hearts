@@ -1,14 +1,14 @@
-package com.example.utility;
+package utility;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-import com.example.app.MainApplication;
-import com.example.gameplay.Game;
-import com.example.players.Player;
-import com.example.gameplay.Trick;
+import app.MainApplication;
+import gameplay.Game;
+import players.Player;
+import gameplay.Trick;
 
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
@@ -118,20 +118,20 @@ public class ScoreDisplayUtility {
             // Animation to move to player areadou
             switch (winnerPlayerIndex) {
                 case 0: // Bottom player
-                    transition.setToX(40);
-                    transition.setToY(320);
+                    transition.setToX(250);
+                    transition.setToY(280);
                     break;
                 case 1: // Left player
-                    transition.setToX(-620);
-                    transition.setToY(40);
+                    transition.setToX(-660);
+                    transition.setToY(237);
                     break;
                 case 2: // Top player
-                    transition.setToX(40);
-                    transition.setToY(-365);
+                    transition.setToX(250);
+                    transition.setToY(-320);
                     break;
                 case 3: // Right player
-                    transition.setToX(585);
-                    transition.setToY(40);
+                    transition.setToX(620);
+                    transition.setToY(237);
                     break;
                 default:
                     break;

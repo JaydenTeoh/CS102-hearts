@@ -1,15 +1,15 @@
-package com.example.app;
+package app;
 
-import com.example.exceptions.PlayerException;
-import com.example.functional.NextTurnAction;
-import com.example.gameplay.Game;
-import com.example.gameplay.Round;
-import com.example.gameplay.Trick;
-import com.example.players.AIPlayer;
-import com.example.players.HumanPlayer;
-import com.example.players.Player;
-import com.example.pokercards.Card;
-import com.example.utility.*;
+import exceptions.PlayerException;
+import functional.NextTurnAction;
+import gameplay.Game;
+import gameplay.Round;
+import gameplay.Trick;
+import players.AIPlayer;
+import players.HumanPlayer;
+import players.Player;
+import pokercards.Card;
+import utility.*;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
@@ -80,21 +80,17 @@ public class MainApplication extends Application {
     private Game game;
     private Label roundLabel;
     private int currentRound;
-    private Region background;
-    private String updatedImageUrl;
-
     private List<CardImageView> cardViewsToPass = new ArrayList<>();
 
-    private Button passCardbutton;
+    Button passCardbutton = new Button();
 
     private Parent createContent() {
         root = new Pane();
         root.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         
-        background = new Region();
-        background.setPrefSize(PlayAreaUtility.WINDOW_WIDTH, PlayAreaUtility.WINDOW_HEIGHT);
-
-        passCardbutton = new Button();
+        // Declare background outside the method
+        Region background = new Region();
+        background.setPrefSize(1500, 800);
 
         // Create a label for "Hearts"
         Label heartsLabel = new Label("\uD83D\uDC9D  Hearts  \uD83D\uDC9E");
@@ -163,30 +159,27 @@ public class MainApplication extends Application {
         // Listener for mode selection change
         modeChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldMode, newMode) -> {
             String currentDirectory = System.getProperty("user.dir");
+            String updatedImageUrl;
             switch (newMode) {
                 case "Casino":
                     updatedImageUrl = "file:" + currentDirectory + "/images/background1.jpg";
-                    ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
                     break;
                 case "School":
                     updatedImageUrl = "file:" + currentDirectory + "/images/background3.jpeg";
-                    ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
                     break;
                 case "Holiday":
                     updatedImageUrl = "file:" + currentDirectory + "/images/background4.jpeg";
-                    ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
-                    break;
-                case "Classic":
-                    background.setStyle("-fx-background-color: green");
                     break;
                 default:
+                    updatedImageUrl = ""; // Default or error case
                     background.setStyle("-fx-background-color: green"); // Green background for Classic mode
                     break;
             }
+            ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
         });
 
         // Add all components to root
-        root.getChildren().addAll(background, heartsLabel, modeChoiceBox, howToPlayButton, startButton);
+        root.getChildren().addAll(background, heartsLabel, modeChoiceBox,howToPlayButton, startButton);
 
         return root;
     }
@@ -258,41 +251,17 @@ public class MainApplication extends Application {
     private void processNextRound() {
         HashMap<Player, Integer> roundPoints = game.getRound().getPlayersPointsInCurrentRound();
         Iterator<Player> iter = roundPoints.keySet().iterator();
-        boolean shotTheMoon = false;
 
         while (iter.hasNext()) {
             Player p = iter.next();
-
-            if (roundPoints.get(p) == 26) {
-                shotTheMoon = true;
-            }
+            game.setPlayersPointsInCurrentGame(p, roundPoints.get(p) % 26);
         }
 
-        iter = roundPoints.keySet().iterator();
-
-        while (iter.hasNext()) {
-            Player p = iter.next();
-
-            if (shotTheMoon) {
-                // everyone who didnt shoot the moon + 26, guy who did dont change
-                if (roundPoints.get(p) == 0) {
-                    game.setPlayersPointsInCurrentGame(p, 26);
-                }
-            } else {
-                game.setPlayersPointsInCurrentGame(p, roundPoints.get(p));
-            }
-        }
-
-        // Clear all existing content in the root pane
+        // make new background for next round
         root.getChildren().clear();
-
-        try {
-            ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
-        } catch (Exception e) {
-            background.setStyle("-fx-background-color: green");
-        }
-
-        // Add the background
+        Region background = new Region();
+        background.setPrefSize(PlayAreaUtility.WINDOW_WIDTH, PlayAreaUtility.WINDOW_HEIGHT);
+        background.setStyle("-fx-background-color: green");
         root.getChildren().add(background);
 
         // start new round

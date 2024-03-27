@@ -1,10 +1,10 @@
-package com.example.utility;
+package utility;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.example.gameplay.Game;
-import com.example.players.Player;
+import gameplay.Game;
+import players.Player;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -81,6 +81,7 @@ public class ScreenUtility {
                 BackgroundPosition.DEFAULT, BackgroundSize.DEFAULT);
         background.setBackground(new Background(backgroundImage));
     }
+
 
     public static void displayLeaderboard(Pane root, List<Player> playerList, Game game) {
         Pane leaderboardScreen = new Pane();

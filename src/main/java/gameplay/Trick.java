@@ -1,6 +1,6 @@
-package com.example.gameplay;
-import com.example.app.*;
-import com.example.pokercards.*;
+package gameplay;
+import app.*;
+import pokercards.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +59,7 @@ public class Trick {
 
         for (int i = 1; i < cardsInTrick.size(); i++) {
             Card card = cardsInTrick.get(i);
-            if (card.getSuit().equals(leadSuit)) {
+            if (card.getSuit() == leadSuit) {
                 // Card is of the lead suit
                 if (card.getRank().compareTo(highestRank) > 0) {
                     // This card is currently the highest of the lead suit

@@ -226,8 +226,6 @@ public class MainApplication extends Application {
         root.getChildren().add(playArea);
 
         PassCardUtility.initialisePassCardButton(root, playerList, playArea, passCardbutton, cardViewsToPass, game, this::nextTurn);
-
-        game.getRound().startNewTrick();
         
         // Create Player Areas
         PlayAreaUtility.setupPlayerAreas(playerList, root);

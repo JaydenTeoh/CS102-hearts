@@ -88,6 +88,7 @@ public class PassCardUtility {
                     // set 2 of clubs to start first, as per game rules
                     if (c.equals(Game.ROUND_STARTING_CARD)) {
                         game.getRound().setPlayerStartingFirst(i);
+                        game.getRound().startNewTrick();
                     }
                 }
             }

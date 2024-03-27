@@ -21,15 +21,11 @@ Please refer to this [link](https://www.thesprucecrafts.com/hearts-complete-card
 ---
 
 ## How to Run App:
-1. Change directory to "JavaFX-UI/Hearts-102"
-```
-cd JavaFX-UI/Hearts-102
-```
-2. Compile the Java Code:  
+1. Compile the Java Code:  
 ```
 bash compile.bat
 ```
-3. Run the Game:
+2. Run the Game:
 ```
 bash run.bat
 ```

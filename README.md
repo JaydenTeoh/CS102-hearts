@@ -34,7 +34,7 @@ bash compile.bat
 bash run.bat
 ```
 
-Source code is in `src/main/com/example`, sorry for nesting, JavaFX is weird!!!
+Source code is in `src/main/java/com/example`, sorry for nesting, JavaFX is weird!!!
 
 ---
 

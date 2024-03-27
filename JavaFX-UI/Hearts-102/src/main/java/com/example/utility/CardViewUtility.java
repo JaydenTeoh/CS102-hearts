@@ -205,7 +205,7 @@ public class CardViewUtility {
     }
 
     public static void processPlayerCards(int currentPlayerIndex, List<Player> playerList,
-            List<CardImageView> cardViewsToPass, int gameRound, Pane root, Runnable callback) {
+        List<CardImageView> cardViewsToPass, int gameRound, Pane root, Runnable callback) {
 
         if (currentPlayerIndex > playerList.size() - 1) {
             for (int index: addCards.keySet()){

@@ -79,20 +79,6 @@ public class PassCardUtility {
         CardViewUtility.processPlayerCards(0, playerList, cardViewsToPass, game.getNumRounds(), root, () -> {
             passCardbutton.setVisible(false);
             cardViewsToPass.clear();
-
-            for (int i = 0; i < Game.NUM_PLAYERS; i++) {
-                List<Card> hand = playerList.get(i).getHand().getCards();
-                for (Card c : hand) {
-                    // set 2 of clubs to start first, as per game rules
-                    if (c.equals(Game.ROUND_STARTING_CARD)) {
-                        game.getRound().setPlayerStartingFirst(i);
-                    }
-                }
-            }
-
-            // Set Playable Cards to starting player, note that starting player is set in PassCardUtility's startPassingProcess method
-            currentPlayer = game.getRound().getPlayerStartingFirst();
-            nextTurn();
         });
     }
 

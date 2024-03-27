@@ -70,7 +70,7 @@ public class MainApplication extends Application {
     private List<Player> playerList;
     private List<Node> currentCardViewsInTrick;
 
-    private Pane root = new Pane();
+    private Pane root;
     private Game game;
     private Round round;
     private Label roundLabel;
@@ -80,6 +80,9 @@ public class MainApplication extends Application {
     Button passCardbutton = new Button();
 
     private Parent createContent() {
+        root = new Pane();
+        root.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        
         // Declare background outside the method
         Region background = new Region();
         background.setPrefSize(1500, 800);
@@ -182,7 +185,6 @@ public class MainApplication extends Application {
 
     private void startGame() {
         // // initialise instance variable root here
-        // root = new Pane();
 
         game = new Game();
         roundLabel = new Label("Round 1");
@@ -217,7 +219,8 @@ public class MainApplication extends Application {
         round.dealHands();
 
         // Create Play Area
-        Pane playArea = PlayAreaUtility.createPlayArea();
+        Pane playArea = new Pane();
+        playArea.setPrefSize(1000, 600);
         playArea.setLayoutX((root.getPrefWidth() - playArea.getPrefWidth()) / 2);
         playArea.setLayoutY((root.getPrefHeight() - playArea.getPrefHeight()) / 2);
         root.getChildren().add(playArea);

@@ -351,7 +351,7 @@ public class CardViewUtility {
             CardImageView cardView = (CardImageView) cardViewsToPass.get(i);
 
             boolean isHuman = nextPlayer instanceof HumanPlayer;
-            cardView.setImage(!isHuman); // Flip the card to face up
+            cardView.setImage(isHuman); // Flip the card to face up
 
             // currentPlayerCardViews.remove(cardView);
             // nextPlayerCards.add(cardView);

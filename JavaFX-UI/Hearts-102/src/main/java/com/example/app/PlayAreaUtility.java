@@ -25,20 +25,13 @@ public class PlayAreaUtility {
     public static final int PLAY_AREA_WIDTH = 400;
     public static final int PLAY_AREA_HEIGHT = 200;
 
-    public static Pane createPlayArea() {
-        Pane playArea = new Pane();
-        playArea.setPrefSize(PLAY_AREA_WIDTH, PLAY_AREA_HEIGHT);
-        playArea.setStyle("-fx-background-color: beige; -fx-border-color: black;");
-        return playArea;
-    }
-
     // Method to create a player area
     public static Pane createPlayerArea(int position) {
         Pane playerArea = new Pane();
         double width = (position == 1 || position == 3) ? PLAYER_AREA_HEIGHT : PLAYER_AREA_WIDTH;
         double height = (position == 1 || position == 3) ? PLAYER_AREA_WIDTH : PLAYER_AREA_HEIGHT;
         playerArea.setPrefSize(width, height);
-        playerArea.setStyle("-fx-border-color: black; -fx-border-width: 2;");
+        playerArea.setStyle("-fx-border-color: black; -fx-border-width: 0;");
         return playerArea;
     }
 
@@ -67,16 +60,6 @@ public class PlayAreaUtility {
         playerArea.setLayoutX(xPos);
         playerArea.setLayoutY(yPos);
     }
-
-    public static void setupPlayArea(Pane gameBoard){
-        Pane playArea = new Pane();
-        playArea.setPrefSize(PLAY_AREA_WIDTH, PLAY_AREA_HEIGHT);
-        playArea.setStyle("-fx-background-color: beige; -fx-border-color: black;");
-        playArea.setLayoutX((WINDOW_WIDTH - PLAY_AREA_WIDTH) / 2);
-        playArea.setLayoutY((WINDOW_HEIGHT - PLAY_AREA_HEIGHT) / 2);
-        gameBoard.getChildren().add(playArea);
-    }
-
     public static void setupPlayerAreas(List<Player> playerList, Round round, Pane root) {
         for (int i = 0; i < playerList.size(); i++) {
             int position = i;

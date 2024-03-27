@@ -15,7 +15,6 @@ import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 
 public class PassCardUtility {
-    public static int currentPlayer;
 
     public static void initialisePassCardButton(Pane root, List<Player> playerList, Pane playArea, Button passCardbutton, List<CardImageView> cardViewsToPass, Game game, NextTurnAction nextTurnCallback) {
         passCardbutton.setText("Pass 3 cards");
@@ -93,8 +92,6 @@ public class PassCardUtility {
                 }
             }
     
-            // Set Playable Cards to starting player, note that starting player is set in PassCardUtility's startPassingProcess method
-            currentPlayer = game.getRound().getPlayerStartingFirst();
             nextTurnCallback.execute();
         });
     }

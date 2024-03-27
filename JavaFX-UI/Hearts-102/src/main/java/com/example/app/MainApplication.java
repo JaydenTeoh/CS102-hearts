@@ -226,8 +226,6 @@ public class MainApplication extends Application {
         root.getChildren().add(playArea);
 
         PassCardUtility.initialisePassCardButton(root, playerList, playArea, passCardbutton, cardViewsToPass, game, this::nextTurn);
-        
-        currentPlayer = PassCardUtility.currentPlayer;
 
         game.getRound().startNewTrick();
         
@@ -306,6 +304,9 @@ public class MainApplication extends Application {
 
         } else if (currTrick.getCardsInTrick().size() != 0) {
             currentPlayer = game.getNextPlayer(currentPlayer);
+        } else if (game.getRound().getNumTricksPlayed() == 0) {
+            // first trick of the round
+            currentPlayer = game.getRound().getPlayerStartingFirst();
         }
 
         // Check if player is Human or AI

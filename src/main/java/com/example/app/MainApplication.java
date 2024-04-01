@@ -106,10 +106,12 @@ public class MainApplication extends Application {
 
         // Set vertical position
         heartsLabel.setLayoutY(300);
-
+        
         // Background setup
+        String currentDirectory = System.getProperty("user.dir");
         background.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        background.setStyle("-fx-background-color: green");
+        updatedImageUrl = "file:" + currentDirectory + "/images/background.jpg";
+        ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
 
         // Mode selection dropdown menu
         ChoiceBox<String> modeChoiceBox = new ChoiceBox<>();
@@ -162,7 +164,6 @@ public class MainApplication extends Application {
         // Listener for mode selection change
         // Listener for mode selection change
         modeChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldMode, newMode) -> {
-            String currentDirectory = System.getProperty("user.dir");
             switch (newMode) {
                 case "Casino":
                     updatedImageUrl = "file:" + currentDirectory + "/images/background1.jpg";
@@ -177,10 +178,12 @@ public class MainApplication extends Application {
                     ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
                     break;
                 case "Classic":
-                    background.setStyle("-fx-background-color: green");
+                    updatedImageUrl = "file:" + currentDirectory + "/images/background.jpg";
+                    ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
                     break;
                 default:
-                    background.setStyle("-fx-background-color: green"); // Green background for Classic mode
+                    updatedImageUrl = "file:" + currentDirectory + "/images/background.jpg";
+                    ScreenUtility.updateBackgroundImage(updatedImageUrl, background);
                     break;
             }
         });
